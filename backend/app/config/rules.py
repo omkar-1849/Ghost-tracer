@@ -1,0 +1,13 @@
+RISK_RULES = {
+    "FAILED_LOGIN": 20,
+    "HTTP_401": 15,
+    "HTTP_403": 15,
+    "HTTP_500": 10,
+    "ADMIN_ACCESS": 25,
+    "SQL_INJECTION": 50,
+    "XSS": 40,
+    "PATH_TRAVERSAL": 45,
+    "COMMAND_INJECTION": 60,
+    "SUSPICIOUS_USER_AGENT": 20,
+    "BRUTE_FORCE": 50
+}

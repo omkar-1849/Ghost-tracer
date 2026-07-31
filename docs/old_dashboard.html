@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel AI Dashboard</title>
+
+    <link rel="stylesheet" href="output.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<script type="module">
+    import { createIcons, icons } from "https://unpkg.com/lucide@latest/dist/esm/lucide.js";
+
+    createIcons({ icons });
+</script>
+
+<body class="bg-slate-950 text-white font-[Inter]">
+
+    <div class="flex">
+
+        <!-- Sidebar -->
+        <aside class="w-72 h-screen bg-slate-900 border-r border-slate-800 flex flex-col">
+
+            <div class="p-8 border-b border-slate-800">
+
+                <h1 class="flex items-center gap-3 text-3xl font-bold text-blue-500">
+                    <i data-lucide="shield"></i>
+                    Sentinel AI
+                </h1>
+
+                <p class="text-slate-400 mt-2 text-sm">
+                    Threat Monitoring Platform
+                </p>
+
+            </div>
+
+            <nav class="flex-1 p-5 space-y-2">
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 text-white transition-all duration-300">
+                    📊 Dashboard
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300">
+                    📜 Logs
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300">
+                    🚨 Alerts
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300">
+                    📈 Analytics
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300">
+                    🌍 Threat Map
+                </a>
+
+                <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300">
+                    ⚙ Settings
+                </a>
+
+            </nav>
+
+            <div class="p-5 border-t border-slate-800">
+
+                <div class="bg-slate-800 rounded-xl p-4">
+
+                    <p class="text-white font-semibold">
+                        Admin
+                    </p>
+
+                    <p class="text-slate-400 text-sm">
+                        Security Administrator
+                    </p>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+        <!-- Main -->
+        <main class="flex-1 p-8">
+
+            <div class="flex items-center justify-between mb-8">
+
+                <div>
+                    <h2 class="text-3xl font-bold">
+                        Dashboard
+                    </h2>
+
+                    <p class="text-slate-400 mt-1">
+                        Welcome back, Admin.
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-4">
+
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 w-64 focus:outline-none focus:border-blue-500 transition-all"
+                    >
+
+                    <button class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 hover:bg-slate-800 transition-all">
+                        🔔
+                    </button>
+
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold">
+                        A
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="grid grid-cols-4 gap-6">
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300">
+                    <p class="text-slate-400">Total Logs</p>
+                    <h1 class="text-4xl font-bold mt-2">20</h1>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300">
+                    <p class="text-slate-400">Alerts</p>
+                    <h1 class="text-4xl font-bold mt-2 text-yellow-400">1</h1>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300">
+                    <p class="text-slate-400">Critical</p>
+                    <h1 class="text-4xl font-bold mt-2 text-red-500">1</h1>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:scale-[1.02] transition-all duration-300">
+                    <p class="text-slate-400">High</p>
+                    <h1 class="text-4xl font-bold mt-2 text-orange-400">0</h1>
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</body>
+</html>
