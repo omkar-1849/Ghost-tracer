@@ -1,0 +1,198 @@
+/* ==========================================================================
+   Sentinel AI — Analytics workspace (scoped premium styles)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Entrance animations (fade + slide, staggered via inline animation-delay)
+   -------------------------------------------------------------------------- */
+@keyframes analytics-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes analytics-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.analytics-enter {
+  opacity: 0;
+  animation: analytics-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   Ambient background — layered depth
+   -------------------------------------------------------------------------- */
+
+/* Soft grid that fades out toward the bottom */
+.analytics-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 62% at 50% 0%,
+    black 25%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 62% at 50% 0%,
+    black 25%,
+    transparent 78%
+  );
+}
+
+/* Fine film-grain noise (inline SVG feTurbulence) */
+.analytics-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.032;
+}
+
+/* Drifting blurred color orbs */
+.analytics-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform;
+  animation: analytics-orb-drift 26s ease-in-out infinite alternate;
+}
+
+.analytics-orb--b {
+  animation-name: analytics-orb-drift-b;
+  animation-duration: 32s;
+}
+
+@keyframes analytics-orb-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(42px, -34px) scale(1.08); }
+  66% { transform: translate(-26px, 26px) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes analytics-orb-drift-b {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-48px, 38px) scale(1.12); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* --------------------------------------------------------------------------
+   Hero — animated conic border
+   -------------------------------------------------------------------------- */
+@property --analytics-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.analytics-hero-border {
+  position: relative;
+}
+
+.analytics-hero-border::before,
+.analytics-hero-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Traveling light ring */
+.analytics-hero-border::before {
+  padding: 1px;
+  background: conic-gradient(
+    from var(--analytics-angle) at 50% 50%,
+    rgba(34, 211, 238, 0) 0%,
+    rgba(34, 211, 238, 0.65) 12%,
+    rgba(99, 102, 241, 0.85) 22%,
+    rgba(168, 85, 247, 0.55) 32%,
+    rgba(34, 211, 238, 0) 48%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: analytics-border-spin 9s linear infinite;
+}
+
+@keyframes analytics-border-spin {
+  to { --analytics-angle: 360deg; }
+}
+
+/* Static inner hairline for depth */
+.analytics-hero-border::after {
+  inset: 1px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 31px;
+}
+
+/* --------------------------------------------------------------------------
+   Radar / scan sweep (World Attack Map placeholder)
+   -------------------------------------------------------------------------- */
+@keyframes analytics-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.analytics-radar-sweep {
+  animation: analytics-sweep 7s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes analytics-ping-dot {
+  0% { transform: scale(0.55); opacity: 0.95; }
+  75%, 100% { transform: scale(2.6); opacity: 0; }
+}
+
+.analytics-ping-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: analytics-ping-dot 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Subtle vertical scan line for the map panel */
+@keyframes analytics-scanline {
+  0% { transform: translateY(-120%); opacity: 0; }
+  18% { opacity: 0.7; }
+  82% { opacity: 0.7; }
+  100% { transform: translateY(560%); opacity: 0; }
+}
+
+.analytics-scanline {
+  animation: analytics-scanline 6.5s ease-in-out infinite;
+}
+
+/* Dashed trajectory line draw (Historical Trends placeholder) */
+@keyframes analytics-dash-move {
+  to { stroke-dashoffset: -160; }
+}
+
+.analytics-dash-move {
+  animation: analytics-dash-move 4.5s linear infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Motion safety
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .analytics-enter {
+    animation: analytics-fade 0.4s ease-out forwards;
+  }
+
+  .analytics-orb,
+  .analytics-hero-border::before,
+  .analytics-radar-sweep,
+  .analytics-ping-dot,
+  .analytics-scanline,
+  .analytics-dash-move {
+    animation: none !important;
+  }
+}

@@ -1,93 +1,50 @@
-import { useEffect, useState } from "react";
-import ThreatChart from "./components/ThreatChart";
-import Sidebar from "./components/Sidebar";
-import Navbar from "./components/Navbar";
-import StatCard from "./components/StatCard";
-import RecentAlerts from "./components/RecentAlerts";
-import RecentLogs from "./components/RecentLogs";
-import { getDashboardStats } from "./services/api";
+import { Routes, Route } from "react-router-dom";
 
-import {
-    Database,
-    TriangleAlert,
-    ShieldAlert,
-    Shield,
-} from "lucide-react";
+import Sidebar from "./components/Sidebar";
+
+import Dashboard from "./pages/Dashboard";
+import Scanner from "./pages/Scanner";
+import Analytics from "./pages/Analytics";
+import Alerts from "./pages/Alerts";
+import Settings from "./pages/Settings";
 
 function App() {
-  const [stats, setStats] = useState({
-    total_logs: 0,
-    total_alerts: 0,
-    critical_alerts: 0,
-    high_alerts: 0,
-  });
+    return (
+        <div className="flex bg-slate-950 text-white h-screen overflow-hidden">
+            <Sidebar />
 
-  useEffect(() => {
-    async function loadStats() {
-        try {
-            const data = await getDashboardStats();
-            setStats(data);
-        } catch (error) {
-            console.error(error);
-        }
-    }
+            <main className="flex-1 overflow-y-auto scroll-smooth p-8">
+                <Routes>
 
-    loadStats();
-    const interval = setInterval(loadStats, 5000);
-    return () => clearInterval(interval);
-}, []);
+                    <Route
+                        path="/"
+                        element={<Dashboard />}
+                    />
 
-  return (
-    <div className="flex bg-slate-950 text-white min-h-screen">
-      <Sidebar />
+                    <Route
+                        path="/scanner"
+                        element={<Scanner />}
+                    />
 
-      <main className="flex-1 p-8">
+                    <Route
+                        path="/analytics"
+                        element={<Analytics />}
+                    />
 
-        <Navbar />
+                    <Route
+                        path="/alerts"
+                        element={<Alerts />}
+                    />
 
-        <div className="grid grid-cols-4 gap-6">
+                    <Route
+                        path="/settings"
+                        element={<Settings />}
+                    />
 
-          <StatCard
-              title="Total Logs"
-              value={stats.total_logs}
-              color="text-white"
-              icon={Database}
-          />
-
-          <StatCard
-              title="Alerts"
-              value={stats.total_alerts}
-              color="text-yellow-400"
-              icon={TriangleAlert}
-          />
-
-          <StatCard
-              title="Critical"
-              value={stats.critical_alerts}
-              color="text-red-500"
-              icon={ShieldAlert}
-          />
-
-          <StatCard
-              title="High Threats"
-              value={stats.high_alerts}
-              color="text-orange-400"
-              icon={Shield}
-          />
-
+                </Routes>
+            </main>
         </div>
-
-        <div className="grid grid-cols-3 gap-6 mt-8">
-            <div className="col-span-2">
-                <ThreatChart />
-            </div>
-            <RecentAlerts />
-        </div>
-        <RecentLogs />
-
-      </main>
-    </div>
-  );
+    );
 }
 
 export default App;

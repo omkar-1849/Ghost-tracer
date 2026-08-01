@@ -1,0 +1,764 @@
+/* ==========================================================================
+   Sentinel AI — Alerts · Security Incident Center (scoped premium styles)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Entrance animations (staggered via inline animation-delay)
+   -------------------------------------------------------------------------- */
+@keyframes alerts-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes alerts-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.alerts-enter {
+  opacity: 0;
+  animation: alerts-rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   Ambient background — layered depth
+   -------------------------------------------------------------------------- */
+
+/* Soft tech grid that fades out toward the bottom */
+.alerts-grid {
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(
+    ellipse 90% 62% at 50% 0%,
+    black 25%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    ellipse 90% 62% at 50% 0%,
+    black 25%,
+    transparent 78%
+  );
+}
+
+/* Fine film-grain noise (inline SVG feTurbulence) */
+.alerts-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.032;
+}
+
+/* Drifting blurred color orbs */
+.alerts-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  will-change: transform;
+  animation: alerts-orb-drift 26s ease-in-out infinite alternate;
+}
+
+.alerts-orb--b {
+  animation-name: alerts-orb-drift-b;
+  animation-duration: 32s;
+}
+
+@keyframes alerts-orb-drift {
+  0% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(42px, -34px) scale(1.08); }
+  66% { transform: translate(-26px, 26px) scale(0.94); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes alerts-orb-drift-b {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-48px, 38px) scale(1.12); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* Ambient scan band drifting slowly down the workspace */
+@keyframes alerts-ambient-scan {
+  0% { transform: translateY(-140%); opacity: 0; }
+  12% { opacity: 0.5; }
+  88% { opacity: 0.5; }
+  100% { transform: translateY(1400%); opacity: 0; }
+}
+
+.alerts-ambient-scan {
+  animation: alerts-ambient-scan 16s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Hero — animated conic border
+   -------------------------------------------------------------------------- */
+@property --alerts-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+.alerts-hero-border {
+  position: relative;
+}
+
+.alerts-hero-border::before,
+.alerts-hero-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Traveling light ring */
+.alerts-hero-border::before {
+  padding: 1px;
+  background: conic-gradient(
+    from var(--alerts-angle) at 50% 50%,
+    rgba(34, 211, 238, 0) 0%,
+    rgba(34, 211, 238, 0.65) 12%,
+    rgba(99, 102, 241, 0.85) 22%,
+    rgba(244, 63, 94, 0.55) 34%,
+    rgba(34, 211, 238, 0) 48%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: alerts-border-spin 9s linear infinite;
+}
+
+@keyframes alerts-border-spin {
+  to { --alerts-angle: 360deg; }
+}
+
+/* Static inner hairline for depth */
+.alerts-hero-border::after {
+  inset: 1px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 31px;
+}
+
+/* --------------------------------------------------------------------------
+   Cursor spotlight (JS drives --mx / --my on the element)
+   -------------------------------------------------------------------------- */
+.alerts-spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.alerts-spotlight::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    240px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(34, 211, 238, 0.12),
+    rgba(99, 102, 241, 0.05) 45%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+}
+
+.alerts-spotlight:hover::before {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Glass light sweep (single-pass beam across the element on hover)
+   -------------------------------------------------------------------------- */
+.alerts-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.alerts-sheen::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 34%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.07),
+    transparent
+  );
+  transform: translateX(-180%) skewX(-18deg);
+  pointer-events: none;
+}
+
+.alerts-sheen:hover::before {
+  animation: alerts-sweep-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-sweep-x {
+  from { transform: translateX(-180%) skewX(-18deg); }
+  to { transform: translateX(420%) skewX(-18deg); }
+}
+
+/* --------------------------------------------------------------------------
+   Incident rows — hover + selection morph
+   -------------------------------------------------------------------------- */
+
+.alerts-row {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.alerts-row:hover {
+  transform: translateX(4px);
+}
+
+/* Morphing gradient border for the selected row */
+.alerts-row--selected::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    120deg,
+    rgba(34, 211, 238, 0),
+    rgba(34, 211, 238, 0.85) 30%,
+    rgba(129, 140, 248, 0.95) 55%,
+    rgba(168, 85, 247, 0.6) 75%,
+    rgba(34, 211, 238, 0)
+  );
+  background-size: 260% 260%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: alerts-border-flow 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes alerts-border-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Expanding selection halo (re-mounted on selection → replays once) */
+.alerts-halo {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.65),
+    0 0 42px 8px rgba(34, 211, 238, 0.22);
+  animation: alerts-halo-out 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes alerts-halo-out {
+  0% { opacity: 0.9; transform: scale(0.94); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
+
+/* Severity accent bar — lights up on hover / selection */
+.alerts-row-accent {
+  transition: box-shadow 0.5s ease, transform 0.5s ease;
+}
+
+.alerts-row:hover .alerts-row-accent,
+.alerts-row--selected .alerts-row-accent {
+  transform: scaleY(1.18);
+}
+
+/* Queue scrollbar */
+.alerts-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.22) transparent;
+}
+
+.alerts-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.alerts-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.alerts-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 9999px;
+}
+
+.alerts-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   Pulsing status dot
+   -------------------------------------------------------------------------- */
+@keyframes alerts-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+  70% { box-shadow: 0 0 0 7px rgba(52, 211, 153, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+}
+
+.alerts-pulse-dot {
+  animation: alerts-pulse-ring 2.2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes alerts-pulse-dot-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.alerts-breathe {
+  animation: alerts-pulse-dot-soft 2.6s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Timeline — animated investigation rail
+   -------------------------------------------------------------------------- */
+
+.alerts-timeline {
+  position: relative;
+}
+
+/* The rail itself: flowing light gradient */
+.alerts-timeline-rail {
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 17px;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    rgba(34, 211, 238, 0.55),
+    rgba(99, 102, 241, 0.55),
+    rgba(168, 85, 247, 0.55),
+    rgba(52, 211, 153, 0.55)
+  );
+  background-size: 100% 300%;
+  animation: alerts-rail-flow 8s ease-in-out infinite;
+  border-radius: 9999px;
+  opacity: 0.6;
+}
+
+@keyframes alerts-rail-flow {
+  0% { background-position: 0% 0%; opacity: 0.35; }
+  50% { background-position: 0% 100%; opacity: 0.85; }
+  100% { background-position: 0% 0%; opacity: 0.35; }
+}
+
+/* Traveling light pulse that rides the rail */
+.alerts-timeline-pulse {
+  position: absolute;
+  left: 14px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 9999px;
+  background: rgba(34, 211, 238, 0.9);
+  box-shadow: 0 0 14px 3px rgba(34, 211, 238, 0.55);
+  animation: alerts-rail-travel 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes alerts-rail-travel {
+  0% { top: 6%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 96%; opacity: 0; }
+}
+
+/* Connector segments draw in, top to bottom, staggered */
+.alerts-tl-segment {
+  position: absolute;
+  left: 17px;
+  width: 2px;
+  background: linear-gradient(to bottom, rgba(34, 211, 238, 0.5), rgba(99, 102, 241, 0.5));
+  border-radius: 9999px;
+  transform-origin: top;
+  transform: scaleY(0);
+  animation: alerts-seg-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-seg-in {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* Node entrance — staggered */
+.alerts-tl-node {
+  opacity: 0;
+  animation: alerts-node-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-node-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Node orb — magnetic hover */
+.alerts-tl-orb {
+  transition: box-shadow 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.alerts-tl-orb:hover {
+  transform: scale(1.18);
+}
+
+/* Node content lifts slightly under hover */
+.alerts-tl-body {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.alerts-tl-node:hover .alerts-tl-body {
+  transform: translateX(6px);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons — each interaction language is unique
+   -------------------------------------------------------------------------- */
+
+/* Primary: Investigate — gradient glass with magnetic lift + sheen */
+.alerts-btn-primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0891b2, #2563eb 55%, #7c3aed);
+  box-shadow:
+    0 10px 30px -10px rgba(37, 99, 235, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease;
+}
+
+.alerts-btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 16px 42px -10px rgba(37, 99, 235, 0.7),
+    0 0 0 1px rgba(34, 211, 238, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.alerts-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.alerts-btn-primary::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 36%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.32),
+    transparent
+  );
+  transform: translateX(-200%) skewX(-18deg);
+  transition: none;
+}
+
+.alerts-btn-primary:hover::after {
+  animation: alerts-sweep-x 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Frosted action buttons — Assign / Export / Mute */
+.alerts-btn-frost {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s ease,
+    box-shadow 0.45s ease,
+    background-color 0.45s ease;
+}
+
+.alerts-btn-frost:hover {
+  transform: translateY(-1px);
+}
+
+/* Assign — indigo accent with breathing indicator */
+.alerts-btn-assign:hover {
+  border-color: rgba(129, 140, 248, 0.55);
+  box-shadow: 0 10px 30px -12px rgba(129, 140, 248, 0.5);
+}
+
+.alerts-btn-assign:hover .alerts-assign-dot {
+  animation: alerts-pulse-ring 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Export — amber accent, fills with progress glow on hover */
+.alerts-btn-export:hover {
+  border-color: rgba(251, 191, 36, 0.55);
+  box-shadow: 0 10px 30px -12px rgba(251, 191, 36, 0.45);
+}
+
+.alerts-btn-export::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(251, 191, 36, 0.14), transparent 55%);
+  transform: translateX(-100%);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.alerts-btn-export:hover::before {
+  transform: translateX(100%);
+}
+
+/* Mute — quiet slate, dot fades when muted */
+.alerts-btn-mute:hover {
+  border-color: rgba(148, 163, 184, 0.5);
+  box-shadow: 0 10px 30px -12px rgba(148, 163, 184, 0.35);
+}
+
+.alerts-btn-mute.is-muted {
+  border-color: rgba(148, 163, 184, 0.35);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.alerts-btn-mute.is-muted .alerts-bell {
+  animation: alerts-mute-wiggle 0.5s ease;
+}
+
+@keyframes alerts-mute-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  60% { transform: rotate(10deg); }
+  80% { transform: rotate(-6deg); }
+}
+
+/* Mark Resolved — emerald with success flash ring */
+.alerts-btn-resolve {
+  position: relative;
+  overflow: visible;
+}
+
+.alerts-btn-resolve::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 2px solid rgba(52, 211, 153, 0.7);
+  opacity: 0;
+}
+
+.alerts-btn-resolve.is-resolving::after {
+  animation: alerts-flash-ring 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-flash-ring {
+  0% { opacity: 0.9; transform: scale(0.92); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+
+.alerts-btn-resolve:hover {
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow: 0 10px 30px -12px rgba(52, 211, 153, 0.5);
+}
+
+/* --------------------------------------------------------------------------
+   Filter chips — morphing active state
+   -------------------------------------------------------------------------- */
+.alerts-chip {
+  position: relative;
+  overflow: hidden;
+  transition:
+    color 0.35s ease,
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+
+.alerts-chip:hover {
+  transform: translateY(-1px);
+}
+
+.alerts-chip--active::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    120deg,
+    rgba(34, 211, 238, 0),
+    rgba(34, 211, 238, 0.9) 40%,
+    rgba(129, 140, 248, 0.9) 70%,
+    rgba(34, 211, 238, 0)
+  );
+  background-size: 240% 240%;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: alerts-border-flow 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.alerts-chip--active {
+  box-shadow: 0 8px 24px -10px rgba(34, 211, 238, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   Search field — focus glow
+   -------------------------------------------------------------------------- */
+.alerts-search {
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.alerts-search:focus-within {
+  border-color: rgba(34, 211, 238, 0.45);
+  box-shadow:
+    0 0 0 3px rgba(34, 211, 238, 0.08),
+    0 0 28px -6px rgba(34, 211, 238, 0.4);
+}
+
+/* --------------------------------------------------------------------------
+   Summary widgets — lightweight glass tiles
+   -------------------------------------------------------------------------- */
+.alerts-summary {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.5s ease,
+    box-shadow 0.5s ease;
+}
+
+.alerts-summary:hover {
+  transform: translateY(-3px);
+}
+
+.alerts-summary--critical:hover {
+  border-color: rgba(248, 113, 113, 0.45);
+  box-shadow: 0 16px 40px -18px rgba(239, 68, 68, 0.45);
+}
+
+.alerts-summary--high:hover {
+  border-color: rgba(251, 146, 60, 0.45);
+  box-shadow: 0 16px 40px -18px rgba(249, 115, 22, 0.4);
+}
+
+.alerts-summary--medium:hover {
+  border-color: rgba(251, 191, 36, 0.45);
+  box-shadow: 0 16px 40px -18px rgba(245, 158, 11, 0.38);
+}
+
+.alerts-summary--resolved:hover {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 16px 40px -18px rgba(16, 185, 129, 0.4);
+}
+
+/* Tiny live bar that glows inside the summary tiles */
+.alerts-summary-bar {
+  transition: opacity 0.5s ease, box-shadow 0.5s ease;
+}
+
+.alerts-summary:hover .alerts-summary-bar {
+  box-shadow: 0 0 12px currentColor;
+}
+
+/* --------------------------------------------------------------------------
+   Panels — glass frames for the two workspaces
+   -------------------------------------------------------------------------- */
+.alerts-panel {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  box-shadow:
+    0 24px 60px -24px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Section hairline divider */
+.alerts-hairline {
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(148, 163, 184, 0.18),
+    transparent
+  );
+}
+
+/* Section header chip */
+.alerts-section-eyebrow {
+  transition: color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile investigation toggle
+   -------------------------------------------------------------------------- */
+@keyframes alerts-back-swing {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-3px); }
+}
+
+.alerts-back-btn:hover svg {
+  animation: alerts-back-swing 0.8s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Motion safety — honour reduced-motion preferences
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .alerts-enter {
+    animation: alerts-fade 0.4s ease-out forwards;
+  }
+
+  .alerts-orb,
+  .alerts-orb--b,
+  .alerts-ambient-scan,
+  .alerts-hero-border::before,
+  .alerts-row--selected::before,
+  .alerts-chip--active::before,
+  .alerts-timeline-rail,
+  .alerts-timeline-pulse,
+  .alerts-tl-segment,
+  .alerts-tl-node,
+  .alerts-btn-primary::after,
+  .alerts-sheen::before {
+    animation: none !important;
+  }
+
+  .alerts-tl-segment {
+    transform: scaleY(1);
+  }
+
+  .alerts-tl-node {
+    opacity: 1;
+  }
+
+  .alerts-halo {
+    animation: none;
+    opacity: 0;
+  }
+
+  .alerts-row:hover,
+  .alerts-summary:hover,
+  .alerts-chip:hover {
+    transform: none;
+  }
+}

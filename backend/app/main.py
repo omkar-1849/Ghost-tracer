@@ -5,6 +5,8 @@ from app.database.base import Base
 from app.models.alert import Alert
 from app.routers.dashboard_router import router as dashboard_router
 from fastapi.middleware.cors import CORSMiddleware
+from app.models.scan_result import ScanResult
+from app.routers.scanner_router import router as scanner_router
 # Import all models
 from app.models.log import Log
 from app.routers.alert_router import router as alert_router
@@ -30,6 +32,8 @@ app.add_middleware(
 app.include_router(log_router)
 app.include_router(dashboard_router)
 app.include_router(alert_router)
+app.include_router(scanner_router)
+
 
 @app.get("/")
 def home():
