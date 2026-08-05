@@ -188,3 +188,98 @@ export async function cancelScan(id) {
 
     return response.json();
 }
+
+export async function getIncidents(params = {}) {
+    const query = new URLSearchParams(params).toString();
+
+    const url = `${BASE_URL}/incidents/${query ? `?${query}` : ""}`;
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error("Failed to fetch incidents");
+    }
+
+    return response.json();
+}
+
+export async function getIncidentById(id) {
+    const response = await fetch(`${BASE_URL}/incidents/${id}`);
+
+    if (!response.ok)
+        throw new Error("Failed to fetch incident");
+
+    return response.json();
+}
+
+export async function updateIncidentStatus(id, status) {
+    const response = await fetch(
+        `${BASE_URL}/incidents/${id}/status`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                status,
+            }),
+        }
+    );
+
+    if (!response.ok)
+        throw new Error("Failed to update incident");
+
+    return response.json();
+}
+
+export async function assignIncident(id, assigned_to) {
+    const response = await fetch(
+        `${BASE_URL}/incidents/${id}/assign`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                assigned_to,
+            }),
+        }
+    );
+
+    if (!response.ok)
+        throw new Error("Failed to assign incident");
+
+    return response.json();
+}
+
+export async function getIncidentStatistics() {
+    const response = await fetch(
+        `${BASE_URL}/incidents/statistics/overview`
+    );
+
+    if (!response.ok)
+        throw new Error("Failed to fetch incident statistics");
+
+    return response.json();
+}
+
+export async function addIncidentNote(id, analyst, note) {
+    const response = await fetch(
+        `${BASE_URL}/incidents/${id}/notes`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                analyst,
+                note,
+            }),
+        }
+    );
+
+    if (!response.ok)
+        throw new Error("Failed to add incident note");
+
+    return response.json();
+}

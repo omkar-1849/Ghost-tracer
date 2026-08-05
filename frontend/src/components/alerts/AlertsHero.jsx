@@ -59,7 +59,7 @@ function AlertsHero({
 
     return (
         <header
-            className="alerts-enter alerts-hero-border relative rounded-[2rem] border border-white/10 bg-slate-900/45 px-6 py-8 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.75),0_0_0_1px_rgba(148,163,184,0.05)] sm:px-10 sm:py-9"
+            className="alerts-enter alerts-hero-border relative rounded-[2rem] border border-white/10 bg-slate-900/45 px-6 py-6 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.75),0_0_0_1px_rgba(148,163,184,0.05)] sm:px-10 sm:py-7"
             style={{ animationDelay: "60ms" }}
         >
             {/* Frosted sheen */}
@@ -165,7 +165,7 @@ function AlertsHero({
                 </div>
 
                 {/* Title cluster + search */}
-                <div className="mt-7 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
                     <div className="max-w-2xl">
                         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                             <span className="bg-gradient-to-r from-rose-400 via-red-400 to-amber-300 bg-clip-text text-transparent">
@@ -345,7 +345,7 @@ function AlertsHero({
             </div>
 
             {/* Brand flourish */}
-            <div className="absolute bottom-4 right-6 z-10 hidden items-center gap-2 text-[10px] font-semibold tracking-[0.25em] text-slate-600 lg:flex">
+            <div className="absolute bottom-4 right-6 z-10 hidden items-center gap-2 text-[10px] font-semibold tracking-[0.25em] text-slate-700 lg:flex">
                 <ShieldCheck size={12} className="text-rose-500/70" />
                 SENTINEL AI · SOC INCIDENT CENTER
             </div>

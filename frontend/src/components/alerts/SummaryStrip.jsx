@@ -84,7 +84,7 @@ function SummaryStrip({ counts }) {
                                     <span className="block text-lg font-bold tabular-nums text-white">
                                         {item.value}
                                     </span>
-                                    <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                                    <span className="block text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
                                         {item.label}
                                     </span>
                                 </span>

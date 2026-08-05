@@ -23,6 +23,9 @@ class Incident(Base):
 
     confidence = Column(Integer)
 
+    assigned_to = Column(String(100), nullable=True)
+    assigned_at = Column(DateTime, nullable=True)
+
     created_at = Column(
         DateTime,
         default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30)

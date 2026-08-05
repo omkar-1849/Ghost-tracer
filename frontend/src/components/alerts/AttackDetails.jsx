@@ -30,7 +30,7 @@ function AttackDetails({ incident }) {
     ];
 
     return (
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {fields.map((field, index) => {
                 const Icon = field.icon;
                 return (
@@ -46,18 +46,18 @@ function AttackDetails({ incident }) {
 
                         <div className="relative flex items-start gap-3">
                             <span
-                                className={`mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900/60 transition-transform duration-300 group-hover:scale-110 ${theme.text}`}
+                                className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900/60 transition-all duration-300 group-hover:brightness-125 ${theme.text}`}
                             >
-                                <Icon size={13} />
+                                <Icon size={15} />
                             </span>
 
                             <div className="min-w-0">
-                                <p className="text-[9px] font-bold tracking-[0.2em] text-slate-500">
+                                <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500">
                                     {field.label.toUpperCase()}
                                 </p>
                                 <p
-                                    className={`mt-0.5 truncate text-[13px] font-semibold text-slate-100 ${
-                                        field.mono ? "font-mono text-[12px]" : ""
+                                    className={`mt-0.5 truncate text-[14px] font-semibold text-slate-100 ${
+                                        field.mono ? "font-mono text-[13px]" : ""
                                     }`}
                                 >
                                     {field.value}

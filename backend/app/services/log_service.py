@@ -1,9 +1,10 @@
 from sqlalchemy.orm import Session
-from app.services.risk_service import calculate_risk
+
 from app.models.log import Log
 from app.schemas.log_schema import LogCreate
-from app.services.behavior_service import detect_brute_force
 from app.services.alert_service import create_alert
+from app.services.behavior_service import detect_brute_force
+from app.services.risk_service import calculate_risk
 
 
 def create_log(db: Session, log: LogCreate):
@@ -22,14 +23,6 @@ def create_log(db: Session, log: LogCreate):
         risk_analysis["threat_level"] = "CRITICAL"
         risk_analysis["reasons"].append("Brute Force Attack")
 
-    if risk_analysis["threat_level"] in ["HIGH", "CRITICAL"]:
-        create_alert(
-            db=db,
-            ip_address=log.ip_address,
-            threat_level=risk_analysis["threat_level"],
-            message=", ".join(risk_analysis["reasons"])
-        )
-
     db_log = Log(
         ip_address=log.ip_address,
         method=log.method,
@@ -45,6 +38,15 @@ def create_log(db: Session, log: LogCreate):
     db.add(db_log)
     db.commit()
     db.refresh(db_log)
+
+    if risk_analysis["threat_level"] in ["HIGH", "CRITICAL"]:
+        create_alert(
+            db=db,
+            ip_address=log.ip_address,
+            threat_level=risk_analysis["threat_level"],
+            message=", ".join(risk_analysis["reasons"]),
+            log=db_log
+        )
 
     return db_log
 

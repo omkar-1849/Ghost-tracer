@@ -12,7 +12,7 @@ class IncidentBase(BaseModel):
     source_ip: str
     target: str
     confidence: int
-
+    assigned_to: str | None = None
 
 class IncidentCreate(IncidentBase):
     pass
@@ -28,6 +28,11 @@ class IncidentResponse(IncidentBase):
     created_at: datetime
     updated_at: datetime
     resolved_at: Optional[datetime] = None
+    assigned_to: str | None = None
+    assigned_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
+
+class IncidentAssign(BaseModel):
+    assigned_to: str

@@ -84,8 +84,8 @@
 /* Ambient scan band drifting slowly down the workspace */
 @keyframes alerts-ambient-scan {
   0% { transform: translateY(-140%); opacity: 0; }
-  12% { opacity: 0.5; }
-  88% { opacity: 0.5; }
+  12% { opacity: 0.25; }
+  88% { opacity: 0.25; }
   100% { transform: translateY(1400%); opacity: 0; }
 }
 
@@ -142,7 +142,7 @@
 .alerts-hero-border::after {
   inset: 1px;
   border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 31px;
+  border-radius: calc(2rem - 1px);
 }
 
 /* --------------------------------------------------------------------------
@@ -208,6 +208,49 @@
 }
 
 /* --------------------------------------------------------------------------
+   Workspace grid — collapse-only override
+   --------------------------------------------------------------------------
+   The default two-panel grid (40/60 at md, 35/65 at xl) comes from the
+   Tailwind fr utilities in Alerts.jsx. This rule only swaps in the
+   collapsed-rail template via the parent modifier class, animated by a
+   smooth grid-template-columns transition. Length-based tracks only (no
+   `fr`) so the transition interpolates.
+   -------------------------------------------------------------------------- */
+.alerts-workspace-grid {
+  transition: grid-template-columns 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Independent scrolling — md and up the page stays fixed (App shell
+   h-screen + overflow-hidden) and the two panels own their scrollbars.
+   This is the ONLY layout change: both panels keep their full natural
+   height and 40/60 (35/65 at xl) proportions, and are simply capped so
+   the overflow (previously delegated to the page scrollbar) happens
+   inside each panel's existing overflow-y-auto list/body. */
+@media (min-width: 768px) {
+  .alerts-workspace-grid > .alerts-queue-panel,
+  .alerts-workspace-grid > .alerts-panel {
+    max-height: calc(100vh - 4rem - 6.25rem);
+  }
+
+  .alerts-workspace-grid--collapsed {
+    grid-template-columns: minmax(0, 88px) minmax(0, calc(100% - 108px));
+  }
+}
+
+@media (min-width: 1280px) {
+  .alerts-workspace-grid--collapsed {
+    grid-template-columns: minmax(0, 88px) minmax(0, calc(100% - 108px));
+  }
+}
+
+/* Queue panel — matte enterprise list (no glass backdrop) */
+.alerts-queue-panel {
+  background: rgba(11, 17, 30, 0.88);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* --------------------------------------------------------------------------
    Incident rows — hover + selection morph
    -------------------------------------------------------------------------- */
 
@@ -221,11 +264,14 @@
     box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.alerts-row:hover {
-  transform: translateX(4px);
+/* Matte rows: hover is a border/background lighten (via utilities);
+   keyboard focus gets a visible ring since rows are <button>s */
+.alerts-row:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.45);
 }
 
-/* Morphing gradient border for the selected row */
+/* Static accent gradient border for the selected row */
 .alerts-row--selected::before {
   content: "";
   position: absolute;
@@ -240,13 +286,12 @@
     rgba(168, 85, 247, 0.6) 75%,
     rgba(34, 211, 238, 0)
   );
-  background-size: 260% 260%;
+  background-size: 100% 100%;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: alerts-border-flow 6s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -275,12 +320,30 @@
 
 /* Severity accent bar — lights up on hover / selection */
 .alerts-row-accent {
-  transition: box-shadow 0.5s ease, transform 0.5s ease;
+  transition: box-shadow 0.5s ease, filter 0.5s ease;
 }
 
 .alerts-row:hover .alerts-row-accent,
 .alerts-row--selected .alerts-row-accent {
-  transform: scaleY(1.18);
+  filter: brightness(1.35);
+}
+
+/* Selected-only secondary strip — reveals with height + opacity only
+   (no bounce, no translate, no scale) */
+.alerts-row-expand {
+  overflow: hidden;
+  animation: alerts-row-expand-in 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-row-expand-in {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 120px;
+    opacity: 1;
+  }
 }
 
 /* Queue scrollbar */
@@ -411,23 +474,18 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Node orb — magnetic hover */
+/* Node orb — subtle border/brightness hover (no scale lift) */
 .alerts-tl-orb {
-  transition: box-shadow 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: border-color 0.45s ease, filter 0.45s ease, box-shadow 0.45s ease;
 }
 
 .alerts-tl-orb:hover {
-  transform: scale(1.18);
+  border-color: rgba(148, 163, 184, 0.45);
+  filter: brightness(1.3);
 }
 
-/* Node content lifts slightly under hover */
-.alerts-tl-body {
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.alerts-tl-node:hover .alerts-tl-body {
-  transform: translateX(6px);
-}
+/* Node content — minimal hover: border/bg highlight only (via
+   the element's own transition-colors + hover utilities) */
 
 /* --------------------------------------------------------------------------
    Buttons — each interaction language is unique
@@ -441,13 +499,10 @@
   box-shadow:
     0 10px 30px -10px rgba(37, 99, 235, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.45s ease;
+  transition: box-shadow 0.45s ease, filter 0.45s ease;
 }
 
 .alerts-btn-primary:hover {
-  transform: translateY(-2px) scale(1.02);
   box-shadow:
     0 16px 42px -10px rgba(37, 99, 235, 0.7),
     0 0 0 1px rgba(34, 211, 238, 0.4),
@@ -484,14 +539,13 @@
   position: relative;
   overflow: hidden;
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.45s ease,
     box-shadow 0.45s ease,
     background-color 0.45s ease;
 }
 
 .alerts-btn-frost:hover {
-  transform: translateY(-1px);
+  filter: brightness(1.12);
 }
 
 /* Assign — indigo accent with breathing indicator */
@@ -647,7 +701,7 @@
 }
 
 .alerts-summary:hover {
-  transform: translateY(-3px);
+  transform: translateY(-1px);
 }
 
 .alerts-summary--critical:hover {
@@ -721,6 +775,33 @@
 }
 
 /* --------------------------------------------------------------------------
+   Modal — glassmorphism entrance + overlay fade
+   -------------------------------------------------------------------------- */
+@keyframes alerts-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.alerts-modal {
+  animation: alerts-modal-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes alerts-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.alerts-overlay {
+  animation: alerts-overlay-in 0.3s ease-out forwards;
+}
+
+/* --------------------------------------------------------------------------
    Motion safety — honour reduced-motion preferences
    -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
@@ -739,7 +820,9 @@
   .alerts-tl-segment,
   .alerts-tl-node,
   .alerts-btn-primary::after,
-  .alerts-sheen::before {
+  .alerts-sheen::before,
+  .alerts-modal,
+  .alerts-overlay {
     animation: none !important;
   }
 
@@ -754,6 +837,16 @@
   .alerts-halo {
     animation: none;
     opacity: 0;
+  }
+
+  .alerts-row-expand {
+    animation: none;
+    max-height: none;
+    opacity: 1;
+  }
+
+  .alerts-workspace-grid {
+    transition: none;
   }
 
   .alerts-row:hover,
