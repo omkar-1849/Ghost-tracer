@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, Integer, String, DateTime, Text, JSON
 from datetime import datetime, timedelta
 
 from app.database.base import Base
@@ -16,6 +16,9 @@ class ScanResult(Base):
     status = Column(String(50), default="QUEUED")
 
     findings = Column(Text)
+
+    # Structured enterprise report
+    report = Column(JSON, nullable=True)
 
     created_at = Column(
         DateTime,

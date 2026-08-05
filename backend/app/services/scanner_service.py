@@ -4,15 +4,18 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 
 from app.models.scan_result import ScanResult
-from app.services.scanner_worker import process_sqlmap_scan
-
+from app.services.scanners.scanner_factory import ScannerFactory
 CANCELLABLE_STATUSES = ("QUEUED", "RUNNING")
 
 
-def run_sqlmap_scan(db: Session, target: str):
+def run_sqlmap_scan(
+    db: Session,
+    target: str,
+    engine: str = "sqlmap",
+):
     scan = ScanResult(
         target=target,
-        scanner="SQLMap",
+        scanner=engine.upper(),
         status="QUEUED",
         findings=""
     )
@@ -21,8 +24,9 @@ def run_sqlmap_scan(db: Session, target: str):
     db.commit()
     db.refresh(scan)
 
+    scanner = ScannerFactory.get_scanner(engine)
     threading.Thread(
-        target=process_sqlmap_scan,
+        target=scanner.start_scan,
         args=(scan.id,),
         daemon=True,
     ).start()

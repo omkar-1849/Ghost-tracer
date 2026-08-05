@@ -1,9 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Activity, CheckCircle2, Clock, Layers, XCircle, ChevronDown, History, Radar, Search, AlertTriangle, RefreshCw, Play, Shield, Timer, FileText, Zap } from "lucide-react";
 import { StatTile, ScanRow, COL_WIDTHS, EngineStatusBadge, ACTIVE_STATUSES, formatDuration, StatusPill } from "./shared";
 import { SCANNER_ENGINES } from "./constants";
 import { getScanReport } from "../../services/api";
-import ReportViewerModal from "./ReportViewerModal";
+import { useNavigate } from "react-router-dom";
 
 const VISIBLE_SCAN_COUNT = 5;
 
@@ -19,21 +19,18 @@ export default function OverviewTab({
     onTabChange,
     showToast
 }) {
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(() => sessionStorage.getItem("scanner_overview_search") || "");
+    
+    useEffect(() => {
+        sessionStorage.setItem("scanner_overview_search", search);
+    }, [search]);
+
     const [expanded, setExpanded] = useState(false);
     
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [showReport, setShowReport] = useState(false);
+    const navigate = useNavigate();
     
-    async function handleViewReport(id) {
-        try {
-            const data = await getScanReport(id);
-            setSelectedReport(data);
-            setShowReport(true);
-        } catch (error) {
-            console.error(error);
-            showToast(error.message || "Failed to load report", "error");
-        }
+    function handleViewReport(id) {
+        navigate(`/scanner/report/${id}`);
     }
 
     const { activeScans, lastCompletedScan, avgDurationStr } = useMemo(() => {
@@ -399,15 +396,6 @@ export default function OverviewTab({
                 </div>
             </div>
 
-            {showReport && (
-                <ReportViewerModal 
-                    report={selectedReport} 
-                    onClose={() => {
-                        setShowReport(false);
-                        setSelectedReport(null);
-                    }} 
-                />
-            )}
         </div>
     );
 }

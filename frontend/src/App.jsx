@@ -7,6 +7,7 @@ import Scanner from "./pages/Scanner";
 import Analytics from "./pages/Analytics";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
+import Report from "./pages/Report";
 
 function App() {
     return (
@@ -24,6 +25,11 @@ function App() {
                     <Route
                         path="/scanner"
                         element={<Scanner />}
+                    />
+
+                    <Route
+                        path="/scanner/report/:id"
+                        element={<Report />}
                     />
 
                     <Route

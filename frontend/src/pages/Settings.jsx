@@ -1,9 +1,5 @@
-function Settings() {
-    return (
-        <h1 className="text-3xl font-bold">
-            Settings
-        </h1>
-    );
-}
+import SettingsLayout from "../components/settings/SettingsLayout";
 
-export default Settings;
+export default function Settings() {
+    return <SettingsLayout />;
+}

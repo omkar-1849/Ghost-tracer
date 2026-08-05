@@ -29,7 +29,11 @@ const keyframes = `
 `;
 
 export default function ScannerLayout() {
-    const [activeTab, setActiveTab] = useState("overview");
+    const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("scanner_tab") || "overview");
+
+    useEffect(() => {
+        sessionStorage.setItem("scanner_tab", activeTab);
+    }, [activeTab]);
     const [recentScans, setRecentScans] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
     const [historyError, setHistoryError] = useState(false);

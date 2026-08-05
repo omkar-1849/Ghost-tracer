@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Target, Globe, AlertTriangle, Play, Loader2, Search, RefreshCw, ChevronDown, History, Radar } from "lucide-react";
-import { startSQLMapScan, getScanReport } from "../../services/api";
+import { startSQLMapScan } from "../../services/api";
 import { ScanRow, COL_WIDTHS, isValidTargetUrl } from "./shared";
-import ReportViewerModal from "./ReportViewerModal";
+import { useNavigate } from "react-router-dom";
 
 const VISIBLE_SCAN_COUNT = 5;
 
@@ -17,12 +17,20 @@ export default function SQLMapTab({
     onCancelScan,
     showToast
 }) {
-    const [targetUrl, setTargetUrl] = useState("");
+    const [targetUrl, setTargetUrl] = useState(() => sessionStorage.getItem("scanner_sqlmap_target") || "");
+    const [search, setSearch] = useState(() => sessionStorage.getItem("scanner_sqlmap_search") || "");
+    
+    useEffect(() => {
+        sessionStorage.setItem("scanner_sqlmap_target", targetUrl);
+    }, [targetUrl]);
+
+    useEffect(() => {
+        sessionStorage.setItem("scanner_sqlmap_search", search);
+    }, [search]);
+
     const [loading, setLoading] = useState(false);
-    const [search, setSearch] = useState("");
     const [expanded, setExpanded] = useState(false);
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [showReport, setShowReport] = useState(false);
+    const navigate = useNavigate();
 
     const urlInvalid = targetUrl.trim() !== "" && !isValidTargetUrl(targetUrl.trim());
     const startDisabled = loading || sqlmapBusy || !targetUrl.trim() || urlInvalid;
@@ -46,15 +54,8 @@ export default function SQLMapTab({
         }
     }
 
-    async function handleViewReport(id) {
-        try {
-            const data = await getScanReport(id);
-            setSelectedReport(data);
-            setShowReport(true);
-        } catch (error) {
-            console.error(error);
-            showToast(error.message || "Failed to load report", "error");
-        }
+    function handleViewReport(id) {
+        navigate(`/scanner/report/${id}`);
     }
 
     const sqlmapScans = useMemo(() => {
@@ -297,15 +298,6 @@ export default function SQLMapTab({
                 </div>
             </div>
 
-            {showReport && (
-                <ReportViewerModal 
-                    report={selectedReport} 
-                    onClose={() => {
-                        setShowReport(false);
-                        setSelectedReport(null);
-                    }} 
-                />
-            )}
         </div>
     );
 }

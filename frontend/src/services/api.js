@@ -115,10 +115,15 @@ export async function getLiveFeed() {
 }
 
 export async function runSqlmapScan(target) {
-    const response = await fetch(`${BASE_URL}/scanner/sqlmap`, {
+    const response = await fetch(`${BASE_URL}/scanner/run`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ target }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            engine: "sqlmap",
+            target,
+        }),
     });
 
     if (!response.ok) {
@@ -141,12 +146,13 @@ export async function getScanById(scanId) {
 
 
 export async function startSQLMapScan(target) {
-    const response = await fetch(`${BASE_URL}/scanner/sqlmap`, {
+    const response = await fetch(`${BASE_URL}/scanner/run`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
+            engine: "sqlmap",
             target,
         }),
     });
@@ -167,7 +173,9 @@ export async function getScanHistory() {
 }
 
 export async function getScanReport(id) {
-    const response = await fetch(`${BASE_URL}/scanner/report/${id}`);
+    const response = await fetch(
+        `${BASE_URL}/scanner/${id}/report`
+    );
 
     if (!response.ok)
         throw new Error("Failed to fetch report");
