@@ -13,6 +13,7 @@ from app.models.incident_timeline import IncidentTimeline
 from app.models.incident_evidence import IncidentEvidence
 from app.models.incident_note import IncidentNote
 from app.models.settings import Settings
+from app.models.website import Website
 
 # Routers
 from app.routers.log_router import router as log_router
@@ -24,6 +25,7 @@ from app.routers.incident_timeline_router import router as incident_timeline_rou
 from app.routers.incident_evidence_router import router as incident_evidence_router
 from app.routers.incident_note_router import router as incident_note_router
 from app.routers.settings_router import router as settings_router
+from app.routers.website_router import router as website_router
 
 Base.metadata.create_all(bind=engine)
 
@@ -58,6 +60,7 @@ app.include_router(incident_timeline_router)
 app.include_router(incident_evidence_router)
 app.include_router(incident_note_router)
 app.include_router(settings_router)
+app.include_router(website_router)
 
 
 @app.get("/")

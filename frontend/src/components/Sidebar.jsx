@@ -5,6 +5,7 @@ import {
     Settings,
     Shield,
     Scan,
+    Globe,
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
@@ -21,6 +22,12 @@ const navItems = [
         label: "Scanner",
         icon: Scan,
         iconColor: "text-blue-400",
+    },
+    {
+        to: "/websites",
+        label: "Websites",
+        icon: Globe,
+        iconColor: "text-emerald-400",
     },
     {
         to: "/alerts",
