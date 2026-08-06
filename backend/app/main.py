@@ -14,6 +14,10 @@ from app.models.incident_evidence import IncidentEvidence
 from app.models.incident_note import IncidentNote
 from app.models.settings import Settings
 from app.models.website import Website
+from app.models.integration import Integration
+
+from app.models.scan import Scan
+
 
 # Routers
 from app.routers.log_router import router as log_router
@@ -26,6 +30,11 @@ from app.routers.incident_evidence_router import router as incident_evidence_rou
 from app.routers.incident_note_router import router as incident_note_router
 from app.routers.settings_router import router as settings_router
 from app.routers.website_router import router as website_router
+from app.routers.integration_router import router as integration_router
+from app.routers.event_router import router as event_router
+
+from app.routers.scan_router import router as scan_router
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -61,6 +70,10 @@ app.include_router(incident_evidence_router)
 app.include_router(incident_note_router)
 app.include_router(settings_router)
 app.include_router(website_router)
+app.include_router(integration_router)
+app.include_router(event_router)
+
+app.include_router(scan_router)
 
 
 @app.get("/")

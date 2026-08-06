@@ -1,20 +1,31 @@
+from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ScanRequest(BaseModel):
-    engine: str = "sqlmap"
-    target: str
+    website_id: int
+    engine: str = "nmap"
 
 
 class ScanResponse(BaseModel):
     id: int
+    website_id: int
+    engine: str
     target: str
-    scanner: str
     status: str
-    findings: str
-    report: dict[str, Any] | None = None
 
-    class Config:
-        from_attributes = True
+    findings: int
+    risk_score: int
+
+    command: str | None = None
+    raw_output: str | None = None
+    parsed_output: dict[str, Any] | None = None
+
+    error: str | None = None
+
+    started_at: datetime
+    completed_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)

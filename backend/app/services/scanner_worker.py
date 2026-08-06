@@ -1,67 +1,57 @@
-import os
-import subprocess
-from datetime import datetime, timedelta
+"""
+Background worker for scan execution.
+
+Provides a generic entry point that dispatches to the correct scanner
+engine via the ScannerFactory.  Used by FastAPI BackgroundTasks and
+threading dispatchers alike.
+"""
 
 from app.database.database import SessionLocal
-from app.models.scan_result import ScanResult
+from app.models.scan import Scan
+from app.services.scanners.scanner_factory import ScannerFactory
+from app.utils.scanner_utils import ist_now
 
-SQLMAP_PATH = os.path.join("C:\\", "Users", "omkar", "sqlmap", "sqlmap.py")
 
+def run_scan_background(scan_id: int, engine: str) -> None:
+    """
+    Execute a scan in the background.
 
-def process_sqlmap_scan(scan_id: int):
-    db = SessionLocal()
+    This function is designed to be called from FastAPI BackgroundTasks
+    or a daemon thread.  It delegates to the appropriate scanner via
+    the ScannerFactory.
 
+    Each scanner's ``start_scan`` manages its own DB session internally,
+    but we handle top-level dispatch errors here to guarantee the Scan
+    record is always updated.
+    """
     try:
-        scan = db.query(ScanResult).filter(ScanResult.id == scan_id).first()
-
-        if not scan or scan.status == "CANCELLED":
-            return
-
-        scan.status = "RUNNING"
-        db.commit()
-
+        scanner = ScannerFactory.get_scanner(engine)
+        scanner.start_scan(scan_id)
+    except ValueError as e:
+        # Unknown engine — mark the scan as failed
+        db = SessionLocal()
         try:
-            result = subprocess.run(
-                [
-                    "python",
-                    SQLMAP_PATH,
-                    "-u",
-                    scan.target,
-                    "--batch",
-                    "--flush-session",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=1800,
-            )
-
-            db.refresh(scan)
-
-            if scan.status == "CANCELLED":
-                return
-
-            if result.returncode == 0:
-                scan.status = "COMPLETED"
-                scan.findings = result.stdout[:4000]
-            else:
-                scan.status = "FAILED"
-                scan.findings = result.stderr[:4000]
-
-        except Exception as error:
-            db.refresh(scan)
-
-            if scan.status == "CANCELLED":
-                return
-
-            scan.status = "FAILED"
-            scan.findings = str(error)[:4000]
-
-        scan.completed_at = (
-            datetime.utcnow() + timedelta(hours=5, minutes=30)
-        )
-
-        db.commit()
-
-    finally:
-        db.close()
-
+            scan = db.query(Scan).filter(Scan.id == scan_id).first()
+            if scan:
+                scan.status = "Failed"
+                scan.error = str(e)
+                scan.completed_at = ist_now()
+                db.commit()
+        except Exception:
+            pass
+        finally:
+            db.close()
+    except Exception as e:
+        # Unexpected top-level error
+        db = SessionLocal()
+        try:
+            scan = db.query(Scan).filter(Scan.id == scan_id).first()
+            if scan and scan.status not in ("Completed", "Failed"):
+                scan.status = "Failed"
+                scan.error = f"Scanner dispatch error: {str(e)[:3900]}"
+                scan.completed_at = ist_now()
+                db.commit()
+        except Exception:
+            pass
+        finally:
+            db.close()

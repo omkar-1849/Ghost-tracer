@@ -1,4 +1,5 @@
-import { Ban, CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
+import { Ban, CheckCircle2, Clock, FileText, Loader2, Scan, Trash2, XCircle } from "lucide-react";
+import { ACTIVE_STATUSES } from "./constants";
 
 export function formatDate(value) {
     if (!value) return "—";
@@ -32,6 +33,7 @@ export function statusColor(status) {
             return "bg-green-500/15 text-green-400 border-green-500/30 shadow-[0_0_12px_rgba(74,222,128,0.18)]";
         case "RUNNING":
             return "bg-cyan-500/15 text-cyan-300 border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.25)]";
+        case "PENDING":
         case "QUEUED":
             return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30 shadow-[0_0_12px_rgba(251,191,36,0.18)]";
         case "FAILED":
@@ -51,12 +53,12 @@ export function StatusPill({ status }) {
                 normalized
             )}`}
         >
-            {normalized === "QUEUED" && <Clock size={12} />}
+            {normalized === "PENDING" || normalized === "QUEUED" ? <Clock size={12} /> : null}
             {normalized === "RUNNING" && <Loader2 size={12} className="animate-spin" />}
             {normalized === "COMPLETED" && <CheckCircle2 size={12} />}
             {normalized === "FAILED" && <XCircle size={12} />}
             {normalized === "CANCELLED" && <Ban size={12} />}
-            {normalized || "UNKNOWN"}
+            {normalized === "PENDING" ? "Queued" : normalized || "UNKNOWN"}
         </span>
     );
 }
@@ -64,14 +66,14 @@ export function StatusPill({ status }) {
 export const COL_WIDTHS = {
     id: "w-[64px]",
     target: "",
-    scanner: "w-[120px]",
-    status: "w-[150px]",
-    created: "w-[200px]",
-    duration: "w-[130px]",
-    action: "w-[140px]",
+    scanner: "w-[110px]",
+    status: "w-[140px]",
+    created: "w-[170px]",
+    duration: "w-[110px]",
+    risk: "w-[90px]",
+    findings: "w-[90px]",
+    action: "w-[190px]",
 };
-
-export const ACTIVE_STATUSES = new Set(["QUEUED", "RUNNING"]);
 
 const tileThemes = {
     purple: {
@@ -142,20 +144,23 @@ export function StatTile({ label, value, icon: Icon, themeKey }) {
     );
 }
 
-import { Scan, FileText } from "lucide-react";
+function riskClasses(score) {
+    if (score >= 70) return "bg-red-500/10 text-red-400 border-red-500/30";
+    if (score >= 40) return "bg-amber-500/10 text-amber-400 border-amber-500/30";
+    if (score > 0) return "bg-green-500/10 text-green-400 border-green-500/30";
+    return "bg-slate-800/60 text-slate-500 border-slate-700/60";
+}
 
-export function ScanRow({ scan, now, cancellingId, onCancel, onViewReport }) {
+export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelete, onViewReport }) {
     const normalized = (scan.status || "").toUpperCase();
     const isActive = ACTIVE_STATUSES.has(normalized);
 
-    let durationLabel = "—";
-    if (normalized === "QUEUED") {
-        durationLabel = "waiting…";
-    } else if (normalized === "RUNNING") {
-        durationLabel = formatDuration(scan.created_at, now);
-    } else {
-        durationLabel = formatDuration(scan.created_at, scan.completed_at);
-    }
+    const durationLabel =
+        normalized === "PENDING" || normalized === "QUEUED"
+            ? "waiting…"
+            : normalized === "RUNNING"
+              ? formatDuration(scan.created_at, now)
+              : formatDuration(scan.created_at, scan.completed_at);
 
     return (
         <tr className="group relative border-b border-slate-800/60 transition-colors duration-200 hover:bg-slate-800/25">
@@ -186,6 +191,16 @@ export function ScanRow({ scan, now, cancellingId, onCancel, onViewReport }) {
                     {durationLabel}
                 </span>
             </td>
+            <td className={`py-4 ${COL_WIDTHS.risk}`}>
+                <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold border tabular-nums ${riskClasses(scan.risk_score)}`}>
+                    {scan.risk_score ?? "—"}
+                </span>
+            </td>
+            <td className={`py-4 ${COL_WIDTHS.findings}`}>
+                <span className="text-slate-300 font-medium tabular-nums">
+                    {scan.findings ?? "—"}
+                </span>
+            </td>
             <td className={`py-4 pr-1 ${COL_WIDTHS.action}`}>
                 {isActive ? (
                     <button
@@ -197,13 +212,25 @@ export function ScanRow({ scan, now, cancellingId, onCancel, onViewReport }) {
                         Cancel
                     </button>
                 ) : (
-                    <button
-                        onClick={() => onViewReport(scan.id)}
-                        className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-all duration-200"
-                    >
-                        <FileText size={14} />
-                        View Report
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => onViewReport(scan.id)}
+                            className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-all duration-200"
+                        >
+                            <FileText size={14} />
+                            View Report
+                        </button>
+                        {onDelete && (
+                            <button
+                                onClick={() => onDelete(scan)}
+                                disabled={deletingId === scan.id}
+                                title="Delete scan"
+                                className="bg-slate-800/50 border border-slate-800 rounded-lg p-2 text-slate-400 hover:bg-red-600/15 hover:text-red-400 hover:border-red-500/40 transition-all duration-200 disabled:opacity-50"
+                            >
+                                {deletingId === scan.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                            </button>
+                        )}
+                    </div>
                 )}
             </td>
             {isActive && (

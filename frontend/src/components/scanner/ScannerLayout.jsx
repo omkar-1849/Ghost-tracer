@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Radar, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { getScanHistory, getScanReport, cancelScan } from "../../services/api";
+import { Radar, AlertTriangle, CheckCircle2, Loader2, Trash2, WifiOff } from "lucide-react";
+import { getAllScans, cancelScan, deleteScan, getScannerEngines } from "../../services/scannerApi";
 
 import ScannerTabs from "./ScannerTabs";
 import OverviewTab from "./OverviewTab";
-import SQLMapTab from "./SQLMapTab";
-import ScannerEnginePlaceholder from "./ScannerEnginePlaceholder";
-import { SCANNER_ENGINES } from "./constants";
-import { ACTIVE_STATUSES } from "./shared";
+import EngineTab from "./EngineTab";
+import { SCANNER_ENGINES, ACTIVE_STATUSES } from "./constants";
 
 const keyframes = `
 @keyframes scanner-sweep {
@@ -34,20 +32,25 @@ export default function ScannerLayout() {
     useEffect(() => {
         sessionStorage.setItem("scanner_tab", activeTab);
     }, [activeTab]);
+
     const [recentScans, setRecentScans] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
     const [historyError, setHistoryError] = useState(false);
-    const [now, setNow] = useState(Date.now());
-    
+    const [now, setNow] = useState(0);
+
+    const [engines, setEngines] = useState([]);
+    const [enginesLoading, setEnginesLoading] = useState(true);
+    const [enginesError, setEnginesError] = useState(false);
+
     // Toast notification state
     const [toast, setToast] = useState(null);
     const toastTimerRef = useRef(null);
 
-    const loadScanHistory = useCallback(async () => {
-        setHistoryError(false);
+    const loadScans = useCallback(async () => {
         try {
-            const data = await getScanHistory();
+            const data = await getAllScans();
             setRecentScans(data);
+            setHistoryError(false);
         } catch (error) {
             console.error(error);
             setHistoryError(true);
@@ -56,20 +59,29 @@ export default function ScannerLayout() {
         }
     }, []);
 
+    const loadEngines = useCallback(async () => {
+        try {
+            const data = await getScannerEngines();
+            setEngines(data);
+            setEnginesError(false);
+        } catch (error) {
+            console.error(error);
+            setEnginesError(true);
+        } finally {
+            setEnginesLoading(false);
+        }
+    }, []);
+
     const hasActive = useMemo(
         () => recentScans.some((scan) => ACTIVE_STATUSES.has((scan.status || "").toUpperCase())),
         [recentScans]
     );
 
-    const sqlmapBusy = useMemo(
-        () =>
-            recentScans.some(
-                (scan) =>
-                    (scan.scanner || "").toUpperCase() === "SQLMAP" &&
-                    ACTIVE_STATUSES.has((scan.status || "").toUpperCase())
-            ),
-        [recentScans]
-    );
+    // Keep the polling interval from re-binding on every status flip.
+    const hasActiveRef = useRef(hasActive);
+    useEffect(() => {
+        hasActiveRef.current = hasActive;
+    }, [hasActive]);
 
     function showToast(message, type = "success") {
         setToast({ message, type, id: Date.now() });
@@ -77,16 +89,50 @@ export default function ScannerLayout() {
         toastTimerRef.current = setTimeout(() => setToast(null), 4000);
     }
 
-    // Poll scan status every 3 seconds while any scan is active.
+    // Load history + engines on mount, poll scan status while any scan is active.
     useEffect(() => {
-        loadScanHistory();
+        let cancelled = false;
+
+        async function bootstrap() {
+            try {
+                const scans = await getAllScans();
+                if (!cancelled) {
+                    setRecentScans(scans);
+                    setHistoryError(false);
+                }
+            } catch (error) {
+                console.error(error);
+                if (!cancelled) setHistoryError(true);
+            } finally {
+                if (!cancelled) setHistoryLoading(false);
+            }
+
+            try {
+                const engines = await getScannerEngines();
+                if (!cancelled) {
+                    setEngines(engines);
+                    setEnginesError(false);
+                }
+            } catch (error) {
+                console.error(error);
+                if (!cancelled) setEnginesError(true);
+            } finally {
+                if (!cancelled) setEnginesLoading(false);
+            }
+        }
+
+        bootstrap();
+
         const interval = setInterval(() => {
-            if (hasActive) {
-                loadScanHistory();
+            if (hasActiveRef.current) {
+                loadScans();
             }
         }, 3000);
-        return () => clearInterval(interval);
-    }, [loadScanHistory, hasActive]);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+        };
+    }, [loadScans]);
 
     // Live elapsed timer while scans are running.
     useEffect(() => {
@@ -94,12 +140,13 @@ export default function ScannerLayout() {
         const interval = setInterval(() => setNow(Date.now()), 1000);
         return () => clearInterval(interval);
     }, [hasActive]);
-    
+
     // Derived stats
     const stats = useMemo(() => {
         const result = { total: recentScans.length, queued: 0, running: 0, completed: 0, failed: 0 };
         for (const scan of recentScans) {
             switch ((scan.status || "").toUpperCase()) {
+                case "PENDING":
                 case "QUEUED": result.queued += 1; break;
                 case "RUNNING": result.running += 1; break;
                 case "COMPLETED": result.completed += 1; break;
@@ -117,7 +164,7 @@ export default function ScannerLayout() {
         try {
             await cancelScan(id);
             showToast("Scan cancelled", "success");
-            await loadScanHistory();
+            await loadScans();
         } catch (error) {
             console.error(error);
             showToast(error.message || "Failed to cancel scan", "error");
@@ -126,43 +173,66 @@ export default function ScannerLayout() {
         }
     }
 
-    // Render appropriate tab content
+    // Handle scan deletion (with confirmation dialog)
+    const [deletingId, setDeletingId] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    async function handleDeleteScan(id) {
+        setDeletingId(id);
+        try {
+            await deleteScan(id);
+            showToast(`Scan #${id} deleted`, "success");
+            await loadScans();
+        } catch (error) {
+            console.error(error);
+            showToast(error.message || "Failed to delete scan", "error");
+        } finally {
+            setDeletingId(null);
+            setDeleteTarget(null);
+        }
+    }
+
+    // Render the active tab. Every engine uses the same generic EngineTab;
+    // only the engine config (id, name, icon, accent) differs.
     const renderTabContent = () => {
         if (activeTab === "overview") {
             return (
-                <OverviewTab 
-                    stats={stats} 
-                    recentScans={recentScans} 
-                    now={now} 
+                <OverviewTab
+                    stats={stats}
+                    recentScans={recentScans}
+                    engines={engines}
+                    enginesLoading={enginesLoading}
+                    enginesError={enginesError}
+                    onRefreshEngines={loadEngines}
+                    now={now}
                     historyLoading={historyLoading}
                     historyError={historyError}
-                    onRefresh={loadScanHistory}
+                    onRefresh={loadScans}
                     cancellingId={cancellingId}
+                    deletingId={deletingId}
                     onCancelScan={handleCancelScan}
+                    onDeleteScan={setDeleteTarget}
                     onTabChange={setActiveTab}
                     showToast={showToast}
                 />
             );
         }
-        
-        if (activeTab === "sqlmap") {
-            return (
-                <SQLMapTab 
-                    recentScans={recentScans}
-                    now={now}
-                    sqlmapBusy={sqlmapBusy}
-                    historyLoading={historyLoading}
-                    historyError={historyError}
-                    onRefresh={loadScanHistory}
-                    cancellingId={cancellingId}
-                    onCancelScan={handleCancelScan}
-                    showToast={showToast}
-                />
-            );
-        }
-        
-        const activeEngine = SCANNER_ENGINES.find(e => e.id === activeTab);
-        return <ScannerEnginePlaceholder engine={activeEngine} />;
+
+        const engine = SCANNER_ENGINES.find((e) => e.id === activeTab);
+        return (
+            <EngineTab
+                engine={engine}
+                recentScans={recentScans}
+                now={now}
+                historyLoading={historyLoading}
+                historyError={historyError}
+                onRefresh={loadScans}
+                cancellingId={cancellingId}
+                deletingId={deletingId}
+                onCancelScan={handleCancelScan}
+                onDeleteScan={setDeleteTarget}
+                showToast={showToast}
+            />
+        );
     };
 
     return (
@@ -202,9 +272,66 @@ export default function ScannerLayout() {
                 </div>
             </div>
 
+            {/* Backend offline banner */}
+            {historyError && recentScans.length === 0 && (
+                <div className="mb-6 flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                    <p className="flex items-center gap-2 text-sm text-red-300">
+                        <WifiOff size={16} />
+                        Backend unreachable — scan history could not be loaded.
+                    </p>
+                    <button
+                        onClick={loadScans}
+                        disabled={historyLoading}
+                        className="text-xs font-bold text-red-300 hover:text-white uppercase tracking-wider transition-colors disabled:opacity-50"
+                    >
+                        Retry
+                    </button>
+                </div>
+            )}
+
             <ScannerTabs activeTab={activeTab} onTabChange={setActiveTab} />
-            
+
             {renderTabContent()}
+
+            {/* Delete confirmation dialog */}
+            {deleteTarget && (
+                <div
+                    className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm animate-backdrop-in"
+                    onClick={() => setDeleteTarget(null)}
+                >
+                    <div
+                        className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl shadow-black/60 animate-scale-in"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
+                                <Trash2 size={18} className="text-red-400" />
+                            </span>
+                            <h3 className="text-lg font-bold text-white">Delete Scan</h3>
+                        </div>
+                        <p className="text-sm text-slate-400 mb-6">
+                            Delete scan <span className="font-mono text-white">#{deleteTarget.id}</span> targeting{" "}
+                            <span className="text-white">{deleteTarget.target}</span>? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={() => setDeleteTarget(null)}
+                                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-sm font-medium transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleDeleteScan(deleteTarget.id)}
+                                disabled={deletingId === deleteTarget.id}
+                                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+                            >
+                                {deletingId === deleteTarget.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Global Toast notifications */}
             {toast && (
