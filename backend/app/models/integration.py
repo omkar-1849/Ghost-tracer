@@ -18,7 +18,10 @@ class Integration(Base):
 
     website_id = Column(
         Integer,
-        ForeignKey("websites.id", ondelete="CASCADE"),
+        ForeignKey(
+            "websites.id",
+            ondelete="CASCADE",
+        ),
         nullable=False,
         unique=True,
         index=True,
@@ -29,8 +32,8 @@ class Integration(Base):
 
     status = Column(
         String(20),
-        nullable=False,
         default="Connected",
+        nullable=False,
     )
 
     created_at = Column(
@@ -51,4 +54,8 @@ class Integration(Base):
         nullable=True,
     )
 
-    website = relationship("Website", backref="integration")
+    website = relationship(
+        "Website",
+        back_populates="integration",
+        passive_deletes=True,
+    )

@@ -71,7 +71,7 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 aria-expanded={open}
                 onClick={() => setOpen(o => !o)}
                 onKeyDown={handleKeyDown}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-slate-300 hover:text-white rounded-lg cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 ${
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-slate-300 hover:text-white rounded-lg cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30 ${
                     open ? "bg-slate-800/80 text-white" : "hover:bg-slate-800/50"
                 }`}
             >
@@ -97,12 +97,14 @@ export default function CustomSelect({ value, onChange, options, id, className =
                                     type="button"
                                     onMouseEnter={() => setHighlighted(idx)}
                                     onClick={() => selectOption(opt.value)}
-                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-sm text-left transition-colors duration-150 ${
-                                        isHighlighted ? "bg-emerald-500/10 text-white" : selected ? "text-emerald-300" : "text-slate-300"
+                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-sm text-left transition-all duration-100 ${
+                                        isHighlighted
+                                            ? "bg-emerald-500/10 text-white translate-x-0.5"
+                                            : selected ? "text-emerald-300" : "text-slate-300"
                                     }`}
                                 >
                                     <span className="font-medium">{opt.label}</span>
-                                    {selected && <Check size={14} className="text-emerald-400 shrink-0" />}
+                                    {selected && <Check size={14} className="text-emerald-400 shrink-0 animate-fade-in" />}
                                 </button>
                             </li>
                         );

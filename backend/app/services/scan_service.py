@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.scan import Scan
@@ -14,7 +15,16 @@ def create_scan(db: Session, website_id: int, engine: str):
     )
 
     if website is None:
-        return None
+        raise HTTPException(
+            status_code=404,
+            detail="Website not found."
+        )
+
+    if not website.verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Website ownership has not been verified."
+        )
 
     scan = Scan(
         website_id=website.id,
@@ -100,7 +110,6 @@ def get_scan_history(
 
 
 def get_all_scans(db: Session):
-    """Return every scan, newest first."""
     return (
         db.query(Scan)
         .order_by(Scan.created_at.desc())
@@ -109,7 +118,6 @@ def get_all_scans(db: Session):
 
 
 def delete_scan(db: Session, scan_id: int):
-    """Delete a scan record. Returns True if deleted, False if not found."""
     scan = db.query(Scan).filter(Scan.id == scan_id).first()
 
     if scan is None:

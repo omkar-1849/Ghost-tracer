@@ -1,10 +1,10 @@
 import { X, CheckCircle2, AlertTriangle, XCircle, Info } from "lucide-react";
 
 const TOAST_STYLES = {
-    success: { icon: CheckCircle2, iconClass: "text-emerald-400", bar: "bg-emerald-400", wrapper: "bg-emerald-950/95 border-emerald-500/30 shadow-emerald-900/40" },
-    warning: { icon: AlertTriangle, iconClass: "text-amber-400", bar: "bg-amber-400", wrapper: "bg-amber-950/95 border-amber-500/30 shadow-amber-900/40" },
-    error: { icon: XCircle, iconClass: "text-red-400", bar: "bg-red-500", wrapper: "bg-red-950/95 border-red-500/30 shadow-red-900/40" },
-    info: { icon: Info, iconClass: "text-cyan-400", bar: "bg-cyan-400", wrapper: "bg-cyan-950/95 border-cyan-500/30 shadow-cyan-900/40" },
+    success: { icon: CheckCircle2, iconClass: "text-emerald-400", bar: "bg-emerald-400", wrapper: "bg-emerald-950/95 border-emerald-500/30" },
+    warning: { icon: AlertTriangle, iconClass: "text-amber-400", bar: "bg-amber-400", wrapper: "bg-amber-950/95 border-amber-500/30" },
+    error: { icon: XCircle, iconClass: "text-red-400", bar: "bg-red-500", wrapper: "bg-red-950/95 border-red-500/30" },
+    info: { icon: Info, iconClass: "text-cyan-400", bar: "bg-cyan-400", wrapper: "bg-cyan-950/95 border-cyan-500/30" },
 };
 
 export const TOAST_DURATION = 4000;

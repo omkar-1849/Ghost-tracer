@@ -21,6 +21,11 @@ function mapToFrontend(backend) {
         lastScan: backend.last_scan,
         createdAt: backend.created_at,
         updatedAt: backend.updated_at,
+        // Website Ownership Verification
+        verified: backend.verified ?? false,
+        verificationMethod: backend.verification_method || null,
+        verificationToken: backend.verification_token || null,
+        verifiedAt: backend.verified_at || null,
     };
 }
 
@@ -96,4 +101,68 @@ export async function deleteWebsite(id) {
         throw new Error("Failed to delete website");
     }
     return true;
+}
+
+/* ------------------------------------------------------------------
+ * Website Ownership Verification
+ * ------------------------------------------------------------------ */
+
+/** Resolve a common error shape ({detail: string | [{msg}]}) to a message. */
+async function errorMessage(res) {
+    try {
+        const error = await res.json();
+        return error && error.detail && Array.isArray(error.detail)
+            ? error.detail[0].msg
+            : (error?.detail || `Request failed (${res.status})`);
+    } catch {
+        return `Request failed (${res.status})`;
+    }
+}
+
+export async function getVerificationToken(websiteId) {
+    const res = await fetch(`${API_URL}/${websiteId}/verification-token`);
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function verifyWebsite(websiteId, method) {
+    const res = await fetch(`${API_URL}/${websiteId}/verify/${encodeURIComponent(method)}`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+/* ------------------------------------------------------------------
+ * Website Integration (SDK / API keys)
+ * ------------------------------------------------------------------ */
+
+export async function getIntegration(websiteId) {
+    const res = await fetch(`${API_URL}/${websiteId}/integration`);
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function connectWebsite(websiteId) {
+    const res = await fetch(`${API_URL}/${websiteId}/connect`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function regenerateIntegrationKeys(websiteId) {
+    const res = await fetch(`${API_URL}/${websiteId}/regenerate-key`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function disconnectWebsite(websiteId) {
+    const res = await fetch(`${API_URL}/${websiteId}/disconnect`, {
+        method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
 }

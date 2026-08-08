@@ -11,16 +11,24 @@ function ShimmerBar({ className = "" }) {
     );
 }
 
-export function StatsSkeleton() {
+/** Reserved-width text bars for the inline summary strip — no card shapes. */
+export function SummarySkeleton() {
+    const items = [
+        { bar: "w-20", label: "w-16" },
+        { bar: "w-12", label: "w-10" },
+        { bar: "w-12", label: "w-10" },
+        { bar: "w-12", label: "w-12" },
+        { bar: "w-16", label: "w-28" },
+    ];
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4 mb-8" aria-hidden="true">
-            {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                    <div className="flex justify-between items-start mb-4">
-                        <ShimmerBar className="h-3 w-16" />
-                        <ShimmerBar className="h-7 w-7 rounded-lg" />
+        <div className="flex flex-wrap items-center gap-x-10 gap-y-4 mb-8" aria-hidden="true">
+            {items.map((item, idx) => (
+                <div key={idx} className="flex items-center">
+                    {idx > 0 && <span className="hidden md:block w-px self-stretch min-h-7 bg-slate-800/70 mr-10" />}
+                    <div className="flex items-baseline gap-3">
+                        <ShimmerBar className={`h-8 ${item.bar}`} />
+                        <ShimmerBar className={`h-3 ${item.label}`} />
                     </div>
-                    <ShimmerBar className="h-6 w-10" />
                 </div>
             ))}
         </div>
@@ -29,8 +37,8 @@ export function StatsSkeleton() {
 
 export function TableSkeleton() {
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl" aria-hidden="true">
-            <div className="bg-slate-800/50 border-b border-slate-700/50 px-4 py-4 flex items-center gap-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden" aria-hidden="true">
+            <div className="bg-slate-800/50 border-b border-slate-700/50 px-4 py-3.5 flex items-center gap-4">
                 <ShimmerBar className="h-3 w-3 rounded-sm" />
                 <ShimmerBar className="h-3 w-24" />
                 <ShimmerBar className="h-3 w-28" />

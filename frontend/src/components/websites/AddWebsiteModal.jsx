@@ -75,7 +75,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
         `w-full bg-slate-950/80 border rounded-xl py-2.5 text-sm text-white placeholder:text-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 ${
             hasError
                 ? "border-red-500/60 focus:border-red-500 focus:ring-red-500/20"
-                : "border-slate-700/80 focus:border-emerald-400 focus:ring-emerald-500/20 focus:shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_0_14px_rgba(16,185,129,0.12)]"
+                : "border-slate-700/80 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/15"
         }`;
 
     return (
@@ -89,7 +89,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                 <div className="shrink-0 p-6 pb-5 border-b border-slate-700/40 bg-slate-900/60 flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/25 shadow-[0_0_12px_rgba(16,185,129,0.15)]">
+                            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/25">
                                 <Globe size={20} />
                             </div>
                             {isEdit ? "Edit Website" : "Add Website"}
@@ -102,7 +102,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                         onClick={onClose}
                         disabled={saving}
                         aria-label="Close dialog"
-                        className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-all duration-150 hover:rotate-90 active:scale-90 disabled:opacity-50"
+                        className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                     >
                         <X size={16} />
                     </button>
@@ -231,9 +231,9 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                                     role="switch"
                                     aria-checked={formData.monitoringEnabled}
                                     onClick={() => setFormData({ ...formData, monitoringEnabled: !formData.monitoringEnabled })}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-emerald-400/50 ${
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald-400/50 ${
                                         formData.monitoringEnabled
-                                            ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]"
+                                            ? "bg-emerald-500"
                                             : "bg-slate-700"
                                     }`}
                                 >
@@ -249,7 +249,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                     <button
                         onClick={onClose}
                         disabled={saving}
-                        className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-all duration-150 border border-slate-700/60 active:scale-95 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-colors duration-150 border border-slate-700/60 active:opacity-70 disabled:opacity-50"
                     >
                         Discard
                     </button>
@@ -257,7 +257,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                         type="submit"
                         form="website-form"
                         disabled={saving}
-                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-all duration-150 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_22px_rgba(16,185,129,0.5)] border border-emerald-400/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
                     >
                         {saving && <Loader2 size={15} className="animate-spin" />}
                         {isEdit ? (saving ? "Saving…" : "Save Changes") : (saving ? "Creating…" : "Create Website")}

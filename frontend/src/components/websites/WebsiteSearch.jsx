@@ -27,13 +27,7 @@ export default function WebsiteSearch({ query, setQuery }) {
     }, []);
 
     return (
-        <div className="relative flex-1 min-w-[200px] max-w-md">
-            {/* Focus glow ring */}
-            <div
-                className={`absolute -inset-0.5 rounded-xl bg-gradient-to-r from-emerald-500/40 via-cyan-500/40 to-purple-500/40 blur-sm transition-opacity duration-200 pointer-events-none ${
-                    focused ? "opacity-70" : "opacity-0"
-                }`}
-            />
+        <div className="relative flex-1 min-w-[240px] max-w-[320px]">
             <div className="relative flex items-center">
                 <Search
                     size={16}
@@ -49,7 +43,7 @@ export default function WebsiteSearch({ query, setQuery }) {
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
                     onChange={(e) => setLocalQuery(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700/80 rounded-xl pl-10 pr-16 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/70 shadow-inner transition-colors duration-200"
+                    className="w-full bg-slate-900 border border-slate-700/80 rounded-lg pl-10 pr-16 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-500/15 shadow-inner transition-colors duration-150"
                 />
                 {localQuery ? (
                     <button

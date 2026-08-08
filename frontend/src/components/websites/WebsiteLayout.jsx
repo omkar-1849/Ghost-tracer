@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { Loader2, Activity, Database } from "lucide-react";
 
-import WebsiteStats from "./WebsiteStats";
+import WebsiteSummary from "./WebsiteSummary";
+import HealthSegments from "./HealthSegments";
 import WebsiteFilters from "./WebsiteFilters";
 import WebsiteSearch from "./WebsiteSearch";
 import WebsiteTable from "./WebsiteTable";
@@ -10,7 +11,7 @@ import WebsiteDetailsDrawer from "./WebsiteDetailsDrawer";
 import AddWebsiteModal from "./AddWebsiteModal";
 import DeleteWebsiteDialog from "./DeleteWebsiteDialog";
 import ToastStack, { TOAST_DURATION } from "./Toast";
-import { StatsSkeleton, TableSkeleton } from "./Skeletons";
+import { SummarySkeleton, TableSkeleton } from "./Skeletons";
 
 import * as api from "../../services/websiteApi";
 
@@ -41,6 +42,7 @@ export default function WebsiteLayout() {
     const [saving, setSaving] = useState(false);
     const [deleting, setDeleting] = useState(false);
     const [isBusy, setIsBusy] = useState(false); // bulk operations
+    const [lastRefreshed, setLastRefreshed] = useState(null);
 
     // View States
     const [activeDrawerWebsite, setActiveDrawerWebsite] = useState(null);
@@ -70,6 +72,7 @@ export default function WebsiteLayout() {
         try {
             const data = await api.searchWebsites(query);
             setWebsites(data);
+            setLastRefreshed(new Date().toISOString());
             setSelectedIds([]);
         } catch (error) {
             console.error("Failed to fetch websites:", error);
@@ -85,6 +88,7 @@ export default function WebsiteLayout() {
         api.searchWebsites(searchQuery).then((data) => {
             if (cancelled) return;
             setWebsites(data);
+            setLastRefreshed(new Date().toISOString());
             setSelectedIds([]);
             setIsLoading(false);
         }).catch(() => {
@@ -104,6 +108,15 @@ export default function WebsiteLayout() {
             return true;
         });
     }, [websites, filters]);
+
+    // Counts for the health segmented filter (drives segment badges + sliding surface)
+    const healthCounts = useMemo(() => {
+        const counts = { All: websites.length, Healthy: 0, Warning: 0, Critical: 0, Unknown: 0 };
+        for (const w of websites) {
+            if (counts[w.health] !== undefined) counts[w.health] += 1;
+        }
+        return counts;
+    }, [websites]);
 
     // Handlers
     const handleAddClick = () => {
@@ -128,6 +141,14 @@ export default function WebsiteLayout() {
         setDeleteTargets([...selectedIds]);
         setIsDeleteDialogOpen(true);
     };
+
+    const handleClearSelection = useCallback(() => {
+        setSelectedIds([]);
+    }, []);
+
+    const handleResetFilters = useCallback(() => {
+        setFilters({ environment: "All", status: "All", health: "All" });
+    }, []);
 
     const handleSaveWebsite = async (formData) => {
         setSaving(true);
@@ -214,7 +235,7 @@ export default function WebsiteLayout() {
 
             {/* Non-blocking progress pill (bulk ops) */}
             {isBusy && (
-                <div className="absolute top-4 right-8 z-[90] flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900/95 border border-emerald-500/30 text-sm font-semibold text-emerald-300 shadow-2xl backdrop-blur-xl animate-fade-in-down">
+                <div className="absolute top-4 right-8 z-[90] flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/95 border border-emerald-500/30 text-sm font-semibold text-emerald-300 shadow-lg shadow-black/30 animate-fade-in-down">
                     <Loader2 size={15} className="animate-spin" />
                     Updating telemetry…
                 </div>
@@ -232,11 +253,19 @@ export default function WebsiteLayout() {
                     <p className="text-slate-400 mt-1.5">Manage target infrastructure, active environments, and telemetry health.</p>
                 </div>
 
-                {/* KPI Cards / Skeleton */}
-                {isLoading && websites.length === 0 ? <StatsSkeleton /> : <WebsiteStats websites={websites} />}
+                {/* Summary strip / Skeleton */}
+                {isLoading && websites.length === 0 ? <SummarySkeleton /> : <WebsiteSummary websites={websites} />}
 
-                {/* Toolbar */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 mb-6 backdrop-blur-xl shadow-xl flex flex-col md:flex-row gap-4 items-center justify-between z-20 relative">
+                {/* Health segmented filter — below the strip, drives the table lens */}
+                <HealthSegments
+                    className="mb-6"
+                    value={filters.health}
+                    counts={healthCounts}
+                    onChange={(h) => setFilters(prev => ({ ...prev, health: h }))}
+                />
+
+                {/* Toolbench toolbar — dense, aligned with the table rails */}
+                <div className="mb-6 flex flex-col md:flex-row gap-3 md:items-center justify-between">
                     <WebsiteSearch query={searchQuery} setQuery={setSearchQuery} />
                     <WebsiteFilters
                         filters={filters}
@@ -244,6 +273,7 @@ export default function WebsiteLayout() {
                         onRefresh={() => fetchWebsites(searchQuery)}
                         onAdd={handleAddClick}
                         selectedCount={selectedIds.length}
+                        onClearSelection={handleClearSelection}
                         onBulkDelete={handleBulkDeleteClick}
                         onBulkEnableMonitor={() => handleBulkMonitor(true)}
                         onBulkDisableMonitor={() => handleBulkMonitor(false)}
@@ -267,6 +297,10 @@ export default function WebsiteLayout() {
                         onEdit={handleEditClick}
                         onDelete={handleDeleteClick}
                         onScan={handleScan}
+                        filters={filters}
+                        lastRefreshed={lastRefreshed}
+                        onRefresh={() => fetchWebsites(searchQuery, false)}
+                        onResetFilters={handleResetFilters}
                     />
                 )}
             </div>
@@ -275,6 +309,7 @@ export default function WebsiteLayout() {
             <WebsiteDetailsDrawer
                 website={activeDrawerWebsite}
                 onClose={() => setActiveDrawerWebsite(null)}
+                onRefresh={() => fetchWebsites(searchQuery, false)}
                 onEdit={(w) => {
                     setActiveDrawerWebsite(null);
                     handleEditClick(w);

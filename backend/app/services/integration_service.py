@@ -8,7 +8,7 @@ from app.models.integration import Integration
 from app.models.website import Website
 
 
-def _hash(value: str) -> str:
+def _hash(value: str):
     return hashlib.sha256(value.encode()).hexdigest()
 
 
@@ -24,24 +24,45 @@ def create_integration(db: Session, website_id: int):
         .first()
     )
 
-    if existing:
-        return existing, None, None
+    # -------------------------------
+    # FIRST TIME CONNECTION
+    # -------------------------------
+    if existing is None:
+        api_key = f"sk_{secrets.token_urlsafe(24)}"
+        api_secret = secrets.token_urlsafe(48)
 
-    api_key = f"sk_{secrets.token_urlsafe(24)}"
-    api_secret = secrets.token_urlsafe(48)
+        integration = Integration(
+            website_id=website_id,
+            api_key_hash=_hash(api_key),
+            api_secret_hash=_hash(api_secret),
+            status="Connected",
+        )
 
-    integration = Integration(
-        website_id=website_id,
-        api_key_hash=_hash(api_key),
-        api_secret_hash=_hash(api_secret),
-        status="Connected",
-    )
+        db.add(integration)
+        db.commit()
+        db.refresh(integration)
 
-    db.add(integration)
-    db.commit()
-    db.refresh(integration)
+        return integration, api_key, api_secret
 
-    return integration, api_key, api_secret
+    # -------------------------------
+    # RECONNECT AFTER REVOCATION
+    # -------------------------------
+    if existing.status == "Revoked":
+        api_key = f"sk_{secrets.token_urlsafe(24)}"
+        api_secret = secrets.token_urlsafe(48)
+
+        existing.api_key_hash = _hash(api_key)
+        existing.api_secret_hash = _hash(api_secret)
+        existing.status = "Connected"
+        existing.updated_at = datetime.utcnow()
+
+        db.commit()
+        db.refresh(existing)
+
+        return existing, api_key, api_secret
+
+    # Already connected
+    return existing, None, None
 
 
 def get_integration(db: Session, website_id: int):

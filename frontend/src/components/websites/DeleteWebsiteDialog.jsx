@@ -22,17 +22,17 @@ export default function DeleteWebsiteDialog({ isOpen, onClose, onConfirm, count 
             {/* Panel */}
             <div className="relative bg-slate-900 border border-red-900/40 w-full max-w-md rounded-2xl shadow-2xl shadow-black overflow-hidden animate-pop-in">
                 {/* Top red accent line */}
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-600 via-rose-500 to-red-600 opacity-80" />
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-red-600 opacity-70" />
 
                 <div className="p-6 pb-0 flex justify-between items-start">
-                    <div className="w-13 h-13 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center shadow-[0_0_18px_rgba(220,38,38,0.15)]">
+                    <div className="w-13 h-13 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center">
                         <AlertTriangle size={26} className="text-red-400" />
                     </div>
                     <button
                         onClick={onClose}
                         disabled={deleting}
                         aria-label="Close dialog"
-                        className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-all duration-150 hover:rotate-90 active:scale-90 disabled:opacity-50"
+                        className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                     >
                         <X size={16} />
                     </button>
@@ -55,14 +55,14 @@ export default function DeleteWebsiteDialog({ isOpen, onClose, onConfirm, count 
                     <button
                         onClick={onClose}
                         disabled={deleting}
-                        className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-all duration-150 border border-slate-700/60 active:scale-95 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-colors duration-150 border border-slate-700/60 active:opacity-70 disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={onConfirm}
                         disabled={deleting}
-                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 transition-all duration-150 shadow-[0_0_15px_rgba(220,38,38,0.3)] hover:shadow-[0_0_22px_rgba(220,38,38,0.45)] border border-red-500/30 hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-red-700 to-rose-700 hover:from-red-600 hover:to-rose-600 transition-colors duration-150 border border-red-500/30 active:scale-[0.98] flex items-center gap-2 disabled:opacity-50"
                     >
                         {deleting && <Loader2 size={16} className="animate-spin" />}
                         <Trash2 size={16} />

@@ -1,15 +1,96 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
     X, ExternalLink, Globe, Calendar, User, Server, HeartPulse,
-    ShieldCheck, ActivitySquare, Database, Terminal, Eye, EyeOff, Pencil,
+    ShieldCheck, ShieldAlert, ActivitySquare, Database, Terminal, Eye, EyeOff, Pencil,
+    Copy, Check, FileCode2, Tag, Hash, PlugZap, KeyRound, Loader2,
+    RotateCcw, Unplug, CheckCircle2, XCircle, Info, Link2,
 } from "lucide-react";
+import * as api from "../../services/websiteApi";
 
 const HEALTH_STYLES = {
-    Healthy: { text: "text-emerald-400", chip: "bg-emerald-500/10 border-emerald-500/30", dot: "bg-emerald-400", glow: "shadow-[0_0_10px_rgba(16,185,129,0.2)]" },
-    Warning: { text: "text-amber-400", chip: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400", glow: "shadow-[0_0_10px_rgba(251,191,36,0.2)]" },
-    Critical: { text: "text-red-400", chip: "bg-red-500/10 border-red-500/30", dot: "bg-red-500", glow: "shadow-[0_0_10px_rgba(248,113,113,0.25)]" },
-    Unknown: { text: "text-slate-400", chip: "bg-slate-500/10 border-slate-500/30", dot: "bg-slate-500", glow: "" },
+    Healthy: { text: "text-emerald-400", chip: "bg-emerald-500/10 border-emerald-500/30", dot: "bg-emerald-400" },
+    Warning: { text: "text-amber-400", chip: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400" },
+    Critical: { text: "text-red-400", chip: "bg-red-500/10 border-red-500/30", dot: "bg-red-500" },
+    Unknown: { text: "text-slate-400", chip: "bg-slate-500/10 border-slate-500/30", dot: "bg-slate-500" },
 };
+
+const TABS = [
+    { id: "overview", label: "Overview", icon: ActivitySquare },
+    { id: "integration", label: "Integration", icon: PlugZap },
+    { id: "verification", label: "Verification", icon: ShieldCheck },
+    { id: "history", label: "Scan History", icon: Terminal },
+];
+
+const VERIFICATION_METHODS = [
+    { id: "html", title: "HTML File", description: "Drop a verification file at your site root", icon: FileCode2 },
+    { id: "meta", title: "Meta Tag", description: "Add a meta tag to your page <head>", icon: Tag },
+    { id: "dns", title: "DNS TXT", description: "Create a TXT record for your domain", icon: Hash },
+];
+
+const METHOD_LABELS = { html: "HTML file", meta: "Meta tag", dns: "DNS TXT record" };
+
+const formatDate = (value) => value ? new Date(value).toLocaleString() : null;
+
+/* ---------- Small reusable pieces ---------- */
+
+function SectionHeading({ icon: Icon, title, subtitle, accent = "text-emerald-400" }) {
+    return (
+        <div className="mb-4">
+            <h4 className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 ${accent}`}>
+                <Icon size={13} /> {title}
+            </h4>
+            {subtitle && <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{subtitle}</p>}
+        </div>
+    );
+}
+
+/** Monospace copyable code block used for tokens, files and snippets. */
+function MonoBlock({ value, fileName = null, showCopy = true, emptyLabel = "—" }) {
+    const [copied, setCopied] = useState(false);
+
+    const copy = async () => {
+        if (!value) return;
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1600);
+        } catch { /* clipboard unavailable */ }
+    };
+
+    return (
+        <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden transition-colors duration-150 hover:border-slate-600/70">
+            {(fileName || showCopy) && (
+                <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-b border-slate-800/80 bg-slate-900/60">
+                    <span className="text-[11px] font-semibold text-slate-400 font-mono truncate">{fileName || "Verification Token"}</span>
+                    {showCopy && (
+                        <button
+                            onClick={copy}
+                            disabled={!value}
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold transition-all duration-150 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${copied ? "text-emerald-300" : "text-slate-400 hover:text-white"}`}
+                        >
+                            {copied ? <Check size={12} className="animate-pop-in" /> : <Copy size={12} />}
+                            {copied ? "Copied" : "Copy"}
+                        </button>
+                    )}
+                </div>
+            )}
+            <div className="px-3.5 py-3 font-mono text-xs text-cyan-200/90 overflow-x-auto custom-scrollbar whitespace-nowrap">{value || emptyLabel}</div>
+        </div>
+    );
+}
+
+function SpecRow({ label, value, mono = true }) {
+    return (
+        <div className="flex items-center justify-between gap-4 px-3.5 py-2.5 border-b border-slate-800/60 last:border-b-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 shrink-0">{label}</span>
+            <span className={`text-xs text-slate-200 truncate ${mono ? "font-mono" : ""}`}>{value}</span>
+        </div>
+    );
+}
+
+function InlineCode({ children }) {
+    return <code className="px-1.5 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 font-mono text-[11px] text-cyan-300/90">{children}</code>;
+}
 
 const InfoCard = ({ icon: Icon, label, value, accent = "text-slate-400", chipClass = "bg-slate-800/80" }) => (
     <div className="bg-slate-900/70 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 transition-all duration-150 hover:border-slate-700 hover:bg-slate-900">
@@ -35,7 +116,196 @@ const DetailRow = ({ icon: Icon, label, value, mono = false }) => (
     </div>
 );
 
-export default function WebsiteDetailsDrawer({ website, onClose, onEdit }) {
+/* ---------- Verification tab ---------- */
+
+function MethodInstructions({ method, token, domain }) {
+    if (method === "html") {
+        return (
+            <div className="space-y-3 animate-fade-in-up">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                    Create a file named <InlineCode>sentinel_verify.html</InlineCode> and place it in the root directory of your website — it must be reachable at{" "}
+                    <InlineCode>/sentinel_verify.html</InlineCode>.
+                </p>
+                <MonoBlock fileName="sentinel_verify.html" value={token} />
+            </div>
+        );
+    }
+
+    if (method === "meta") {
+        return (
+            <div className="space-y-3 animate-fade-in-up">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                    Paste this meta tag between the <InlineCode>&lt;head&gt;</InlineCode> tags of your site's homepage.
+                </p>
+                <MonoBlock
+                    fileName="index.html"
+                    value={`<meta name="sentinel-verification" content="${token}">`}
+                    emptyLabel="Token unavailable"
+                />
+            </div>
+        );
+    }
+
+    // DNS TXT
+    return (
+        <div className="space-y-3 animate-fade-in-up">
+            <p className="text-xs text-slate-400 leading-relaxed">
+                Create a TXT record at your DNS provider for <InlineCode>{domain || "your domain"}</InlineCode>.
+            </p>
+            <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden">
+                <SpecRow label="Type" value="TXT" />
+                <SpecRow label="Host / Name" value="@" />
+                <SpecRow label="Value" value={token} />
+                <SpecRow label="TTL" value="3600" mono={false} />
+            </div>
+        </div>
+    );
+}
+
+/* ---------- Integration tab ---------- */
+
+function IntegrationTab({ integration, integrationError, keys, connecting, regenerating, disconnecting, onConnect, onRegenerate, onDisconnect }) {
+    const connected = !!integration && integration.status === "Connected";
+
+    if (integration === undefined) {
+        return (
+            <div className="flex items-center gap-3 p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 text-sm text-slate-400 animate-fade-in-up">
+                <Loader2 size={16} className="animate-spin text-cyan-400" />
+                Loading integration…
+            </div>
+        );
+    }
+
+    if (!connected) {
+        return (
+            <div className="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/40 p-6 text-center animate-fade-in-up">
+                <div className="mx-auto w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mb-3">
+                    <PlugZap size={22} className="text-cyan-400" />
+                </div>
+                <h4 className="text-sm font-bold text-white">No active SDK integration</h4>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-[260px] mx-auto">
+                    Generate an API key + secret pair to authenticate the Sentinel SDK for this website.
+                </p>
+                {integrationError && (
+                    <p className="mt-3 text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+                        <XCircle size={13} /> {integrationError}
+                    </p>
+                )}
+                <button
+                    onClick={onConnect}
+                    disabled={connecting}
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white rounded-xl text-sm font-bold transition-colors duration-150 border border-cyan-400/20 active:scale-[0.98] disabled:opacity-50"
+                >
+                    {connecting ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
+                    {connecting ? "Connecting…" : "Connect Website"}
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-4 animate-fade-in-up">
+            {/* Status */}
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0">
+                    <PlugZap size={16} />
+                </div>
+                <div className="min-w-0">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Connected
+                    </span>
+                    <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                        The Sentinel SDK is authorized to push security events for this website.
+                    </p>
+                </div>
+            </div>
+
+            {/* Credentials */}
+            {keys && (
+                <div className="space-y-2.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 pt-1">
+                        <KeyRound size={12} className="text-cyan-400" /> Credentials
+                    </div>
+                    <div className="space-y-2.5">
+                        <div className="space-y-1">
+                            <span className="text-[11px] font-semibold text-slate-500 px-0.5">API Key</span>
+                            <MonoBlock value={keys.api_key} />
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[11px] font-semibold text-slate-500 px-0.5">API Secret</span>
+                            <MonoBlock value={keys.api_secret} />
+                        </div>
+                    </div>
+                    <p className="flex items-start gap-1.5 text-[11px] text-amber-400/80 leading-relaxed pt-0.5">
+                        <Info size={12} className="shrink-0 mt-0.5" />
+                        Store these credentials securely — the secret is only shown once.
+                    </p>
+                </div>
+            )}
+
+            {/* Meta */}
+            <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden">
+                <SpecRow label="Status" value={integration.status} />
+                <SpecRow label="Created" value={formatDate(integration.created_at)} mono={false} />
+                <SpecRow label="Last used" value={formatDate(integration.last_used) || "Never"} mono={false} />
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap gap-2.5 pt-1">
+                <button
+                    onClick={onRegenerate}
+                    disabled={regenerating}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                >
+                    {regenerating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
+                    {regenerating ? "Regenerating…" : "Regenerate Keys"}
+                </button>
+                <button
+                    onClick={onDisconnect}
+                    disabled={disconnecting}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                >
+                    {disconnecting ? <Loader2 size={14} className="animate-spin" /> : <Unplug size={14} />}
+                    {disconnecting ? "Disconnecting…" : "Disconnect"}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+/* ---------- Drawer ---------- */
+
+export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefresh }) {
+    const [site, setSite] = useState(website);
+    const [activeTab, setActiveTab] = useState("overview");
+
+    // Verification state
+    const [verifyMethod, setVerifyMethod] = useState("html");
+    const [verifying, setVerifying] = useState(false);
+    const [verifyResult, setVerifyResult] = useState(null);
+
+    // Integration state
+    // `undefined` = not loaded yet (show loader), `null` = disconnected, object = record.
+    const [integration, setIntegration] = useState(undefined);
+    const [integrationError, setIntegrationError] = useState(null);
+    const [keys, setKeys] = useState(null);
+    const [connecting, setConnecting] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
+    const [disconnecting, setDisconnecting] = useState(false);
+
+    // When a different website is opened, reset all per-website state.
+    const [previousId, setPreviousId] = useState(website?.id ?? null);
+    if (website && website.id !== previousId) {
+        setPreviousId(website.id);
+        setSite(website);
+        setActiveTab("overview");
+        setVerifyMethod("html");
+        setVerifyResult(null);
+        setIntegration(undefined);
+        setIntegrationError(null);
+        setKeys(null);
+    }
+
     // Close on Escape
     useEffect(() => {
         if (!website) return;
@@ -46,11 +316,111 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit }) {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [website, onClose]);
 
+    // Fetch a fresh verification token / status (handles legacy records).
+    useEffect(() => {
+        if (!website?.id) return;
+        let cancelled = false;
+        api.getVerificationToken(website.id)
+            .then((data) => {
+                if (cancelled || !data) return;
+                setSite(prev => prev ? {
+                    ...prev,
+                    verificationToken: data.verification_token || prev.verificationToken,
+                    verified: data.verified ?? prev.verified,
+                    verificationMethod: data.verification_method || prev.verificationMethod,
+                    verifiedAt: data.verified_at || prev.verifiedAt,
+                } : prev);
+            })
+            .catch(() => { /* backend may be offline — fall back to list payload */ });
+        return () => { cancelled = true; };
+    }, [website?.id]);
+
+    // Load integration record when the tab is opened.
+    useEffect(() => {
+        if (activeTab !== "integration" || !website?.id) return;
+        let cancelled = false;
+        api.getIntegration(website.id)
+            .then((data) => { if (!cancelled) setIntegration(data); })
+            .catch(() => { if (!cancelled) setIntegration(null); });
+        return () => { cancelled = true; };
+    }, [activeTab, website?.id]);
+
     if (!website) return null;
 
     const tags = website.tags ? website.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
     const health = HEALTH_STYLES[website.health] || HEALTH_STYLES.Unknown;
     const isActive = website.status === "Active";
+    const token = site?.verificationToken || website.verificationToken;
+
+    const handleTabClick = (tabId) => {
+        setActiveTab(tabId);
+        if (tabId === "integration") {
+            // Show the loader on every open while we re-fetch the record.
+            setIntegration(undefined);
+            setIntegrationError(null);
+        }
+    };
+
+    const handleVerify = async () => {
+        if (!site || verifying) return;
+        setVerifying(true);
+        setVerifyResult(null);
+        try {
+            const result = await api.verifyWebsite(site.id, verifyMethod);
+            setVerifyResult({
+                success: !!result?.success,
+                message: result?.message || (result?.success ? "Website ownership verified successfully." : "Verification failed. Check that the file, tag or record is live, then try again."),
+            });
+            if (result?.success) {
+                // Reflect the new state immediately, then let the parent refresh the list.
+                setSite(prev => prev ? { ...prev, verified: true, verificationMethod: verifyMethod, verifiedAt: new Date().toISOString() } : prev);
+                onRefresh?.();
+            }
+        } catch (error) {
+            setVerifyResult({ success: false, message: error.message || "Verification request failed. Please try again." });
+        } finally {
+            setVerifying(false);
+        }
+    };
+
+    const handleConnect = async () => {
+        setConnecting(true);
+        setIntegrationError(null);
+        try {
+            const newKeys = await api.connectWebsite(site.id);
+            setKeys(newKeys);
+            setIntegration({ status: "Connected" });
+        } catch (error) {
+            setIntegrationError(error.message || "Failed to connect the website.");
+        } finally {
+            setConnecting(false);
+        }
+    };
+
+    const handleRegenerate = async () => {
+        setRegenerating(true);
+        try {
+            const result = await api.regenerateIntegrationKeys(site.id);
+            setKeys({ api_key: result.api_key, api_secret: result.api_secret });
+        } catch (error) {
+            setIntegrationError(error.message || "Failed to regenerate keys.");
+        } finally {
+            setRegenerating(false);
+        }
+    };
+
+    const handleDisconnect = async () => {
+        setDisconnecting(true);
+        try {
+            await api.disconnectWebsite(site.id);
+            setIntegration(null);
+            setKeys(null);
+        } catch (error) {
+            setIntegrationError(error.message || "Failed to disconnect the website.");
+        } finally {
+            setDisconnecting(false);
+        }
+    };
 
     return (
         <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label={`Details for ${website.name}`}>
@@ -61,22 +431,18 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit }) {
             />
 
             {/* Panel */}
-            <div className="absolute inset-y-0 right-0 w-full max-w-md bg-slate-950/95 backdrop-blur-2xl border-l border-slate-800/80 shadow-2xl shadow-black/60 animate-drawer-in flex flex-col">
+            <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-slate-950/95 backdrop-blur-2xl border-l border-slate-800/80 shadow-2xl shadow-black/60 animate-drawer-in flex flex-col">
                 {/* Header */}
-                <div className="shrink-0 p-6 border-b border-slate-800/80 bg-slate-900/40">
+                <div className="shrink-0 p-6 pb-5 border-b border-slate-800/80 bg-slate-900/40">
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex gap-4 items-center min-w-0">
-                            {/* Favicon with gradient ring */}
-                            <div className="relative shrink-0">
-                                <div className={`w-13 h-13 p-0.5 rounded-2xl bg-gradient-to-br from-emerald-500/60 via-cyan-500/40 to-transparent ${health.glow}`}>
-                                    <div className="w-full h-full rounded-[14px] bg-slate-800 border border-slate-700/60 flex items-center justify-center overflow-hidden">
-                                        {website.faviconUrl ? (
-                                            <img src={website.faviconUrl} alt="" className="w-6 h-6 object-contain" />
-                                        ) : (
-                                            <Globe size={22} className="text-slate-400" />
-                                        )}
-                                    </div>
-                                </div>
+                            {/* Favicon */}
+                            <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center overflow-hidden shrink-0">
+                                {website.faviconUrl ? (
+                                    <img src={website.faviconUrl} alt="" className="w-6 h-6 object-contain" />
+                                ) : (
+                                    <Globe size={22} className="text-slate-400" />
+                                )}
                             </div>
                             <div className="min-w-0">
                                 <h2 className="text-lg font-bold text-white leading-tight truncate">{website.name}</h2>
@@ -94,7 +460,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit }) {
                         <button
                             onClick={onClose}
                             aria-label="Close details"
-                            className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-all duration-150 hover:rotate-90 active:scale-90"
+                            className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-colors duration-150 active:opacity-70"
                         >
                             <X size={16} />
                         </button>
@@ -103,104 +469,263 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit }) {
                     {/* Status ribbon */}
                     <div className="flex flex-wrap items-center gap-2 mt-4">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isActive ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-slate-800/60 border-slate-700/50 text-slate-400"}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-emerald-400 animate-pulse-dot" : "bg-slate-500"}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-emerald-400" : "bg-slate-500"}`} />
                             {website.status}
                         </span>
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 border border-blue-500/30 text-blue-300">
                             <Server size={11} /> {website.environment}
                         </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${health.chip} ${health.text}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${health.dot} animate-pulse-dot`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
                             {website.health}
                         </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${website.monitoringEnabled ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300" : "bg-slate-800/60 border-slate-700/50 text-slate-500"}`}>
                             {website.monitoringEnabled ? <Eye size={11} /> : <EyeOff size={11} />}
                             {website.monitoringEnabled ? "Monitoring" : "Unmonitored"}
                         </span>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${site?.verified ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-slate-800/60 border-slate-700/50 text-slate-400"}`}>
+                            {site?.verified ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
+                            {site?.verified ? "Verified" : "Unverified"}
+                        </span>
                     </div>
                 </div>
 
+                {/* Tabs */}
+                <div role="tablist" aria-label="Website details" className="shrink-0 px-6 border-b border-slate-800/80 bg-slate-900/40 flex items-stretch gap-1 overflow-x-auto custom-scrollbar">
+                    {TABS.map(tab => {
+                        const active = activeTab === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                role="tab"
+                                id={`drawer-tab-${tab.id}`}
+                                aria-selected={active}
+                                aria-controls={`drawer-panel-${tab.id}`}
+                                onClick={() => handleTabClick(tab.id)}
+                                className={`relative shrink-0 flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold transition-colors duration-150 outline-none focus-visible:text-white ${
+                                    active ? "text-white" : "text-slate-500 hover:text-slate-300"
+                                }`}
+                            >
+                                <tab.icon size={13} className={active ? "text-emerald-400" : ""} />
+                                {tab.label}
+                                <span className={`absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`} />
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-                    {/* Overview */}
-                    <section className="space-y-3">
-                        <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                            <ActivitySquare size={13} className="text-emerald-400" /> Overview
-                        </h4>
-                        <div className="grid grid-cols-2 gap-3">
-                            <InfoCard icon={ActivitySquare} label="Status" value={website.status}
-                                accent={isActive ? "text-emerald-400" : "text-slate-400"}
-                                chipClass={isActive ? "bg-emerald-500/10 border-emerald-500/20" : "bg-slate-800/80 border-slate-700/50"} />
-                            <InfoCard icon={HeartPulse} label="Health" value={website.health}
-                                accent={health.text} chipClass={`${health.chip} border`} />
-                            <InfoCard icon={Server} label="Environment" value={website.environment}
-                                accent="text-blue-400" chipClass="bg-blue-500/10 border-blue-500/20" />
-                            <InfoCard icon={ShieldCheck} label="Security Score" value={website.securityScore ?? "N/A"}
-                                accent="text-purple-400" chipClass="bg-purple-500/10 border-purple-500/20" />
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                    {/* ---------- Overview ---------- */}
+                    {activeTab === "overview" && (
+                        <div key="overview" className="space-y-8 animate-fade-in-up">
+                            <section className="space-y-3">
+                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                    <ActivitySquare size={13} className="text-emerald-400" /> Overview
+                                </h4>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <InfoCard icon={ActivitySquare} label="Status" value={website.status}
+                                        accent={isActive ? "text-emerald-400" : "text-slate-400"}
+                                        chipClass={isActive ? "bg-emerald-500/10 border-emerald-500/20" : "bg-slate-800/80 border-slate-700/50"} />
+                                    <InfoCard icon={HeartPulse} label="Health" value={website.health}
+                                        accent={health.text} chipClass={`${health.chip} border`} />
+                                    <InfoCard icon={Server} label="Environment" value={website.environment}
+                                        accent="text-blue-400" chipClass="bg-blue-500/10 border-blue-500/20" />
+                                    <InfoCard icon={ShieldCheck} label="Security Score" value={website.securityScore ?? "N/A"}
+                                        accent="text-purple-400" chipClass="bg-purple-500/10 border-purple-500/20" />
+                                </div>
+                            </section>
+
+                            <section className="space-y-1">
+                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2">
+                                    <Database size={13} className="text-slate-400" /> General Information
+                                </h4>
+                                <DetailRow icon={User} label="Owner" value={website.owner || "No owner assigned"} />
+                                <DetailRow icon={Database} label="IP Address" value={website.ipAddress || "Unresolved"} mono />
+                                <DetailRow icon={Calendar} label="Last Scanned"
+                                    value={website.lastScan ? new Date(website.lastScan).toLocaleString() : "Never scanned"} />
+                                <DetailRow icon={Link2} label="Ownership"
+                                    value={site?.verified ? `Verified via ${METHOD_LABELS[site?.verificationMethod] || "unknown method"}` : "Not verified"} />
+                                {website.description && (
+                                    <div className="pt-2">
+                                        <div className="text-xs text-slate-500 mb-1.5">Description</div>
+                                        <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/50 border border-slate-800/60 rounded-xl p-3.5">{website.description}</p>
+                                    </div>
+                                )}
+                            </section>
+
+                            {tags.length > 0 && (
+                                <section>
+                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2 mb-3">
+                                        <Globe size={13} className="text-slate-400" /> Tags
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {tags.map((tag, idx) => (
+                                            <span
+                                                key={idx}
+                                                style={{ animationDelay: `${idx * 40}ms` }}
+                                                className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-xs font-medium text-slate-300 shadow-sm transition-colors duration-150 hover:border-emerald-500/40 hover:text-white animate-fade-in-up"
+                                            >
+                                                #{tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
                         </div>
-                    </section>
+                    )}
 
-                    {/* General Information */}
-                    <section className="space-y-1">
-                        <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2">
-                            <Database size={13} className="text-slate-400" /> General Information
-                        </h4>
-                        <DetailRow icon={User} label="Owner" value={website.owner || "No owner assigned"} />
-                        <DetailRow icon={Database} label="IP Address" value={website.ipAddress || "Unresolved"} mono />
-                        <DetailRow icon={Calendar} label="Last Scanned"
-                            value={website.lastScan ? new Date(website.lastScan).toLocaleString() : "Never scanned"} />
-                        {website.description && (
-                            <div className="pt-2">
-                                <div className="text-xs text-slate-500 mb-1.5">Description</div>
-                                <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/50 border border-slate-800/60 rounded-xl p-3.5">{website.description}</p>
+                    {/* ---------- Integration ---------- */}
+                    {activeTab === "integration" && (
+                        <section key="integration" className="animate-fade-in-up">
+                            <SectionHeading
+                                icon={PlugZap}
+                                title="SDK Integration"
+                                accent="text-cyan-400"
+                                subtitle="Connect the Sentinel SDK to stream security events and telemetry from this website."
+                            />
+                            <IntegrationTab
+                                integration={integration}
+                                integrationError={integrationError}
+                                keys={keys}
+                                connecting={connecting}
+                                regenerating={regenerating}
+                                disconnecting={disconnecting}
+                                onConnect={handleConnect}
+                                onRegenerate={handleRegenerate}
+                                onDisconnect={handleDisconnect}
+                            />
+                        </section>
+                    )}
+
+                    {/* ---------- Verification ---------- */}
+                    {activeTab === "verification" && (
+                        <section key="verification" className="space-y-6 animate-fade-in-up">
+                            <SectionHeading
+                                icon={ShieldCheck}
+                                title="Website Ownership Verification"
+                                accent="text-emerald-400"
+                                subtitle="Confirm you control this domain before running security scans against it."
+                            />
+
+                            {/* Status card */}
+                            <div className={`rounded-2xl border p-5 flex items-start gap-4 transition-colors duration-300 ${site?.verified ? "bg-emerald-500/[0.06] border-emerald-500/25" : "bg-red-500/[0.05] border-red-500/20"}`}>
+                                <div className={`p-2.5 rounded-xl shrink-0 border ${site?.verified ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" : "bg-red-500/10 text-red-400 border-red-500/25"}`}>
+                                    {site?.verified ? <ShieldCheck size={20} /> : <ShieldAlert size={20} />}
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className={`text-sm font-bold flex items-center gap-2 ${site?.verified ? "text-emerald-300" : "text-red-300"}`}>
+                                        {site?.verified ? "Verified" : "Ownership not verified"}
+                                        {site?.verified && <CheckCircle2 size={14} className="text-emerald-400" />}
+                                    </h4>
+                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                                        {site?.verified
+                                            ? `Ownership confirmed via ${METHOD_LABELS[site?.verificationMethod] || "an unknown method"}.`
+                                            : "Only verified domains can be scanned."}
+                                    </p>
+                                    {site?.verifiedAt && (
+                                        <p className="text-[11px] text-slate-500 mt-1.5 font-medium">Verified {formatDate(site?.verifiedAt)}</p>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                    </section>
 
-                    {/* Tags */}
-                    {tags.length > 0 && (
-                        <section>
-                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2 mb-3">
-                                <Globe size={13} className="text-slate-400" /> Tags
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                                {tags.map((tag, idx) => (
-                                    <span
-                                        key={idx}
-                                        style={{ animationDelay: `${idx * 40}ms` }}
-                                        className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-xs font-medium text-slate-300 shadow-sm transition-colors duration-150 hover:border-emerald-500/40 hover:text-white animate-fade-in-up"
+                            {/* Token */}
+                            <div>
+                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Verification Token</h4>
+                                <MonoBlock value={token} />
+                                <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
+                                    This token is unique to <span className="text-slate-300 font-semibold">{website.domain}</span> and is checked when you verify ownership.
+                                </p>
+                            </div>
+
+                            {/* Methods */}
+                            <div>
+                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Verification Method</h4>
+                                <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Verification method">
+                                    {VERIFICATION_METHODS.map(method => {
+                                        const selected = verifyMethod === method.id;
+                                        return (
+                                            <button
+                                                key={method.id}
+                                                role="radio"
+                                                aria-checked={selected}
+                                                onClick={() => setVerifyMethod(method.id)}
+                                                className={`group flex flex-col items-start gap-2 p-3.5 rounded-xl border text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald-400/40 ${
+                                                    selected
+                                                        ? "bg-emerald-500/[0.07] border-emerald-500/40"
+                                                        : "bg-slate-900/60 border-slate-700/60 hover:border-slate-600 hover:bg-slate-800/50"
+                                                }`}
+                                            >
+                                                <method.icon size={16} className={selected ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-300 transition-colors duration-150"} />
+                                                <span className={`text-xs font-bold ${selected ? "text-white" : "text-slate-300"}`}>{method.title}</span>
+                                                <span className="text-[10px] text-slate-500 leading-snug">{method.description}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Instructions */}
+                                <div className="mt-3">
+                                    <MethodInstructions method={verifyMethod} token={token} domain={website.domain} />
+                                </div>
+                            </div>
+
+                            {/* Verify Now */}
+                            <div className="space-y-3">
+                                <button
+                                    onClick={handleVerify}
+                                    disabled={verifying}
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    {verifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                                    {verifying ? "Verifying ownership…" : "Verify Now"}
+                                </button>
+
+                                {verifyResult && (
+                                    <div
+                                        role="status"
+                                        className={`flex items-start gap-2.5 px-3.5 py-3 rounded-xl border text-xs font-semibold leading-relaxed animate-fade-in-up ${
+                                            verifyResult.success
+                                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
+                                                : "bg-red-500/10 border-red-500/30 text-red-300"
+                                        }`}
                                     >
-                                        #{tag}
-                                    </span>
-                                ))}
+                                        {verifyResult.success ? <CheckCircle2 size={15} className="shrink-0 mt-0.5" /> : <XCircle size={15} className="shrink-0 mt-0.5" />}
+                                        <span>{verifyResult.message}</span>
+                                    </div>
+                                )}
                             </div>
                         </section>
                     )}
 
-                    {/* Scan History Placeholder */}
-                    <section>
-                        <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2 mb-3">
-                            <Terminal size={13} className="text-slate-400" /> Scan History
-                        </h4>
-                        <div className="relative w-full h-32 rounded-xl bg-slate-900/60 border border-slate-800/80 border-dashed flex flex-col items-center justify-center text-slate-500 overflow-hidden group hover:border-slate-700 transition-colors duration-150">
-                            <span className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-emerald-400/[0.04] to-transparent animate-scan" />
-                            <Terminal size={24} className="mb-2 opacity-50 transition-transform duration-200 group-hover:scale-110" />
-                            <span className="text-xs font-semibold">Future Analytics Module Integration</span>
-                        </div>
-                    </section>
+                    {/* ---------- Scan History ---------- */}
+                    {activeTab === "history" && (
+                        <section key="history" className="animate-fade-in-up">
+                            <SectionHeading
+                                icon={Terminal}
+                                title="Scan History"
+                                accent="text-slate-400"
+                                subtitle="Past scans and findings for this target will appear here."
+                            />
+                            <div className="relative w-full h-36 rounded-xl bg-slate-900/60 border border-slate-800/80 border-dashed flex flex-col items-center justify-center text-slate-500 hover:border-slate-700 transition-colors duration-150">
+                                <Terminal size={24} className="mb-2 opacity-50" />
+                                <span className="text-xs font-semibold">Future Analytics Module Integration</span>
+                            </div>
+                        </section>
+                    )}
                 </div>
 
                 {/* Footer */}
                 <div className="shrink-0 p-6 border-t border-slate-800/80 bg-slate-900/40 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
+                        className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white rounded-xl text-sm font-semibold transition-colors duration-150 active:opacity-70"
                     >
                         Close
                     </button>
                     <button
                         onClick={() => onEdit(website)}
-                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_22px_rgba(16,185,129,0.5)] transition-all duration-150 hover:scale-[1.01] active:scale-[0.98]"
+                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98]"
                     >
                         <Pencil size={14} />
                         Edit Website
