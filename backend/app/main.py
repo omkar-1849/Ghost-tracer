@@ -15,9 +15,14 @@ from app.models.incident_note import IncidentNote
 from app.models.settings import Settings
 from app.models.website import Website
 from app.models.integration import Integration
-
+from app.models.user import User
 from app.models.scan import Scan
+from app.models.password_reset_token import PasswordResetToken
 
+from app.models.organization import Organization
+from app.models.organization_member import OrganizationMember
+
+from app.models.session import Session
 
 # Routers
 from app.routers.log_router import router as log_router
@@ -32,6 +37,13 @@ from app.routers.settings_router import router as settings_router
 from app.routers.website_router import router as website_router
 from app.routers.integration_router import router as integration_router
 from app.routers.event_router import router as event_router
+from app.routers.profile_router import router as profile_router
+from app.routers.session_router import router as session_router
+from app.routers.auth_router import router as auth_router
+
+from app.routers.organization_router import (
+    router as organization_router,
+)
 
 from app.routers.scan_router import router as scan_router
 
@@ -72,7 +84,11 @@ app.include_router(settings_router)
 app.include_router(website_router)
 app.include_router(integration_router)
 app.include_router(event_router)
+app.include_router(organization_router)
 
+app.include_router(auth_router)
+app.include_router(profile_router)
+app.include_router(session_router)
 app.include_router(scan_router)
 
 
