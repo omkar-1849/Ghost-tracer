@@ -6,6 +6,7 @@ from app.schemas.organization_schema import MemberResponse
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
 from app.models.user import User
+from app.services.audit_log_service import create_audit_log
 
 
 ALLOWED_ROLES = {
@@ -241,6 +242,16 @@ def add_member(
     db.commit()
     db.refresh(membership)
 
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user.id,
+        action="ADD_ORGANIZATION_MEMBER",
+        resource_type="ORGANIZATION_MEMBER",
+        resource_id=str(membership.id),
+        description=f"User {user.email} added as member with role '{role}'.",
+    )
+
     return {
         "id": membership.id,
         "user_id": user.id,
@@ -284,10 +295,21 @@ def update_member_role(
             detail="The organization owner role cannot be changed.",
         )
 
+    old_role = membership.role
     membership.role = role
 
     db.commit()
     db.refresh(membership)
+
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        action="CHANGE_MEMBER_ROLE",
+        resource_type="ORGANIZATION_MEMBER",
+        resource_id=str(membership.id),
+        description=f"Member role changed from '{old_role}' to '{role}'.",
+    )
 
     return membership
 
@@ -316,5 +338,27 @@ def remove_member(
             detail="The organization owner cannot be removed.",
         )
 
+    membership_id = membership.id
+    target_email = None
+
+    user = (
+        db.query(User)
+        .filter(User.id == user_id)
+        .first()
+    )
+
+    if user:
+        target_email = user.email
+
     db.delete(membership)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        action="REMOVE_ORGANIZATION_MEMBER",
+        resource_type="ORGANIZATION_MEMBER",
+        resource_id=str(membership_id),
+        description=f"Member {target_email or ('user ' + str(user_id))} removed from organization.",
+    )

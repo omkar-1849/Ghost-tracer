@@ -3,8 +3,10 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.database.database import SessionLocal
+from app.models.user import User
 from app.schemas.website_schema import WebsiteCreate, WebsiteUpdate, WebsiteResponse
 from app.services import website_service
+from app.utils.security import get_current_user
 
 router = APIRouter(
     prefix="/websites",
@@ -23,9 +25,10 @@ def get_db():
 @router.post("", response_model=WebsiteResponse, status_code=201)
 def create_website(
     website: WebsiteCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return website_service.create_website(db, website)
+    return website_service.create_website(db, website, current_user.id)
 
 
 @router.get("/search", response_model=List[WebsiteResponse])
@@ -61,17 +64,19 @@ def get_website(
 def update_website(
     website_id: int,
     website: WebsiteUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return website_service.update_website(db, website_id, website)
+    return website_service.update_website(db, website_id, website, current_user.id)
 
 
 @router.delete("/{website_id}")
 def delete_website(
     website_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    return website_service.delete_website(db, website_id)
+    return website_service.delete_website(db, website_id, current_user.id)
 
 
 # -------------------------------

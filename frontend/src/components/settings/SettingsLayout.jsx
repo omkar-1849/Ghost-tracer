@@ -7,6 +7,7 @@ import {
     PlatformSection, ScanningSection, AISection, SecuritySection, 
     NotificationsSection, SystemSection, StorageSection, AboutSection 
 } from "./SettingsSections";
+import AuditActivity from "./AuditActivity";
 import * as api from "../../services/settingsApi";
 
 const DEFAULT_SETTINGS = {
@@ -185,6 +186,7 @@ export default function SettingsLayout() {
     const [isSaving, setIsSaving] = useState(false);
     const [toast, setToast] = useState(null);
     const [lastSync, setLastSync] = useState(new Date());
+    const [isAuditActivityOpen, setIsAuditActivityOpen] = useState(false);
 
     const searchRef = useRef(null);
     const contentRef = useRef(null);
@@ -451,7 +453,14 @@ export default function SettingsLayout() {
                         <SectionDivider />
                         <SectionWrapper id="ai"><AISection settings={settings} updateSetting={updateSetting} query={searchQuery} /></SectionWrapper>
                         <SectionDivider />
-                        <SectionWrapper id="security"><SecuritySection settings={settings} updateSetting={updateSetting} query={searchQuery} /></SectionWrapper>
+                        <SectionWrapper id="security">
+                            <SecuritySection
+                                settings={settings}
+                                updateSetting={updateSetting}
+                                query={searchQuery}
+                                onOpenAuditActivity={() => setIsAuditActivityOpen(true)}
+                            />
+                        </SectionWrapper>
                         <SectionDivider />
                         <SectionWrapper id="notifications"><NotificationsSection settings={settings} updateSetting={updateSetting} query={searchQuery} /></SectionWrapper>
                         <SectionDivider />
@@ -554,6 +563,10 @@ export default function SettingsLayout() {
                 </div>
             </div>
 
+            {/* Audit Activity Modal */}
+            {isAuditActivityOpen && (
+                <AuditActivity onClose={() => setIsAuditActivityOpen(false)} />
+            )}
         </div>
     );
 }

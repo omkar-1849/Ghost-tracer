@@ -1,3 +1,5 @@
+import { authFetch } from "./authClient";
+
 const API_URL = "http://127.0.0.1:8000/settings";
 
 function mapToFrontend(backend) {
@@ -71,7 +73,7 @@ export async function getSettings() {
 
 export async function updateSettings(frontendSettings) {
     const backendPayload = mapToBackend(frontendSettings);
-    const res = await fetch(API_URL, {
+    const res = await authFetch(API_URL, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(backendPayload),

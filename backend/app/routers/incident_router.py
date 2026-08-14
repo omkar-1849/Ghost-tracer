@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
-
+from app.models.user import User
 from app.schemas.incident_schema import (
     IncidentResponse,
     IncidentUpdateStatus,
@@ -11,8 +11,10 @@ from app.schemas.incident_schema import (
 from typing import Optional
 from app.services import incident_service
 from app.services.incident_timeline_service import get_incident_timeline
+from app.services.audit_log_service import resolve_audit_organization_id
 from app.services.incident_evidence_service import get_incident_evidence
 from app.services.incident_note_service import get_notes
+from app.utils.security import get_current_user
 
 router = APIRouter(
     prefix="/incidents",
@@ -81,12 +83,15 @@ def get_incident(
 def update_incident_status(
     incident_id: int,
     payload: IncidentUpdateStatus,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     incident = incident_service.update_incident_status(
         db=db,
         incident_id=incident_id,
-        status=payload.status
+        status=payload.status,
+        user_id=current_user.id,
+        organization_id=resolve_audit_organization_id(db, current_user.id),
     )
 
     if incident is None:

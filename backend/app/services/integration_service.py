@@ -6,14 +6,26 @@ from sqlalchemy.orm import Session
 
 from app.models.integration import Integration
 from app.models.website import Website
+from app.models.organization_member import OrganizationMember
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 
 def _hash(value: str):
     return hashlib.sha256(value.encode()).hexdigest()
 
 
-def create_integration(db: Session, website_id: int):
-    website = db.query(Website).filter(Website.id == website_id).first()
+def create_integration(
+    db: Session,
+    website_id: int,
+    user_id: int | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+):
+    website = (
+        db.query(Website)
+        .filter(Website.id == website_id)
+        .first()
+    )
 
     if website is None:
         return None, None, None
@@ -24,9 +36,8 @@ def create_integration(db: Session, website_id: int):
         .first()
     )
 
-    # -------------------------------
-    # FIRST TIME CONNECTION
-    # -------------------------------
+    organization_id = resolve_audit_organization_id(db, user_id)
+
     if existing is None:
         api_key = f"sk_{secrets.token_urlsafe(24)}"
         api_secret = secrets.token_urlsafe(48)
@@ -42,11 +53,21 @@ def create_integration(db: Session, website_id: int):
         db.commit()
         db.refresh(integration)
 
+        if user_id is not None and organization_id is not None:
+            create_audit_log(
+                db=db,
+                organization_id=organization_id,
+                user_id=user_id,
+                action="CREATE_API_TOKEN",
+                resource_type="INTEGRATION",
+                resource_id=str(integration.id),
+                description="API integration created.",
+                ip_address=ip_address,
+                user_agent=user_agent,
+            )
+
         return integration, api_key, api_secret
 
-    # -------------------------------
-    # RECONNECT AFTER REVOCATION
-    # -------------------------------
     if existing.status == "Revoked":
         api_key = f"sk_{secrets.token_urlsafe(24)}"
         api_secret = secrets.token_urlsafe(48)
@@ -59,13 +80,28 @@ def create_integration(db: Session, website_id: int):
         db.commit()
         db.refresh(existing)
 
+        if user_id is not None and organization_id is not None:
+            create_audit_log(
+                db=db,
+                organization_id=organization_id,
+                user_id=user_id,
+                action="RECONNECT_API_TOKEN",
+                resource_type="INTEGRATION",
+                resource_id=str(existing.id),
+                description="API integration reconnected.",
+                ip_address=ip_address,
+                user_agent=user_agent,
+            )
+
         return existing, api_key, api_secret
 
-    # Already connected
     return existing, None, None
 
 
-def get_integration(db: Session, website_id: int):
+def get_integration(
+    db: Session,
+    website_id: int,
+):
     return (
         db.query(Integration)
         .filter(Integration.website_id == website_id)
@@ -73,11 +109,22 @@ def get_integration(db: Session, website_id: int):
     )
 
 
-def regenerate_keys(db: Session, website_id: int):
-    integration = get_integration(db, website_id)
+def regenerate_keys(
+    db: Session,
+    website_id: int,
+    user_id: int | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+):
+    integration = get_integration(
+        db,
+        website_id,
+    )
 
     if integration is None:
         return None
+
+    organization_id = resolve_audit_organization_id(db, user_id)
 
     api_key = f"sk_{secrets.token_urlsafe(24)}"
     api_secret = secrets.token_urlsafe(48)
@@ -89,14 +136,45 @@ def regenerate_keys(db: Session, website_id: int):
     db.commit()
     db.refresh(integration)
 
+    if user_id is not None and organization_id is not None:
+        create_audit_log(
+            db=db,
+            organization_id=organization_id,
+            user_id=user_id,
+            action="REGENERATE_API_TOKEN",
+            resource_type="INTEGRATION",
+            resource_id=str(integration.id),
+            description="API integration keys regenerated.",
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
     return integration, api_key, api_secret
 
 
-def revoke_integration(db: Session, website_id: int):
-    integration = get_integration(db, website_id)
+def revoke_integration(
+    db: Session,
+    website_id: int,
+    user_id: int | None = None,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+):
+    integration = (
+        db.query(Integration)
+        .filter(
+            Integration.website_id == website_id
+        )
+        .first()
+    )
 
     if integration is None:
         return None
+
+    # Already revoked
+    if integration.status == "Revoked":
+        return integration
+
+    organization_id = resolve_audit_organization_id(db, user_id)
 
     integration.status = "Revoked"
     integration.updated_at = datetime.utcnow()
@@ -104,10 +182,26 @@ def revoke_integration(db: Session, website_id: int):
     db.commit()
     db.refresh(integration)
 
+    if user_id is not None and organization_id is not None:
+        create_audit_log(
+            db=db,
+            organization_id=organization_id,
+            user_id=user_id,
+            action="REVOKE_API_TOKEN",
+            resource_type="INTEGRATION",
+            resource_id=str(integration.id),
+            description="API integration revoked.",
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+
     return integration
 
 
-def validate_api_key(db: Session, api_key: str):
+def validate_api_key(
+    db: Session,
+    api_key: str,
+):
     key_hash = _hash(api_key)
 
     integration = (
@@ -123,5 +217,33 @@ def validate_api_key(db: Session, api_key: str):
         integration.last_used = datetime.utcnow()
         db.commit()
         db.refresh(integration)
+
+        organization_id = 1
+
+        # Find the website owner's organization if possible
+        if integration.website_id is not None:
+            from app.models.website import Website
+            website = (
+                db.query(Website)
+                .filter(Website.id == integration.website_id)
+                .first()
+            )
+            if website is not None:
+                org_member = (
+                    db.query(OrganizationMember)
+                    .first()
+                )
+                if org_member:
+                    organization_id = org_member.organization_id
+
+        create_audit_log(
+            db=db,
+            organization_id=organization_id,
+            user_id=None,
+            action="API_KEY_USED",
+            resource_type="INTEGRATION",
+            resource_id=str(integration.id),
+            description="API key used for integration authentication.",
+        )
 
     return integration

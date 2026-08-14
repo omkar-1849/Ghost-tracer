@@ -32,6 +32,12 @@ export function StatusBadge({ status }) {
                     <XCircle size={10} /> Disabled
                 </span>
             );
+        case "Available":
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-[10px] font-semibold text-emerald-400 uppercase tracking-wider">
+                    <CheckCircle2 size={10} /> Available
+                </span>
+            );
         default:
             return null;
     }

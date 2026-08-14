@@ -6,6 +6,7 @@ from typing import Dict, Any, List
 
 from app.database.database import SessionLocal
 from app.models.scan import Scan
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 from app.services.scanners.base_scanner import BaseScanner
 from app.utils.scanner_utils import (
     extract_host_port,
@@ -87,12 +88,34 @@ class SSLScanner(BaseScanner):
                     scan.error = f"Connection failed: {str(e)}"
                     scan.completed_at = ist_now()
                     db.commit()
+
+                    org_id = resolve_audit_organization_id(db)
+                    create_audit_log(
+                        db=db,
+                        organization_id=org_id if org_id is not None else 1,
+                        user_id=None,
+                        action="SCAN_FAILED",
+                        resource_type="SCAN",
+                        resource_id=str(scan.id),
+                        description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
+                    )
                     return
             except (socket.timeout, socket.gaierror, ssl.SSLError, ConnectionRefusedError, OSError) as e:
                 scan.status = "Failed"
                 scan.error = f"Connection failed: {str(e)}"
                 scan.completed_at = ist_now()
                 db.commit()
+
+                org_id = resolve_audit_organization_id(db)
+                create_audit_log(
+                    db=db,
+                    organization_id=org_id if org_id is not None else 1,
+                    user_id=None,
+                    action="SCAN_FAILED",
+                    resource_type="SCAN",
+                    resource_id=str(scan.id),
+                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
+                )
                 return
 
             raw_data = {
@@ -128,12 +151,34 @@ class SSLScanner(BaseScanner):
             scan.completed_at = ist_now()
             db.commit()
 
+            org_id = resolve_audit_organization_id(db)
+            create_audit_log(
+                db=db,
+                organization_id=org_id if org_id is not None else 1,
+                user_id=None,
+                action="SCAN_COMPLETED",
+                resource_type="SCAN",
+                resource_id=str(scan.id),
+                description=f"Scan ({scan.engine}) on {scan.target} completed with {scan.findings} findings.",
+            )
+
         except Exception as e:
             try:
                 scan.status = "Failed"
                 scan.error = str(e)[:4000]
                 scan.completed_at = ist_now()
                 db.commit()
+
+                org_id = resolve_audit_organization_id(db)
+                create_audit_log(
+                    db=db,
+                    organization_id=org_id if org_id is not None else 1,
+                    user_id=None,
+                    action="SCAN_FAILED",
+                    resource_type="SCAN",
+                    resource_id=str(scan.id),
+                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
+                )
             except Exception:
                 pass
         finally:

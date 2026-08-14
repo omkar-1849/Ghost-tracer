@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.incident import Incident
 from datetime import datetime, timedelta
 from app.services.incident_timeline_service import create_timeline_event
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 from sqlalchemy import or_
 
 def create_incident(
@@ -16,6 +17,8 @@ def create_incident(
     source_ip: str,
     target: str,
     confidence: int,
+    user_id: int | None = None,
+    organization_id: int | None = None,
 ):
     incident = Incident(
         incident_code=incident_code,
@@ -32,6 +35,19 @@ def create_incident(
     db.add(incident)
     db.commit()
     db.refresh(incident)
+
+    if organization_id is None:
+        organization_id = resolve_audit_organization_id(db, user_id)
+
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        action="CREATE_INCIDENT",
+        resource_type="INCIDENT",
+        resource_id=str(incident.id),
+        description=f"Incident '{incident.incident_code}' created.",
+    )
 
     return incident
 
@@ -87,6 +103,8 @@ def update_incident_status(
     db: Session,
     incident_id: int,
     status: str,
+    user_id: int | None = None,
+    organization_id: int | None = None,
 ):
     incident = get_incident_by_id(db, incident_id)
 
@@ -105,6 +123,26 @@ def update_incident_status(
             incident_id=incident.id,
             event="Incident Resolved",
             description="Incident marked as resolved by analyst."
+        )
+
+        create_audit_log(
+            db=db,
+            organization_id=organization_id if organization_id else 1,
+            user_id=user_id,
+            action="CLOSE_INCIDENT",
+            resource_type="INCIDENT",
+            resource_id=str(incident.id),
+            description=f"Incident '{incident.incident_code}' closed/resolved.",
+        )
+    else:
+        create_audit_log(
+            db=db,
+            organization_id=organization_id if organization_id else 1,
+            user_id=user_id,
+            action="UPDATE_INCIDENT",
+            resource_type="INCIDENT",
+            resource_id=str(incident.id),
+            description=f"Incident '{incident.incident_code}' status changed to {status}.",
         )
 
     db.commit()

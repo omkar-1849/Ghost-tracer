@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.scan import Scan
 from app.models.website import Website
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 
 def create_scan(db: Session, website_id: int, engine: str):
@@ -39,6 +40,16 @@ def create_scan(db: Session, website_id: int, engine: str):
     db.commit()
     db.refresh(scan)
 
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db),
+        user_id=None,
+        action="SCAN_STARTED",
+        resource_type="SCAN",
+        resource_id=str(scan.id),
+        description=f"Scan started ({scan.engine}) on {scan.target}.",
+    )
+
     return scan
 
 
@@ -59,6 +70,27 @@ def update_scan_status(
 
     db.commit()
     db.refresh(scan)
+
+    if status == "Completed":
+        create_audit_log(
+            db=db,
+            organization_id=resolve_audit_organization_id(db),
+            user_id=None,
+            action="SCAN_COMPLETED",
+            resource_type="SCAN",
+            resource_id=str(scan.id),
+            description=f"Scan ({scan.engine}) on {scan.target} completed with {scan.findings} findings.",
+        )
+    elif status == "Failed":
+        create_audit_log(
+            db=db,
+            organization_id=resolve_audit_organization_id(db),
+            user_id=None,
+            action="SCAN_FAILED",
+            resource_type="SCAN",
+            resource_id=str(scan.id),
+            description=f"Scan ({scan.engine}) on {scan.target} failed.",
+        )
 
     return scan
 
@@ -85,6 +117,16 @@ def save_scan_result(
 
     db.commit()
     db.refresh(scan)
+
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db),
+        user_id=None,
+        action="SCAN_COMPLETED",
+        resource_type="SCAN",
+        resource_id=str(scan.id),
+        description=f"Scan ({scan.engine}) on {scan.target} completed with {scan.findings} findings.",
+    )
 
     return scan
 

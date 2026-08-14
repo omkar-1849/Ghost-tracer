@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 from app.models.website import Website
 from app.schemas.website_schema import WebsiteCreate, WebsiteUpdate
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 
 def generate_verification_token():
@@ -36,7 +37,7 @@ def resolve_ip(domain: str) -> str:
         return None
 
 
-def create_website(db: Session, data: WebsiteCreate) -> Website:
+def create_website(db: Session, data: WebsiteCreate, user_id: int | None = None) -> Website:
     existing = db.query(Website).filter(Website.url == data.url).first()
     if existing:
         raise HTTPException(
@@ -72,6 +73,17 @@ def create_website(db: Session, data: WebsiteCreate) -> Website:
     db.add(website)
     db.commit()
     db.refresh(website)
+
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db, user_id),
+        user_id=user_id,
+        action="CREATE_WEBSITE",
+        resource_type="WEBSITE",
+        resource_id=str(website.id),
+        description=f"Website '{website.name}' created.",
+    )
+
     return website
 
 
@@ -92,7 +104,7 @@ def get_all_websites(db: Session, skip: int = 0, limit: int = 100):
     )
 
 
-def update_website(db: Session, website_id: int, data: WebsiteUpdate) -> Website:
+def update_website(db: Session, website_id: int, data: WebsiteUpdate, user_id: int | None = None) -> Website:
     website = get_website(db, website_id)
 
     update_data = data.model_dump(exclude_unset=True)
@@ -119,13 +131,39 @@ def update_website(db: Session, website_id: int, data: WebsiteUpdate) -> Website
 
     db.commit()
     db.refresh(website)
+
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db, user_id),
+        user_id=user_id,
+        action="UPDATE_WEBSITE",
+        resource_type="WEBSITE",
+        resource_id=str(website.id),
+        description=f"Website '{website.name}' updated.",
+    )
+
     return website
 
 
-def delete_website(db: Session, website_id: int):
+def delete_website(db: Session, website_id: int, user_id: int | None = None):
     website = get_website(db, website_id)
+
+    site_id = website.id
+    site_name = website.name
+
     db.delete(website)
     db.commit()
+
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db, user_id),
+        user_id=user_id,
+        action="DELETE_WEBSITE",
+        resource_type="WEBSITE",
+        resource_id=str(site_id),
+        description=f"Website '{site_name}' deleted.",
+    )
+
     return {"message": "Website successfully deleted."}
 
 

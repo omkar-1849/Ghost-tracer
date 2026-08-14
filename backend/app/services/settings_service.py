@@ -3,6 +3,7 @@ from fastapi import HTTPException
 
 from app.models.settings import Settings
 from app.schemas.settings_schema import SettingsUpdate
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 
 def get_settings(db: Session) -> Settings:
@@ -15,15 +16,34 @@ def get_settings(db: Session) -> Settings:
     return settings
 
 
-def update_settings(db: Session, updates: SettingsUpdate) -> Settings:
+def update_settings(
+    db: Session,
+    updates: SettingsUpdate,
+    user_id: int | None = None,
+    organization_id: int | None = None,
+) -> Settings:
     settings = get_settings(db)
-    
+
     update_data = updates.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(settings, key, value)
-        
+
     db.commit()
     db.refresh(settings)
+
+    if organization_id is None:
+        organization_id = resolve_audit_organization_id(db, user_id)
+
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        action="CHANGE_SETTINGS",
+        resource_type="SETTINGS",
+        resource_id=str(settings.id),
+        description="Platform settings updated.",
+    )
+
     return settings
 
 

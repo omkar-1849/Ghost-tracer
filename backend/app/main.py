@@ -21,7 +21,6 @@ from app.models.password_reset_token import PasswordResetToken
 
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
-
 from app.models.session import Session
 
 # Routers
@@ -40,6 +39,8 @@ from app.routers.event_router import router as event_router
 from app.routers.profile_router import router as profile_router
 from app.routers.session_router import router as session_router
 from app.routers.auth_router import router as auth_router
+
+from app.routers.audit_log_router import router as audit_log_router
 
 from app.routers.organization_router import (
     router as organization_router,
@@ -90,7 +91,7 @@ app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(session_router)
 app.include_router(scan_router)
-
+app.include_router(audit_log_router)
 
 @app.get("/")
 def home():

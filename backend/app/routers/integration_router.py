@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -13,6 +13,8 @@ from app.services.integration_service import (
     regenerate_keys,
     revoke_integration,
 )
+from app.utils.security import get_current_user
+
 
 router = APIRouter(
     prefix="/websites",
@@ -26,11 +28,20 @@ router = APIRouter(
 )
 def connect_website(
     website_id: int,
+    request: Request,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
     integration, api_key, api_secret = create_integration(
-        db,
-        website_id,
+        db=db,
+        website_id=website_id,
+        user_id=current_user.id,
+        ip_address=(
+            request.client.host
+            if request.client
+            else None
+        ),
+        user_agent=request.headers.get("user-agent"),
     )
 
     if integration is None:
@@ -58,8 +69,12 @@ def connect_website(
 def get_website_integration(
     website_id: int,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-    integration = get_integration(db, website_id)
+    integration = get_integration(
+        db,
+        website_id,
+    )
 
     if not integration:
         raise HTTPException(
@@ -76,9 +91,21 @@ def get_website_integration(
 )
 def regenerate_website_key(
     website_id: int,
+    request: Request,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-    result = regenerate_keys(db, website_id)
+    result = regenerate_keys(
+        db=db,
+        website_id=website_id,
+        user_id=current_user.id,
+        ip_address=(
+            request.client.host
+            if request.client
+            else None
+        ),
+        user_agent=request.headers.get("user-agent"),
+    )
 
     if not result:
         raise HTTPException(
@@ -95,19 +122,33 @@ def regenerate_website_key(
     }
 
 
-@router.delete("/{website_id}/disconnect")
+@router.delete(
+    "/{website_id}/disconnect",
+)
 def disconnect_website(
     website_id: int,
+    request: Request,
     db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
 ):
-    integration = revoke_integration(db, website_id)
+    result = revoke_integration(
+        db=db,
+        website_id=website_id,
+        user_id=current_user.id,
+        ip_address=(
+            request.client.host
+            if request.client
+            else None
+        ),
+        user_agent=request.headers.get("user-agent"),
+    )
 
-    if not integration:
+    if result is None:
         raise HTTPException(
             status_code=404,
             detail="Integration not found.",
         )
 
     return {
-        "message": "Website disconnected successfully."
+        "message": "Website disconnected successfully.",
     }

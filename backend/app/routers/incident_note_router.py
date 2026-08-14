@@ -8,11 +8,13 @@ from app.schemas.incident_note_schema import (
 )
 from app.services import incident_note_service
 from app.services.incident_timeline_service import create_timeline_event
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 router = APIRouter(
     prefix="/incidents",
     tags=["Incident Notes"]
 )
+
 
 
 @router.post(
@@ -36,6 +38,35 @@ def add_note(
         incident_id=incident_id,
         event="Note Added",
         description=f"{payload.analyst} added an investigation note."
+    )
+
+    # Resolve organization + user from the analyst field (email or user_id)
+    from app.models.user import User
+    user_id = None
+    organization_id = 1
+
+    if payload.analyst and payload.analyst.isdigit():
+        user_id = int(payload.analyst)
+    elif payload.analyst:
+        user = (
+            db.query(User)
+            .filter(User.email == payload.analyst.lower().strip())
+            .first()
+        )
+        if user:
+            user_id = user.id
+
+    if user_id is not None:
+        organization_id = resolve_audit_organization_id(db, user_id)
+
+    create_audit_log(
+        db=db,
+        organization_id=organization_id,
+        user_id=user_id,
+        action="ADD_INCIDENT_NOTE",
+        resource_type="INCIDENT",
+        resource_id=str(incident_id),
+        description=f"Note added to incident {incident_id}.",
     )
 
     return note

@@ -131,7 +131,7 @@ export function AISection({ settings, updateSetting, query }) {
 }
 
 // 4. Security Settings
-export function SecuritySection({ settings, updateSetting, query }) {
+export function SecuritySection({ settings, updateSetting, query, onOpenAuditActivity }) {
     const isVisible = (title, desc) => matchesSearch(title, query) || matchesSearch(desc, query);
     
     return (
@@ -143,6 +143,9 @@ export function SecuritySection({ settings, updateSetting, query }) {
                 )}
                 {isVisible("Audit Logging", "Record") && (
                     <ToggleCard label="Audit Logging" description="Record all configuration changes and user actions." status="Implemented" value={settings.auditLogging} onChange={(val) => updateSetting("auditLogging", val)} />
+                )}
+                {isVisible("Audit Activity", "Review organization activity") && (
+                    <ActionCard label="Audit Activity" description="Review recent organization activity and expand individual events for their recorded context." status="Available" buttonText="View activity" onClick={onOpenAuditActivity} />
                 )}
                 {isVisible("API Token Management", "Generate") && (
                     <ActionCard label="API Token Management" description="Generate and revoke personal access tokens for external integrations." status="Coming Soon" buttonText="Manage Tokens" disabled />

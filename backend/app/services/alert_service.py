@@ -6,6 +6,7 @@ from app.models.log import Log
 
 from app.services.incident_timeline_service import create_timeline_event
 from app.services.incident_evidence_service import create_evidence
+from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 
 
 def create_alert(
@@ -78,6 +79,16 @@ def create_alert(
         filename="incident_summary.json",
         file_type="JSON",
         description="Incident metadata snapshot."
+    )
+
+    create_audit_log(
+        db=db,
+        organization_id=resolve_audit_organization_id(db),
+        user_id=None,
+        action="CREATE_INCIDENT",
+        resource_type="INCIDENT",
+        resource_id=str(incident.id),
+        description=f"Incident '{incident.incident_code}' created from alert {alert.id}.",
     )
 
     return alert
