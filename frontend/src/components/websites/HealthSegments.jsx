@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEGMENTS = [
     { id: "All", label: "All", dot: null },
-    { id: "Healthy", label: "Healthy", dot: "bg-emerald-400" },
-    { id: "Warning", label: "Warning", dot: "bg-amber-400" },
-    { id: "Critical", label: "Critical", dot: "bg-red-500" },
-    { id: "Unknown", label: "Unknown", dot: "bg-slate-500" },
+    { id: "Healthy", label: "Healthy", dot: "bg-[var(--color-success)]" },
+    { id: "Warning", label: "Warning", dot: "bg-[var(--color-warning)]" },
+    { id: "Critical", label: "Critical", dot: "bg-[var(--color-critical)]" },
+    { id: "Unknown", label: "Unknown", dot: "bg-[var(--color-info)]" },
 ];
 
 /**
@@ -44,12 +44,12 @@ export default function HealthSegments({ value, counts, onChange, className = ""
             ref={containerRef}
             role="tablist"
             aria-label="Filter by security health"
-            className={`relative inline-flex items-stretch rounded-lg border border-slate-700/70 bg-slate-900/60 p-1 ${className}`}
+            className={`relative inline-flex items-stretch rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-1 ${className}`}
         >
             {/* Shared selection surface */}
             <span
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 rounded-md bg-slate-800 border border-slate-700/60 transition-all duration-200 ease-out"
+                className="absolute top-1 bottom-1 rounded-sm bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] transition-all duration-200 ease-out"
                 style={{ left: indicator.left, width: indicator.width }}
             />
 
@@ -64,15 +64,15 @@ export default function HealthSegments({ value, counts, onChange, className = ""
                         aria-selected={active}
                         aria-label={`${seg.label} websites (${count})`}
                         onClick={() => onChange(seg.id)}
-                        className={`relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-md text-[13px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 ${
-                            active ? "text-white" : "text-slate-400 hover:text-slate-200"
+                        className={`relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-sm text-[13px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] ${
+                            active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                         }`}
                     >
                         {seg.dot && (
                             <span className={`w-1.5 h-1.5 rounded-full ${seg.dot} ${active ? "opacity-90" : "opacity-50"}`} />
                         )}
                         {seg.label}
-                        <span className={`tabular-nums text-xs ${active ? "text-slate-300" : "text-slate-500"}`}>{count}</span>
+                        <span className={`tabular-nums text-xs ${active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>{count}</span>
                     </button>
                 );
             })}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ShieldCheck, Loader2, AlertCircle, Lock, Mail } from "lucide-react";
+import { Shield, Loader2, AlertCircle, Lock, Mail } from "lucide-react";
 import { login } from "../services/authClient";
 
 export default function Login() {
@@ -29,17 +29,17 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-            <div className="w-full max-w-md">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--color-canvas)] px-4">
+            <div className="w-full max-w-sm">
                 {/* Branding */}
-                <div className="flex flex-col items-center mb-10">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_32px_rgba(168,85,247,0.35)] mb-5">
-                        <ShieldCheck size={32} className="text-white" />
+                <div className="flex flex-col items-center mb-8">
+                    <div className="w-12 h-12 rounded-lg bg-[var(--color-accent)] flex items-center justify-center mb-4">
+                        <Shield size={24} className="text-white" />
                     </div>
-                    <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent tracking-tight">
+                    <h1 className="text-xl font-semibold text-[var(--color-text-primary)] tracking-tight">
                         Sentinel AI
                     </h1>
-                    <p className="mt-1.5 text-sm text-slate-500">
+                    <p className="mt-1 text-sm text-[var(--color-text-muted)]">
                         Sign in to access the administration console
                     </p>
                 </div>
@@ -47,21 +47,21 @@ export default function Login() {
                 {/* Login card */}
                 <form
                     onSubmit={handleSubmit}
-                    className="rounded-2xl border border-slate-800/70 bg-slate-900/40 p-8 shadow-2xl shadow-black/30"
+                    className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-6 shadow-[var(--shadow-2)]"
                 >
                     {error && (
-                        <div className="mb-6 flex items-center gap-3 rounded-xl border border-red-900/50 bg-red-950/40 px-4 py-3 text-sm text-red-300">
-                            <AlertCircle size={16} className="shrink-0 text-red-400" />
+                        <div className="mb-5 flex items-center gap-2.5 rounded-md border border-[rgba(229,72,77,0.25)] bg-[rgba(229,72,77,0.08)] px-3.5 py-2.5 text-sm text-[var(--color-critical)]">
+                            <AlertCircle size={15} className="shrink-0" />
                             {error}
                         </div>
                     )}
 
-                    <label className="block mb-5">
-                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <label className="block mb-4">
+                        <span className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
                             Email address
                         </span>
                         <div className="relative">
-                            <Mail size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Mail size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                             <input
                                 type="email"
                                 required
@@ -69,17 +69,17 @@ export default function Login() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="analyst@sentinel.io"
                                 autoComplete="email"
-                                className="w-full rounded-xl border border-slate-700/80 bg-slate-950/60 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                                className="w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2 pl-9 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] transition-colors duration-150 hover:border-[var(--color-border-strong)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                             />
                         </div>
                     </label>
 
-                    <label className="block mb-8">
-                        <span className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <label className="block mb-6">
+                        <span className="block text-xs font-medium text-[var(--color-text-secondary)] mb-1.5">
                             Password
                         </span>
                         <div className="relative">
-                            <Lock size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                            <Lock size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                             <input
                                 type="password"
                                 required
@@ -87,7 +87,7 @@ export default function Login() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••••••"
                                 autoComplete="current-password"
-                                className="w-full rounded-xl border border-slate-700/80 bg-slate-950/60 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 transition-all duration-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                                className="w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2 pl-9 pr-3 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] transition-colors duration-150 hover:border-[var(--color-border-strong)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
                             />
                         </div>
                     </label>
@@ -95,14 +95,14 @@ export default function Login() {
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 py-3 text-sm font-bold text-white transition-all duration-200 hover:from-indigo-500 hover:via-purple-500 hover:to-fuchsia-500 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(168,85,247,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full rounded-md bg-[var(--color-accent)] py-2.5 text-sm font-medium text-white transition-colors duration-150 hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        {isLoading && <Loader2 size={16} className="animate-spin" />}
+                        {isLoading && <Loader2 size={15} className="animate-spin" />}
                         {isLoading ? "Authenticating…" : "Sign in"}
                     </button>
                 </form>
 
-                <p className="mt-6 text-center text-xs text-slate-600">
+                <p className="mt-5 text-center text-xs text-[var(--color-text-disabled)]">
                     Sentinel AI · Enterprise Security Platform
                 </p>
             </div>

@@ -235,7 +235,7 @@ export default function WebsiteLayout() {
 
             {/* Non-blocking progress pill (bulk ops) */}
             {isBusy && (
-                <div className="absolute top-4 right-8 z-[90] flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-900/95 border border-emerald-500/30 text-sm font-semibold text-emerald-300 shadow-lg shadow-black/30 animate-fade-in-down">
+                <div className="absolute top-4 right-8 z-[90] flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-success)] text-sm font-semibold text-[var(--color-success)] shadow-[var(--shadow-2)] animate-fade-in-down">
                     <Loader2 size={15} className="animate-spin" />
                     Updating telemetry…
                 </div>
@@ -244,13 +244,13 @@ export default function WebsiteLayout() {
             <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar">
                 {/* Header */}
                 <div className="mb-8 mt-2 animate-fade-in-up">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 mb-1.5">
-                        <span className="flex items-center gap-1.5"><Activity size={12} className="text-emerald-400" /> Asset Inventory</span>
-                        <span className="w-1 h-1 rounded-full bg-slate-700" />
-                        <span className="flex items-center gap-1.5"><Database size={12} className="text-slate-400" /> Websites</span>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">
+                        <span className="flex items-center gap-1.5"><Activity size={12} className="text-[var(--color-success)]" /> Asset Inventory</span>
+                        <span className="w-1 h-1 rounded-full bg-[var(--color-surface-3)]" />
+                        <span className="flex items-center gap-1.5"><Database size={12} className="text-[var(--color-text-secondary)]" /> Websites</span>
                     </div>
-                    <h1 className="text-3xl font-extrabold text-white tracking-tight">Website Management</h1>
-                    <p className="text-slate-400 mt-1.5">Manage target infrastructure, active environments, and telemetry health.</p>
+                    <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)] tracking-tight">Website Management</h1>
+                    <p className="text-[var(--color-text-secondary)] mt-1.5">Manage target infrastructure, active environments, and telemetry health.</p>
                 </div>
 
                 {/* Summary strip / Skeleton */}

@@ -8,10 +8,10 @@ import {
 import * as api from "../../services/websiteApi";
 
 const HEALTH_STYLES = {
-    Healthy: { text: "text-emerald-400", chip: "bg-emerald-500/10 border-emerald-500/30", dot: "bg-emerald-400" },
-    Warning: { text: "text-amber-400", chip: "bg-amber-500/10 border-amber-500/30", dot: "bg-amber-400" },
-    Critical: { text: "text-red-400", chip: "bg-red-500/10 border-red-500/30", dot: "bg-red-500" },
-    Unknown: { text: "text-slate-400", chip: "bg-slate-500/10 border-slate-500/30", dot: "bg-slate-500" },
+    Healthy: { text: "text-[var(--color-success)]", chip: "bg-[var(--color-success)] border-[var(--color-success)]", dot: "bg-[var(--color-success)]" },
+    Warning: { text: "text-[var(--color-warning)]", chip: "bg-[var(--color-warning)] border-[var(--color-warning)]", dot: "bg-[var(--color-warning)]" },
+    Critical: { text: "text-[var(--color-critical)]", chip: "bg-[var(--color-critical)] border-[var(--color-critical)]", dot: "bg-[var(--color-critical)]" },
+    Unknown: { text: "text-[var(--color-text-secondary)]", chip: "bg-[var(--color-text-disabled)] border-[var(--color-border-strong)]", dot: "bg-[var(--color-text-disabled)]" },
 };
 
 const TABS = [
@@ -33,13 +33,13 @@ const formatDate = (value) => value ? new Date(value).toLocaleString() : null;
 
 /* ---------- Small reusable pieces ---------- */
 
-function SectionHeading({ icon: Icon, title, subtitle, accent = "text-emerald-400" }) {
+function SectionHeading({ icon: Icon, title, subtitle, accent = "text-[var(--color-success)]" }) {
     return (
         <div className="mb-4">
             <h4 className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 ${accent}`}>
                 <Icon size={13} /> {title}
             </h4>
-            {subtitle && <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-[var(--color-text-muted)] mt-1.5 leading-relaxed">{subtitle}</p>}
         </div>
     );
 }
@@ -58,15 +58,15 @@ function MonoBlock({ value, fileName = null, showCopy = true, emptyLabel = "—"
     };
 
     return (
-        <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden transition-colors duration-150 hover:border-slate-600/70">
+        <div className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-canvas)] overflow-hidden transition-colors duration-150 hover:border-[var(--color-border-strong)]">
             {(fileName || showCopy) && (
-                <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-b border-slate-800/80 bg-slate-900/60">
-                    <span className="text-[11px] font-semibold text-slate-400 font-mono truncate">{fileName || "Verification Token"}</span>
+                <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]">
+                    <span className="text-[11px] font-semibold text-[var(--color-text-secondary)] font-mono truncate">{fileName || "Verification Token"}</span>
                     {showCopy && (
                         <button
                             onClick={copy}
                             disabled={!value}
-                            className={`inline-flex items-center gap-1 text-[11px] font-bold transition-all duration-150 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${copied ? "text-emerald-300" : "text-slate-400 hover:text-white"}`}
+                            className={`inline-flex items-center gap-1 text-[11px] font-bold transition-all duration-150 shrink-0 disabled:opacity-40 disabled:cursor-not-allowed ${copied ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"}`}
                         >
                             {copied ? <Check size={12} className="animate-pop-in" /> : <Copy size={12} />}
                             {copied ? "Copied" : "Copy"}
@@ -74,44 +74,44 @@ function MonoBlock({ value, fileName = null, showCopy = true, emptyLabel = "—"
                     )}
                 </div>
             )}
-            <div className="px-3.5 py-3 font-mono text-xs text-cyan-200/90 overflow-x-auto custom-scrollbar whitespace-nowrap">{value || emptyLabel}</div>
+            <div className="px-3.5 py-3 font-mono text-xs text-[var(--color-info)] overflow-x-auto custom-scrollbar whitespace-nowrap">{value || emptyLabel}</div>
         </div>
     );
 }
 
 function SpecRow({ label, value, mono = true }) {
     return (
-        <div className="flex items-center justify-between gap-4 px-3.5 py-2.5 border-b border-slate-800/60 last:border-b-0">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 shrink-0">{label}</span>
-            <span className={`text-xs text-slate-200 truncate ${mono ? "font-mono" : ""}`}>{value}</span>
+        <div className="flex items-center justify-between gap-4 px-3.5 py-2.5 border-b border-[var(--color-border-subtle)] last:border-b-0">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] shrink-0">{label}</span>
+            <span className={`text-xs text-[var(--color-text-primary)] truncate ${mono ? "font-mono" : ""}`}>{value}</span>
         </div>
     );
 }
 
 function InlineCode({ children }) {
-    return <code className="px-1.5 py-0.5 rounded-md bg-slate-800/80 border border-slate-700/60 font-mono text-[11px] text-cyan-300/90">{children}</code>;
+    return <code className="px-1.5 py-0.5 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] font-mono text-[11px] text-[var(--color-info)]">{children}</code>;
 }
 
-const InfoCard = ({ icon: Icon, label, value, accent = "text-slate-400", chipClass = "bg-slate-800/80" }) => (
-    <div className="bg-slate-900/70 border border-slate-800/80 p-3.5 rounded-xl flex items-center gap-3 transition-all duration-150 hover:border-slate-700 hover:bg-slate-900">
+const InfoCard = ({ icon: Icon, label, value, accent = "text-[var(--color-text-secondary)]", chipClass = "bg-[var(--color-surface-2)]" }) => (
+    <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] p-3.5 rounded-md flex items-center gap-3 transition-all duration-150 hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-1)]">
         <div className={`p-2 rounded-lg border ${chipClass} shrink-0`}>
             <Icon size={16} className={accent} />
         </div>
         <div className="min-w-0">
-            <div className="text-[10px] uppercase text-slate-500 font-bold tracking-wider">{label}</div>
-            <div className="text-sm font-semibold text-white truncate">{value}</div>
+            <div className="text-[10px] uppercase text-[var(--color-text-muted)] font-bold tracking-wider">{label}</div>
+            <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{value}</div>
         </div>
     </div>
 );
 
 const DetailRow = ({ icon: Icon, label, value, mono = false }) => (
     <div className="flex gap-3.5 py-2.5 transition-colors duration-150">
-        <div className="w-8 h-8 rounded-lg bg-slate-800/60 border border-slate-700/50 flex items-center justify-center shrink-0">
-            <Icon size={14} className="text-slate-400" />
+        <div className="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center shrink-0">
+            <Icon size={14} className="text-[var(--color-text-secondary)]" />
         </div>
         <div className="min-w-0">
-            <div className="text-xs text-slate-500">{label}</div>
-            <div className={`text-sm text-slate-200 ${mono ? "font-mono" : ""}`}>{value}</div>
+            <div className="text-xs text-[var(--color-text-muted)]">{label}</div>
+            <div className={`text-sm text-[var(--color-text-primary)] ${mono ? "font-mono" : ""}`}>{value}</div>
         </div>
     </div>
 );
@@ -122,7 +122,7 @@ function MethodInstructions({ method, token, domain }) {
     if (method === "html") {
         return (
             <div className="space-y-3 animate-fade-in-up">
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                     Create a file named <InlineCode>sentinel_verify.html</InlineCode> and place it in the root directory of your website — it must be reachable at{" "}
                     <InlineCode>/sentinel_verify.html</InlineCode>.
                 </p>
@@ -134,7 +134,7 @@ function MethodInstructions({ method, token, domain }) {
     if (method === "meta") {
         return (
             <div className="space-y-3 animate-fade-in-up">
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                     Paste this meta tag between the <InlineCode>&lt;head&gt;</InlineCode> tags of your site's homepage.
                 </p>
                 <MonoBlock
@@ -149,10 +149,10 @@ function MethodInstructions({ method, token, domain }) {
     // DNS TXT
     return (
         <div className="space-y-3 animate-fade-in-up">
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                 Create a TXT record at your DNS provider for <InlineCode>{domain || "your domain"}</InlineCode>.
             </p>
-            <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden">
+            <div className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-canvas)] overflow-hidden">
                 <SpecRow label="Type" value="TXT" />
                 <SpecRow label="Host / Name" value="@" />
                 <SpecRow label="Value" value={token} />
@@ -169,8 +169,8 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
 
     if (integration === undefined) {
         return (
-            <div className="flex items-center gap-3 p-5 rounded-2xl border border-slate-800/80 bg-slate-900/40 text-sm text-slate-400 animate-fade-in-up">
-                <Loader2 size={16} className="animate-spin text-cyan-400" />
+            <div className="flex items-center gap-3 p-5 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] text-sm text-[var(--color-text-secondary)] animate-fade-in-up">
+                <Loader2 size={16} className="animate-spin text-[var(--color-info)]" />
                 Loading integration…
             </div>
         );
@@ -178,23 +178,23 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
 
     if (!connected) {
         return (
-            <div className="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/40 p-6 text-center animate-fade-in-up">
-                <div className="mx-auto w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center mb-3">
-                    <PlugZap size={22} className="text-cyan-400" />
+            <div className="rounded-lg border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)] p-6 text-center animate-fade-in-up">
+                <div className="mx-auto w-12 h-12 rounded-lg bg-[var(--color-info)] border border-[var(--color-info)] flex items-center justify-center mb-3">
+                    <PlugZap size={22} className="text-[var(--color-info)]" />
                 </div>
-                <h4 className="text-sm font-bold text-white">No active SDK integration</h4>
-                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-[260px] mx-auto">
+                <h4 className="text-sm font-bold text-[var(--color-text-primary)]">No active SDK integration</h4>
+                <p className="text-xs text-[var(--color-text-secondary)] mt-1.5 leading-relaxed max-w-[260px] mx-auto">
                     Generate an API key + secret pair to authenticate the Sentinel SDK for this website.
                 </p>
                 {integrationError && (
-                    <p className="mt-3 text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+                    <p className="mt-3 text-xs font-semibold text-[var(--color-critical)] bg-[var(--color-critical)] border border-[var(--color-critical)] rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
                         <XCircle size={13} /> {integrationError}
                     </p>
                 )}
                 <button
                     onClick={onConnect}
                     disabled={connecting}
-                    className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-500 hover:to-sky-500 text-white rounded-xl text-sm font-bold transition-colors duration-150 border border-cyan-400/20 active:scale-[0.98] disabled:opacity-50"
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold transition-colors duration-150 border border-[var(--color-info)] active:scale-[0.98] disabled:opacity-50"
                 >
                     {connecting ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
                     {connecting ? "Connecting…" : "Connect Website"}
@@ -206,15 +206,15 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
     return (
         <div className="space-y-4 animate-fade-in-up">
             {/* Status */}
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4 flex items-start gap-3">
-                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 shrink-0">
+            <div className="rounded-lg border border-[var(--color-success)] bg-[var(--color-success)] p-4 flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-[var(--color-success)] border border-[var(--color-success)] text-[var(--color-success)] shrink-0">
                     <PlugZap size={16} />
                 </div>
                 <div className="min-w-0">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> Connected
+                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-success)]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-success)]" /> Connected
                     </span>
-                    <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-[11px] text-[var(--color-text-secondary)] mt-1 leading-relaxed">
                         The Sentinel SDK is authorized to push security events for this website.
                     </p>
                 </div>
@@ -223,20 +223,20 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
             {/* Credentials */}
             {keys && (
                 <div className="space-y-2.5">
-                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-500 pt-1">
-                        <KeyRound size={12} className="text-cyan-400" /> Credentials
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] pt-1">
+                        <KeyRound size={12} className="text-[var(--color-info)]" /> Credentials
                     </div>
                     <div className="space-y-2.5">
                         <div className="space-y-1">
-                            <span className="text-[11px] font-semibold text-slate-500 px-0.5">API Key</span>
+                            <span className="text-[11px] font-semibold text-[var(--color-text-muted)] px-0.5">API Key</span>
                             <MonoBlock value={keys.api_key} />
                         </div>
                         <div className="space-y-1">
-                            <span className="text-[11px] font-semibold text-slate-500 px-0.5">API Secret</span>
+                            <span className="text-[11px] font-semibold text-[var(--color-text-muted)] px-0.5">API Secret</span>
                             <MonoBlock value={keys.api_secret} />
                         </div>
                     </div>
-                    <p className="flex items-start gap-1.5 text-[11px] text-amber-400/80 leading-relaxed pt-0.5">
+                    <p className="flex items-start gap-1.5 text-[11px] text-[var(--color-warning)] leading-relaxed pt-0.5">
                         <Info size={12} className="shrink-0 mt-0.5" />
                         Store these credentials securely — the secret is only shown once.
                     </p>
@@ -244,7 +244,7 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
             )}
 
             {/* Meta */}
-            <div className="rounded-xl border border-slate-700/60 bg-slate-950/70 overflow-hidden">
+            <div className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-canvas)] overflow-hidden">
                 <SpecRow label="Status" value={integration.status} />
                 <SpecRow label="Created" value={formatDate(integration.created_at)} mono={false} />
                 <SpecRow label="Last used" value={formatDate(integration.last_used) || "Never"} mono={false} />
@@ -255,7 +255,7 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
                 <button
                     onClick={onRegenerate}
                     disabled={regenerating}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-200 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] border border-[var(--color-border-default)] transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                 >
                     {regenerating ? <Loader2 size={14} className="animate-spin" /> : <RotateCcw size={14} />}
                     {regenerating ? "Regenerating…" : "Regenerate Keys"}
@@ -263,7 +263,7 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
                 <button
                     onClick={onDisconnect}
                     disabled={disconnecting}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/25 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold text-[var(--color-critical)] bg-[var(--color-critical)] hover:bg-[var(--color-critical)] border border-[var(--color-critical)] transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                 >
                     {disconnecting ? <Loader2 size={14} className="animate-spin" /> : <Unplug size={14} />}
                     {disconnecting ? "Disconnecting…" : "Disconnect"}
@@ -426,31 +426,31 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
         <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label={`Details for ${website.name}`}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-backdrop-in"
+                className="absolute inset-0 bg-[var(--color-canvas)]  animate-backdrop-in"
                 onClick={onClose}
             />
 
             {/* Panel */}
-            <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-slate-950/95 backdrop-blur-2xl border-l border-slate-800/80 shadow-2xl shadow-black/60 animate-drawer-in flex flex-col">
+            <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-[var(--color-canvas)] -2xl border-l border-[var(--color-border-subtle)] shadow-[var(--shadow-3)] animate-drawer-in flex flex-col">
                 {/* Header */}
-                <div className="shrink-0 p-6 pb-5 border-b border-slate-800/80 bg-slate-900/40">
+                <div className="shrink-0 p-6 pb-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]">
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex gap-4 items-center min-w-0">
                             {/* Favicon */}
-                            <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center overflow-hidden shrink-0">
+                            <div className="w-12 h-12 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center overflow-hidden shrink-0">
                                 {website.faviconUrl ? (
                                     <img src={website.faviconUrl} alt="" className="w-6 h-6 object-contain" />
                                 ) : (
-                                    <Globe size={22} className="text-slate-400" />
+                                    <Globe size={22} className="text-[var(--color-text-secondary)]" />
                                 )}
                             </div>
                             <div className="min-w-0">
-                                <h2 className="text-lg font-bold text-white leading-tight truncate">{website.name}</h2>
+                                <h2 className="text-lg font-bold text-[var(--color-text-primary)] leading-tight truncate">{website.name}</h2>
                                 <a
                                     href={website.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-sm text-cyan-400 hover:text-cyan-300 flex items-center gap-1 mt-0.5 font-mono transition-colors duration-150"
+                                    className="text-sm text-[var(--color-info)] hover:text-[var(--color-info)] flex items-center gap-1 mt-0.5 font-mono transition-colors duration-150"
                                 >
                                     <span className="truncate">{website.domain}</span>
                                     <ExternalLink size={12} className="shrink-0" />
@@ -460,7 +460,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                         <button
                             onClick={onClose}
                             aria-label="Close details"
-                            className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-colors duration-150 active:opacity-70"
+                            className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] rounded-full border border-[var(--color-border-default)] transition-colors duration-150 active:opacity-70"
                         >
                             <X size={16} />
                         </button>
@@ -468,22 +468,22 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
 
                     {/* Status ribbon */}
                     <div className="flex flex-wrap items-center gap-2 mt-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isActive ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-slate-800/60 border-slate-700/50 text-slate-400"}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-emerald-400" : "bg-slate-500"}`} />
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isActive ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-[var(--color-success)]" : "bg-[var(--color-text-disabled)]"}`} />
                             {website.status}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-500/10 border border-blue-500/30 text-blue-300">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[var(--color-low)] border border-[var(--color-low)] text-[var(--color-low)]">
                             <Server size={11} /> {website.environment}
                         </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${health.chip} ${health.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
                             {website.health}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${website.monitoringEnabled ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-300" : "bg-slate-800/60 border-slate-700/50 text-slate-500"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${website.monitoringEnabled ? "bg-[var(--color-info)] border-[var(--color-info)] text-[var(--color-info)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}>
                             {website.monitoringEnabled ? <Eye size={11} /> : <EyeOff size={11} />}
                             {website.monitoringEnabled ? "Monitoring" : "Unmonitored"}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${site?.verified ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-slate-800/60 border-slate-700/50 text-slate-400"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${site?.verified ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
                             {site?.verified ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
                             {site?.verified ? "Verified" : "Unverified"}
                         </span>
@@ -491,7 +491,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                 </div>
 
                 {/* Tabs */}
-                <div role="tablist" aria-label="Website details" className="shrink-0 px-6 border-b border-slate-800/80 bg-slate-900/40 flex items-stretch gap-1 overflow-x-auto custom-scrollbar">
+                <div role="tablist" aria-label="Website details" className="shrink-0 px-6 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] flex items-stretch gap-1 overflow-x-auto custom-scrollbar">
                     {TABS.map(tab => {
                         const active = activeTab === tab.id;
                         return (
@@ -502,13 +502,13 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                 aria-selected={active}
                                 aria-controls={`drawer-panel-${tab.id}`}
                                 onClick={() => handleTabClick(tab.id)}
-                                className={`relative shrink-0 flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold transition-colors duration-150 outline-none focus-visible:text-white ${
-                                    active ? "text-white" : "text-slate-500 hover:text-slate-300"
+                                className={`relative shrink-0 flex items-center gap-1.5 px-3.5 py-3 text-xs font-bold transition-colors duration-150 outline-none focus-visible:text-[var(--color-text-primary)] ${
+                                    active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                                 }`}
                             >
-                                <tab.icon size={13} className={active ? "text-emerald-400" : ""} />
+                                <tab.icon size={13} className={active ? "text-[var(--color-success)]" : ""} />
                                 {tab.label}
-                                <span className={`absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`} />
+                                <span className={`absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[var(--color-accent)] transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`} />
                             </button>
                         );
                     })}
@@ -520,25 +520,25 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                     {activeTab === "overview" && (
                         <div key="overview" className="space-y-8 animate-fade-in-up">
                             <section className="space-y-3">
-                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                    <ActivitySquare size={13} className="text-emerald-400" /> Overview
+                                <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
+                                    <ActivitySquare size={13} className="text-[var(--color-success)]" /> Overview
                                 </h4>
                                 <div className="grid grid-cols-2 gap-3">
                                     <InfoCard icon={ActivitySquare} label="Status" value={website.status}
-                                        accent={isActive ? "text-emerald-400" : "text-slate-400"}
-                                        chipClass={isActive ? "bg-emerald-500/10 border-emerald-500/20" : "bg-slate-800/80 border-slate-700/50"} />
+                                        accent={isActive ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}
+                                        chipClass={isActive ? "bg-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)]"} />
                                     <InfoCard icon={HeartPulse} label="Health" value={website.health}
                                         accent={health.text} chipClass={`${health.chip} border`} />
                                     <InfoCard icon={Server} label="Environment" value={website.environment}
-                                        accent="text-blue-400" chipClass="bg-blue-500/10 border-blue-500/20" />
+                                        accent="text-[var(--color-low)]" chipClass="bg-[var(--color-low)] border-[var(--color-low)]" />
                                     <InfoCard icon={ShieldCheck} label="Security Score" value={website.securityScore ?? "N/A"}
-                                        accent="text-purple-400" chipClass="bg-purple-500/10 border-purple-500/20" />
+                                        accent="text-[var(--color-accent)]" chipClass="bg-[var(--color-accent)] border-[var(--color-accent)]" />
                                 </div>
                             </section>
 
                             <section className="space-y-1">
-                                <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2">
-                                    <Database size={13} className="text-slate-400" /> General Information
+                                <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2 border-b border-[var(--color-border-subtle)] pb-2">
+                                    <Database size={13} className="text-[var(--color-text-secondary)]" /> General Information
                                 </h4>
                                 <DetailRow icon={User} label="Owner" value={website.owner || "No owner assigned"} />
                                 <DetailRow icon={Database} label="IP Address" value={website.ipAddress || "Unresolved"} mono />
@@ -548,23 +548,23 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                     value={site?.verified ? `Verified via ${METHOD_LABELS[site?.verificationMethod] || "unknown method"}` : "Not verified"} />
                                 {website.description && (
                                     <div className="pt-2">
-                                        <div className="text-xs text-slate-500 mb-1.5">Description</div>
-                                        <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/50 border border-slate-800/60 rounded-xl p-3.5">{website.description}</p>
+                                        <div className="text-xs text-[var(--color-text-muted)] mb-1.5">Description</div>
+                                        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md p-3.5">{website.description}</p>
                                     </div>
                                 )}
                             </section>
 
                             {tags.length > 0 && (
                                 <section>
-                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800/80 pb-2 mb-3">
-                                        <Globe size={13} className="text-slate-400" /> Tags
+                                    <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2 border-b border-[var(--color-border-subtle)] pb-2 mb-3">
+                                        <Globe size={13} className="text-[var(--color-text-secondary)]" /> Tags
                                     </h4>
                                     <div className="flex flex-wrap gap-2">
                                         {tags.map((tag, idx) => (
                                             <span
                                                 key={idx}
                                                 style={{ animationDelay: `${idx * 40}ms` }}
-                                                className="px-2.5 py-1 rounded-lg bg-slate-800/80 border border-slate-700/70 text-xs font-medium text-slate-300 shadow-sm transition-colors duration-150 hover:border-emerald-500/40 hover:text-white animate-fade-in-up"
+                                                className="px-2.5 py-1 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-xs font-medium text-[var(--color-text-primary)] shadow-sm transition-colors duration-150 hover:border-[var(--color-success)] hover:text-[var(--color-text-primary)] animate-fade-in-up"
                                             >
                                                 #{tag}
                                             </span>
@@ -581,7 +581,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                             <SectionHeading
                                 icon={PlugZap}
                                 title="SDK Integration"
-                                accent="text-cyan-400"
+                                accent="text-[var(--color-info)]"
                                 subtitle="Connect the Sentinel SDK to stream security events and telemetry from this website."
                             />
                             <IntegrationTab
@@ -604,43 +604,43 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                             <SectionHeading
                                 icon={ShieldCheck}
                                 title="Website Ownership Verification"
-                                accent="text-emerald-400"
+                                accent="text-[var(--color-success)]"
                                 subtitle="Confirm you control this domain before running security scans against it."
                             />
 
                             {/* Status card */}
-                            <div className={`rounded-2xl border p-5 flex items-start gap-4 transition-colors duration-300 ${site?.verified ? "bg-emerald-500/[0.06] border-emerald-500/25" : "bg-red-500/[0.05] border-red-500/20"}`}>
-                                <div className={`p-2.5 rounded-xl shrink-0 border ${site?.verified ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" : "bg-red-500/10 text-red-400 border-red-500/25"}`}>
+                            <div className={`rounded-lg border p-5 flex items-start gap-4 transition-colors duration-300 ${site?.verified ? "bg-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-critical)] border-[var(--color-critical)]"}`}>
+                                <div className={`p-2.5 rounded-md shrink-0 border ${site?.verified ? "bg-[var(--color-success)] text-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-critical)] text-[var(--color-critical)] border-[var(--color-critical)]"}`}>
                                     {site?.verified ? <ShieldCheck size={20} /> : <ShieldAlert size={20} />}
                                 </div>
                                 <div className="min-w-0">
-                                    <h4 className={`text-sm font-bold flex items-center gap-2 ${site?.verified ? "text-emerald-300" : "text-red-300"}`}>
+                                    <h4 className={`text-sm font-bold flex items-center gap-2 ${site?.verified ? "text-[var(--color-success)]" : "text-[var(--color-critical)]"}`}>
                                         {site?.verified ? "Verified" : "Ownership not verified"}
-                                        {site?.verified && <CheckCircle2 size={14} className="text-emerald-400" />}
+                                        {site?.verified && <CheckCircle2 size={14} className="text-[var(--color-success)]" />}
                                     </h4>
-                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                                    <p className="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed">
                                         {site?.verified
                                             ? `Ownership confirmed via ${METHOD_LABELS[site?.verificationMethod] || "an unknown method"}.`
                                             : "Only verified domains can be scanned."}
                                     </p>
                                     {site?.verifiedAt && (
-                                        <p className="text-[11px] text-slate-500 mt-1.5 font-medium">Verified {formatDate(site?.verifiedAt)}</p>
+                                        <p className="text-[11px] text-[var(--color-text-muted)] mt-1.5 font-medium">Verified {formatDate(site?.verifiedAt)}</p>
                                     )}
                                 </div>
                             </div>
 
                             {/* Token */}
                             <div>
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Verification Token</h4>
+                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-2">Verification Token</h4>
                                 <MonoBlock value={token} />
-                                <p className="text-[11px] text-slate-500 mt-2 leading-relaxed">
-                                    This token is unique to <span className="text-slate-300 font-semibold">{website.domain}</span> and is checked when you verify ownership.
+                                <p className="text-[11px] text-[var(--color-text-muted)] mt-2 leading-relaxed">
+                                    This token is unique to <span className="text-[var(--color-text-primary)] font-semibold">{website.domain}</span> and is checked when you verify ownership.
                                 </p>
                             </div>
 
                             {/* Methods */}
                             <div>
-                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2.5">Verification Method</h4>
+                                <h4 className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-2.5">Verification Method</h4>
                                 <div className="grid grid-cols-3 gap-2.5" role="radiogroup" aria-label="Verification method">
                                     {VERIFICATION_METHODS.map(method => {
                                         const selected = verifyMethod === method.id;
@@ -650,15 +650,15 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                                 role="radio"
                                                 aria-checked={selected}
                                                 onClick={() => setVerifyMethod(method.id)}
-                                                className={`group flex flex-col items-start gap-2 p-3.5 rounded-xl border text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald-400/40 ${
+                                                className={`group flex flex-col items-start gap-2 p-3.5 rounded-md border text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-success)] ${
                                                     selected
-                                                        ? "bg-emerald-500/[0.07] border-emerald-500/40"
-                                                        : "bg-slate-900/60 border-slate-700/60 hover:border-slate-600 hover:bg-slate-800/50"
+                                                        ? "bg-[var(--color-success)] border-[var(--color-success)]"
+                                                        : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)]"
                                                 }`}
                                             >
-                                                <method.icon size={16} className={selected ? "text-emerald-400" : "text-slate-400 group-hover:text-slate-300 transition-colors duration-150"} />
-                                                <span className={`text-xs font-bold ${selected ? "text-white" : "text-slate-300"}`}>{method.title}</span>
-                                                <span className="text-[10px] text-slate-500 leading-snug">{method.description}</span>
+                                                <method.icon size={16} className={selected ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-150"} />
+                                                <span className={`text-xs font-bold ${selected ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]"}`}>{method.title}</span>
+                                                <span className="text-[10px] text-[var(--color-text-muted)] leading-snug">{method.description}</span>
                                             </button>
                                         );
                                     })}
@@ -675,7 +675,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                 <button
                                     onClick={handleVerify}
                                     disabled={verifying}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {verifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
                                     {verifying ? "Verifying ownership…" : "Verify Now"}
@@ -684,10 +684,10 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                 {verifyResult && (
                                     <div
                                         role="status"
-                                        className={`flex items-start gap-2.5 px-3.5 py-3 rounded-xl border text-xs font-semibold leading-relaxed animate-fade-in-up ${
+                                        className={`flex items-start gap-2.5 px-3.5 py-3 rounded-md border text-xs font-semibold leading-relaxed animate-fade-in-up ${
                                             verifyResult.success
-                                                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                                                : "bg-red-500/10 border-red-500/30 text-red-300"
+                                                ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]"
+                                                : "bg-[var(--color-critical)] border-[var(--color-critical)] text-[var(--color-critical)]"
                                         }`}
                                     >
                                         {verifyResult.success ? <CheckCircle2 size={15} className="shrink-0 mt-0.5" /> : <XCircle size={15} className="shrink-0 mt-0.5" />}
@@ -704,10 +704,10 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                             <SectionHeading
                                 icon={Terminal}
                                 title="Scan History"
-                                accent="text-slate-400"
+                                accent="text-[var(--color-text-secondary)]"
                                 subtitle="Past scans and findings for this target will appear here."
                             />
-                            <div className="relative w-full h-36 rounded-xl bg-slate-900/60 border border-slate-800/80 border-dashed flex flex-col items-center justify-center text-slate-500 hover:border-slate-700 transition-colors duration-150">
+                            <div className="relative w-full h-36 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] border-dashed flex flex-col items-center justify-center text-[var(--color-text-muted)] hover:border-[var(--color-border-default)] transition-colors duration-150">
                                 <Terminal size={24} className="mb-2 opacity-50" />
                                 <span className="text-xs font-semibold">Future Analytics Module Integration</span>
                             </div>
@@ -716,16 +716,16 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                 </div>
 
                 {/* Footer */}
-                <div className="shrink-0 p-6 border-t border-slate-800/80 bg-slate-900/40 flex gap-3">
+                <div className="shrink-0 p-6 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] flex gap-3">
                     <button
                         onClick={onClose}
-                        className="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 hover:text-white rounded-xl text-sm font-semibold transition-colors duration-150 active:opacity-70"
+                        className="px-5 py-2.5 bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] rounded-md text-sm font-semibold transition-colors duration-150 active:opacity-70"
                     >
                         Close
                     </button>
                     <button
                         onClick={() => onEdit(website)}
-                        className="flex-1 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98]"
+                        className="flex-1 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98]"
                     >
                         <Pencil size={14} />
                         Edit Website

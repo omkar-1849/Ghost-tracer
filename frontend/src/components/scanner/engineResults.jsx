@@ -13,19 +13,19 @@ import {
 
 function severityClasses(severity) {
     switch ((severity || "").toLowerCase()) {
-        case "critical": return "bg-red-500/15 text-red-400 border-red-500/30";
-        case "high": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
-        case "medium": return "bg-amber-500/15 text-amber-400 border-amber-500/30";
-        case "low": return "bg-yellow-500/15 text-yellow-300 border-yellow-500/30";
-        case "info": return "bg-sky-500/15 text-sky-300 border-sky-500/30";
-        default: return "bg-slate-500/15 text-slate-400 border-slate-500/30";
+        case "critical": return "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
+        case "high": return "bg-[rgba(237,125,28,0.10)] text-[var(--color-high)] border-[rgba(237,125,28,0.25)]";
+        case "medium": return "bg-[rgba(221,179,42,0.10)] text-[var(--color-medium)] border-[rgba(221,179,42,0.25)]";
+        case "low": return "bg-[rgba(74,157,224,0.10)] text-[var(--color-low)] border-[rgba(74,157,224,0.25)]";
+        case "info": return "bg-[rgba(61,122,240,0.10)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]";
+        default: return "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
     }
 }
 
 export function SeverityBadge({ severity }) {
     const label = severity ? String(severity).toUpperCase() : "INFO";
     return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border whitespace-nowrap ${severityClasses(severity)}`}>
+        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border whitespace-nowrap ${severityClasses(severity)}`}>
             {label}
         </span>
     );
@@ -33,7 +33,7 @@ export function SeverityBadge({ severity }) {
 
 export function SectionTitle({ children, className = "" }) {
     return (
-        <h4 className={`text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3 ${className}`}>
+        <h4 className={`text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2.5 ${className}`}>
             {children}
         </h4>
     );
@@ -41,9 +41,9 @@ export function SectionTitle({ children, className = "" }) {
 
 export function DetailRow({ label, value, mono = true }) {
     return (
-        <div className="flex items-center justify-between gap-4 py-2 border-b border-slate-800/50 last:border-0">
-            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider shrink-0">{label}</span>
-            <span className={`text-sm text-white text-right truncate ${mono ? "font-mono" : ""}`}>{value || "N/A"}</span>
+        <div className="flex items-center justify-between gap-4 py-1.5 border-b border-[var(--color-border-subtle)] last:border-0 text-xs">
+            <span className="font-medium text-[var(--color-text-muted)] uppercase tracking-wider shrink-0 text-[11px]">{label}</span>
+            <span className={`text-[var(--color-text-primary)] text-right truncate ${mono ? "font-mono" : ""}`}>{value || "N/A"}</span>
         </div>
     );
 }
@@ -53,23 +53,21 @@ export function DetailGrid({ children, className = "" }) {
 }
 
 const metricTones = {
-    purple: { chip: "from-purple-500/25 to-fuchsia-600/10", text: "text-purple-300" },
-    cyan: { chip: "from-cyan-500/25 to-blue-600/10", text: "text-cyan-300" },
-    green: { chip: "from-green-500/25 to-emerald-600/10", text: "text-green-300" },
-    amber: { chip: "from-amber-500/25 to-orange-600/10", text: "text-amber-300" },
-    yellow: { chip: "from-yellow-500/25 to-amber-600/10", text: "text-yellow-300" },
-    red: { chip: "from-red-500/25 to-rose-600/10", text: "text-red-400" },
-    blue: { chip: "from-blue-500/25 to-indigo-600/10", text: "text-blue-300" },
+    purple: { text: "text-[var(--color-accent)]" },
+    cyan: { text: "text-[var(--color-accent)]" },
+    green: { text: "text-[var(--color-success)]" },
+    amber: { text: "text-[var(--color-high)]" },
+    yellow: { text: "text-[var(--color-medium)]" },
+    red: { text: "text-[var(--color-critical)]" },
+    blue: { text: "text-[var(--color-low)]" },
 };
 
 export function MetricChip({ label, value, tone = "purple" }) {
     const theme = metricTones[tone] || metricTones.purple;
     return (
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-4">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">{label}</p>
-            <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-br border border-slate-700/50 ${theme.chip}`}>
-                <span className={`text-lg font-bold tabular-nums truncate max-w-[220px] ${theme.text}`}>{value ?? "—"}</span>
-            </div>
+        <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3">
+            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">{label}</p>
+            <span className={`text-base font-bold tabular-nums truncate max-w-[200px] block ${theme.text}`}>{value ?? "—"}</span>
         </div>
     );
 }
@@ -77,16 +75,16 @@ export function MetricChip({ label, value, tone = "purple" }) {
 export function StringList({ title, items, tone = "amber" }) {
     if (!items || items.length === 0) return null;
     const tones = {
-        red: "text-red-400 bg-red-500/10 border-red-500/20",
-        amber: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-        cyan: "text-cyan-300 bg-cyan-500/10 border-cyan-500/20",
+        red: "bg-[rgba(229,72,77,0.08)] text-[var(--color-critical)] border-[rgba(229,72,77,0.20)]",
+        amber: "bg-[rgba(237,125,28,0.08)] text-[var(--color-high)] border-[rgba(237,125,28,0.20)]",
+        cyan: "bg-[rgba(61,122,240,0.08)] text-[var(--color-accent)] border-[rgba(61,122,240,0.20)]",
     };
     return (
         <div>
             <SectionTitle>{title}</SectionTitle>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
                 {items.map((item, i) => (
-                    <span key={i} className={`px-3 py-1.5 rounded-lg border text-xs font-mono ${tones[tone] || tones.amber}`}>
+                    <span key={i} className={`px-2 py-1 rounded border text-xs font-mono ${tones[tone] || tones.amber}`}>
                         {item}
                     </span>
                 ))}
@@ -107,7 +105,7 @@ export function FindingsList({ findings }) {
     }
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {findings.map((finding, idx) => {
                 const details = finding.details || {};
                 const get = (key) => finding[key] ?? details[key];
@@ -130,25 +128,25 @@ export function FindingsList({ findings }) {
                 ].filter(Boolean);
 
                 return (
-                    <div key={idx} className="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
-                        <div className="flex items-start justify-between gap-3 mb-2">
-                            <h4 className="text-sm font-bold text-white break-words">{title}</h4>
+                    <div key={idx} className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
+                        <div className="flex items-start justify-between gap-3 mb-1.5">
+                            <h4 className="text-xs font-semibold text-[var(--color-text-primary)] break-words">{title}</h4>
                             <SeverityBadge severity={finding.severity} />
                         </div>
                         {description && (
-                            <p className="text-[13px] text-slate-400 leading-relaxed break-words">{description}</p>
+                            <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed break-words">{description}</p>
                         )}
                         {finding.solution && (
-                            <p className="mt-3 flex items-start gap-2 text-[13px] text-emerald-300 bg-emerald-950/20 border border-emerald-500/20 rounded-lg px-3 py-2">
-                                <CheckCircle2 size={14} className="shrink-0 mt-0.5" />
+                            <p className="mt-2.5 flex items-start gap-1.5 text-xs text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)] rounded p-2">
+                                <CheckCircle2 size={13} className="shrink-0 mt-0.5" />
                                 <span>{finding.solution}</span>
                             </p>
                         )}
                         {meta.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mt-3">
+                            <div className="flex flex-wrap gap-1 mt-2.5 pt-2 border-t border-[var(--color-border-subtle)]">
                                 {meta.map((m) => (
-                                    <span key={m.label} className="px-2 py-0.5 rounded-md bg-slate-800/70 border border-slate-700/60 text-[10px] font-mono text-slate-300">
-                                        {m.label}: {m.value}
+                                    <span key={m.label} className="px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[10px] font-mono text-[var(--color-text-muted)]">
+                                        <strong className="text-[var(--color-text-secondary)]">{m.label}:</strong> {m.value}
                                     </span>
                                 ))}
                             </div>
@@ -163,11 +161,11 @@ export function FindingsList({ findings }) {
 export function RecommendationsList({ recommendations }) {
     if (!recommendations || recommendations.length === 0) return null;
     return (
-        <div className="space-y-2.5">
+        <div className="space-y-2">
             {recommendations.map((rec, idx) => (
-                <div key={idx} className="flex items-start gap-3 bg-emerald-950/20 border border-emerald-500/20 rounded-xl p-4">
-                    <CheckCircle2 size={16} className="text-emerald-400 mt-0.5 shrink-0" />
-                    <p className="text-sm text-slate-300 leading-relaxed">{rec}</p>
+                <div key={idx} className="flex items-start gap-2.5 bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)] rounded-md p-3">
+                    <CheckCircle2 size={14} className="text-[var(--color-success)] mt-0.5 shrink-0" />
+                    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{rec}</p>
                 </div>
             ))}
         </div>
@@ -176,10 +174,10 @@ export function RecommendationsList({ recommendations }) {
 
 export function EmptyPanel({ icon: Icon = ShieldCheck, title = "No data", subtitle = "No results available for this scan." }) {
     return (
-        <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-            <Icon size={32} className="text-slate-600 mb-3" />
-            <p className="text-slate-300 font-medium">{title}</p>
-            <p className="text-slate-500 text-sm mt-1">{subtitle}</p>
+        <div className="flex flex-col items-center justify-center py-8 text-center bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] border-dashed">
+            <Icon size={24} className="text-[var(--color-text-disabled)] mb-2" />
+            <p className="text-xs font-medium text-[var(--color-text-secondary)]">{title}</p>
+            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">{subtitle}</p>
         </div>
     );
 }
@@ -197,15 +195,15 @@ function SQLMapResults({ report }) {
     );
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <MetricChip label="Risk" value={summary.risk || "Unknown"} tone={riskTone} />
                 <MetricChip label="DBMS" value={findings.dbms || "Unknown"} tone="cyan" />
                 <MetricChip label="WAF" value={findings.waf || "Not Detected"} tone="purple" />
                 <MetricChip label="Injectable" value={findings.injectable ? "Yes" : "No"} tone={findings.injectable ? "red" : "green"} />
             </div>
 
-            <div className="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
+            <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
                 <SectionTitle>Injection Profile</SectionTitle>
                 <DetailGrid>
                     <DetailRow label="Parameters Tested" value={findings.parameters_tested ?? "0"} />
@@ -228,21 +226,21 @@ function SQLMapResults({ report }) {
 function TimelineList({ timeline }) {
     if (!timeline || timeline.length === 0) return null;
     const levelColors = {
-        INFO: "text-cyan-400",
-        WARNING: "text-amber-400",
-        CRITICAL: "text-red-400",
-        ERROR: "text-red-400",
+        INFO: "text-[var(--color-accent)]",
+        WARNING: "text-[var(--color-high)]",
+        CRITICAL: "text-[var(--color-critical)]",
+        ERROR: "text-[var(--color-critical)]",
     };
     return (
         <div>
             <SectionTitle>Execution Timeline</SectionTitle>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
                 {timeline.map((event, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-slate-950/40 border border-slate-800/60 rounded-lg px-4 py-2.5">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider shrink-0 mt-0.5 ${levelColors[(event.level || "INFO").toUpperCase()] || "text-slate-400"}`}>
+                    <div key={i} className="flex items-start gap-2.5 bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded px-3 py-2">
+                        <span className={`text-[10px] font-bold uppercase tracking-wider shrink-0 mt-0.5 ${levelColors[(event.level || "INFO").toUpperCase()] || "text-[var(--color-text-secondary)]"}`}>
                             {event.level || "INFO"}
                         </span>
-                        <p className="text-[13px] text-slate-300 font-mono leading-relaxed">{event.message}</p>
+                        <p className="text-xs text-[var(--color-text-secondary)] font-mono leading-relaxed">{event.message}</p>
                     </div>
                 ))}
             </div>
@@ -257,8 +255,8 @@ function NmapResults({ report }) {
     const totalPorts = hosts.reduce((acc, host) => acc + (host.ports || []).length, 0);
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <MetricChip label="Hosts" value={summary.total_hosts ?? hosts.length} tone="blue" />
                 <MetricChip label="Open Ports" value={summary.total_ports ?? totalPorts} tone="cyan" />
                 <MetricChip label="Findings" value={summary.total_findings ?? findings.length} tone={findings.length ? "amber" : "green"} />
@@ -267,15 +265,15 @@ function NmapResults({ report }) {
             {hosts.length > 0 && (
                 <div>
                     <SectionTitle>Hosts &amp; Ports</SectionTitle>
-                    <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl overflow-x-auto">
-                        <table className="w-full text-left text-sm min-w-[640px]">
+                    <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md overflow-x-auto">
+                        <table className="w-full text-left text-xs min-w-[580px]">
                             <thead>
-                                <tr className="border-b border-slate-700/60 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                    <th className="py-2.5 px-4">Host Status</th>
-                                    <th className="py-2.5 px-4">Port</th>
-                                    <th className="py-2.5 px-4">Service</th>
-                                    <th className="py-2.5 px-4">Product / Version</th>
-                                    <th className="py-2.5 px-4">NSE Scripts</th>
+                                <tr className="border-b border-[var(--color-border-default)] text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
+                                    <th className="py-2 px-3">Host Status</th>
+                                    <th className="py-2 px-3">Port</th>
+                                    <th className="py-2 px-3">Service</th>
+                                    <th className="py-2 px-3">Product / Version</th>
+                                    <th className="py-2 px-3">NSE Scripts</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -283,18 +281,18 @@ function NmapResults({ report }) {
                                     const ports = host.ports || [];
                                     if (ports.length === 0) {
                                         return (
-                                            <tr key={hi} className="border-b border-slate-800/60">
-                                                <td className="py-2.5 px-4 text-slate-300" colSpan={5}>{host.status || "up"}</td>
+                                            <tr key={hi} className="border-b border-[var(--color-border-subtle)]">
+                                                <td className="py-2 px-3 text-[var(--color-text-secondary)]" colSpan={5}>{host.status || "up"}</td>
                                             </tr>
                                         );
                                     }
                                     return ports.map((port, pi) => (
-                                        <tr key={`${hi}-${pi}`} className="border-b border-slate-800/60 last:border-0">
-                                            <td className="py-2.5 px-4 text-slate-300 capitalize">{hi === 0 ? host.status || "up" : ""}</td>
-                                            <td className="py-2.5 px-4 font-mono text-cyan-300">{port.port}{port.protocol ? `/${port.protocol}` : ""}</td>
-                                            <td className="py-2.5 px-4 text-slate-200">{port.service || "—"}</td>
-                                            <td className="py-2.5 px-4 text-slate-400">{[port.product, port.version].filter(Boolean).join(" ") || "—"}</td>
-                                            <td className="py-2.5 px-4 text-slate-500 text-xs">
+                                        <tr key={`${hi}-${pi}`} className="border-b border-[var(--color-border-subtle)] last:border-0">
+                                            <td className="py-2 px-3 text-[var(--color-text-secondary)] capitalize">{hi === 0 ? host.status || "up" : ""}</td>
+                                            <td className="py-2 px-3 font-mono text-[var(--color-accent)]">{port.port}{port.protocol ? `/${port.protocol}` : ""}</td>
+                                            <td className="py-2 px-3 text-[var(--color-text-primary)]">{port.service || "—"}</td>
+                                            <td className="py-2 px-3 text-[var(--color-text-secondary)]">{[port.product, port.version].filter(Boolean).join(" ") || "—"}</td>
+                                            <td className="py-2 px-3 text-[var(--color-text-muted)] text-[11px]">
                                                 {(port.scripts || []).map((s) => s.id).join(", ") || "—"}
                                             </td>
                                         </tr>
@@ -324,8 +322,8 @@ function NucleiResults({ report }) {
     const findings = report.findings || [];
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <MetricChip label="Critical" value={breakdown.critical ?? 0} tone="red" />
                 <MetricChip label="High" value={breakdown.high ?? 0} tone="amber" />
                 <MetricChip label="Medium" value={breakdown.medium ?? 0} tone="yellow" />
@@ -350,8 +348,8 @@ function NiktoResults({ report }) {
     const findings = report.findings || [];
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <MetricChip label="Total Findings" value={report.total_findings ?? findings.length} tone="amber" />
                 <MetricChip label="Server" value={report.server_info || "Unknown"} tone="cyan" />
             </div>
@@ -373,8 +371,8 @@ function ZapResults({ report }) {
     const findings = report.findings || [];
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <MetricChip label="High" value={breakdown.high ?? 0} tone="red" />
                 <MetricChip label="Medium" value={breakdown.medium ?? 0} tone="amber" />
                 <MetricChip label="Low" value={breakdown.low ?? 0} tone="yellow" />
@@ -400,18 +398,18 @@ function SSLResults({ report }) {
     const validity = report.validity_status || "Unknown";
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="space-y-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <MetricChip label="Certificate Health" value={validity} tone={validity === "Valid" ? "green" : "red"} />
                 <MetricChip label="Days to Expiry" value={cert.days_until_expiry ?? "N/A"} tone={cert.is_expiring_soon ? "amber" : "cyan"} />
                 <MetricChip label="TLS Version" value={cipher.tls_version || "N/A"} tone="blue" />
                 <MetricChip label="Findings" value={findings.length} tone={findings.length ? "amber" : "green"} />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Lock size={14} className="text-cyan-400" />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
+                    <div className="flex items-center gap-2 mb-2.5">
+                        <Lock size={13} className="text-[var(--color-accent)]" />
                         <SectionTitle className="mb-0">Certificate</SectionTitle>
                     </div>
                     <DetailGrid>
@@ -425,9 +423,9 @@ function SSLResults({ report }) {
                     </DetailGrid>
                 </div>
 
-                <div className="bg-slate-900/50 border border-slate-800/60 rounded-xl p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                        <Server size={14} className="text-blue-400" />
+                <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
+                    <div className="flex items-center gap-2 mb-2.5">
+                        <Server size={13} className="text-[var(--color-accent)]" />
                         <SectionTitle className="mb-0">Cipher Suite</SectionTitle>
                     </div>
                     <DetailGrid>
@@ -436,17 +434,17 @@ function SSLResults({ report }) {
                         <DetailRow label="Key Bits" value={cipher.bits} />
                     </DetailGrid>
 
-                    <SectionTitle className="mt-5">Subject Alternative Names</SectionTitle>
+                    <SectionTitle className="mt-4">Subject Alternative Names</SectionTitle>
                     {cert.sans && cert.sans.length > 0 ? (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                             {cert.sans.map((san, i) => (
-                                <span key={i} className="px-2 py-1 rounded-md bg-slate-800/70 border border-slate-700/60 text-[11px] font-mono text-cyan-300">
+                                <span key={i} className="px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[10px] font-mono text-[var(--color-accent)]">
                                     {san}
                                 </span>
                             ))}
                         </div>
                     ) : (
-                        <p className="text-sm text-slate-500">No SANs reported.</p>
+                        <p className="text-xs text-[var(--color-text-muted)]">No SANs reported.</p>
                     )}
                 </div>
             </div>
@@ -461,18 +459,6 @@ function SSLResults({ report }) {
     );
 }
 
-/* ------------------------------------------------------------------ */
-/* Registry — the extension point for new scanners                    */
-/* ------------------------------------------------------------------ */
-/**
- * To add a new scanner engine (e.g. OpenVAS, Trivy, Burp, Wazuh, Nessus):
- *   1. Add backend support (VALID_ENGINES + ScannerFactory registration).
- *   2. Add an entry to SCANNER_ENGINES in ./constants (id + backend engine value).
- *   3. Add a small renderer component below that reads that engine's
- *      parsed_output shape, and register it in ENGINE_RENDERERS keyed by
- *      the frontend tab id.
- * EngineTab and the Report page pick it up automatically — no new page.
- */
 const ENGINE_RENDERERS = {
     sqlmap: SQLMapResults,
     nmap: NmapResults,
@@ -497,9 +483,6 @@ export function EngineResults({ report, engineId }) {
         );
     }
 
-    // Renderers are resolved from the ENGINE_RENDERERS registry at runtime —
-    // this is the deliberate extension point for new engines, so the component
-    // reference is intentionally dynamic rather than a static import.
     const Renderer = getEngineRenderer(engineId);
     if (!Renderer) {
         return (

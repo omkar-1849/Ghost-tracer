@@ -1,126 +1,138 @@
-import { Bug, Globe, Radar, Target } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Bug, Globe, Radar, Target, RefreshCw } from "lucide-react";
 
 /* Existing intelligence widgets (logic untouched). */
 import TopAttackingIPs from "../components/TopAttackingIPs";
 import TopTargetedURLs from "../components/TopTargetedURLs";
 import ThreatDistribution from "../components/ThreatDistribution";
 import AttackTypes from "../components/AttackTypes";
+import LiveDot from "../components/ui/LiveDot";
 
-/* Analytics workspace primitives. */
-import AnalyticsBackground from "../components/analytics/AnalyticsBackground";
-import AnalyticsHero from "../components/analytics/AnalyticsHero";
-import AnalyticsSection from "../components/analytics/AnalyticsSection";
-import AnalyticsCard from "../components/analytics/AnalyticsCard";
-import ComingSoonPanel from "../components/analytics/ComingSoonPanel";
-
-import "../components/analytics/AnalyticsPage.css";
+import { getDashboardStats } from "../services/api";
 
 function Analytics() {
+    const [stats, setStats] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+
+    useEffect(() => {
+        async function load() {
+            try {
+                const data = await getDashboardStats();
+                setStats(data);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        load();
+        const interval = setInterval(load, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    async function handleRefresh() {
+        setRefreshing(true);
+        try {
+            const data = await getDashboardStats();
+            setStats(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setRefreshing(false);
+        }
+    }
+
     return (
-        <div className="relative min-h-[calc(100vh-4rem)]">
-            {/* Ambient layered background (decoration only). */}
-            <AnalyticsBackground />
+        <div className="p-6 max-w-[1440px]">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+                        Threat Analytics
+                    </h1>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                        Attack surface analysis and threat intelligence
+                    </p>
+                </div>
 
-            <div className="relative z-10 mx-auto max-w-[1440px] px-1 pb-20 pt-2 sm:px-4 lg:px-6">
-                {/* ------------------------------------------------------ */}
-                {/* Hero — intelligence overview + controls                  */}
-                {/* ------------------------------------------------------ */}
-                <AnalyticsHero />
+                <div className="flex items-center gap-3">
+                    {/* Live badge */}
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)]">
+                        <LiveDot color="var(--color-success)" size={5} />
+                        AUTO-REFRESH
+                    </span>
 
-                {/* ------------------------------------------------------ */}
-                {/* Threat intelligence — asymmetric widget composition      */}
-                {/* ------------------------------------------------------ */}
-                <AnalyticsSection
-                    eyebrow="THREAT INTELLIGENCE"
-                    title="Attack Surface Analysis"
-                    subtitle="Live correlation of attacker origins, classified attack families, targeted assets and the overall event mix across your monitored surface."
-                    actions={
-                        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold tracking-[0.18em] text-emerald-400">
-                            <span className="relative flex h-1.5 w-1.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                            </span>
-                            AUTO-REFRESH · 5S
-                        </span>
-                    }
-                >
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        {/* Wide: source IPs */}
-                        <AnalyticsCard
-                            icon={Globe}
-                            accent="cyan"
-                            title="Top Attacking IPs"
-                            subtitle="Highest-volume source addresses"
-                            delay={120}
-                            className="lg:col-span-2"
-                        >
-                            <TopAttackingIPs />
-                        </AnalyticsCard>
+                    <button
+                        type="button"
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className="p-2 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)] transition-colors disabled:opacity-50"
+                        aria-label="Refresh"
+                    >
+                        <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
+                    </button>
+                </div>
+            </div>
 
-                        {/* Narrow: event mix */}
-                        <AnalyticsCard
-                            icon={Radar}
-                            accent="amber"
-                            title="Threat Distribution"
-                            subtitle="Event mix by classification"
-                            delay={200}
-                        >
-                            <ThreatDistribution />
-                        </AnalyticsCard>
-
-                        {/* Wide: attack families */}
-                        <AnalyticsCard
-                            icon={Bug}
-                            accent="purple"
-                            title="Attack Types"
-                            subtitle="Classified attack families by volume"
-                            delay={280}
-                            className="lg:col-span-2"
-                        >
-                            <AttackTypes />
-                        </AnalyticsCard>
-
-                        {/* Narrow: targeted assets */}
-                        <AnalyticsCard
-                            icon={Target}
-                            accent="blue"
-                            title="Top Targeted URLs"
-                            subtitle="Most frequently hit endpoints"
-                            delay={360}
-                        >
-                            <TopTargetedURLs />
-                        </AnalyticsCard>
+            {/* KPI strip */}
+            {stats && (
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
+                        <p className="text-xs text-[var(--color-text-muted)]">Detections</p>
+                        <p className="text-xl font-bold tabular-nums text-[var(--color-text-primary)] mt-0.5">
+                            {(stats.total_logs ?? 0).toLocaleString()}
+                        </p>
                     </div>
-                </AnalyticsSection>
-
-                {/* ------------------------------------------------------ */}
-                {/* Reserved space — future modules                          */}
-                {/* ------------------------------------------------------ */}
-                <AnalyticsSection
-                    eyebrow="GLOBAL SURFACE"
-                    title="Situational Awareness"
-                    subtitle="Upcoming modules that will bring geospatial attack visualization and long-window trend forensics into the same workspace."
-                >
-                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-                        <ComingSoonPanel
-                            variant="map"
-                            title="World Attack Map"
-                            subtitle="Live geospatial origin visualization"
-                            footnote="Streams attacker origins onto a real-time world projection"
-                            delay={440}
-                            className="lg:col-span-3"
-                        />
-
-                        <ComingSoonPanel
-                            variant="trends"
-                            title="Historical Trends"
-                            subtitle="Long-window detection forensics"
-                            footnote="Compares campaign volume across rolling windows"
-                            delay={520}
-                            className="lg:col-span-2"
-                        />
+                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
+                        <p className="text-xs text-[var(--color-text-muted)]">Critical Alerts</p>
+                        <p className="text-xl font-bold tabular-nums text-[var(--color-critical)] mt-0.5">
+                            {stats.critical_alerts ?? 0}
+                        </p>
                     </div>
-                </AnalyticsSection>
+                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
+                        <p className="text-xs text-[var(--color-text-muted)]">High Alerts</p>
+                        <p className="text-xl font-bold tabular-nums text-[var(--color-high)] mt-0.5">
+                            {stats.high_alerts ?? 0}
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Intelligence grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Source IPs — wide */}
+                <div className="lg:col-span-2 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Globe size={15} className="text-[var(--color-text-muted)]" />
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Top Attacking IPs</h3>
+                    </div>
+                    <TopAttackingIPs />
+                </div>
+
+                {/* Threat Distribution — narrow */}
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Radar size={15} className="text-[var(--color-text-muted)]" />
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Threat Distribution</h3>
+                    </div>
+                    <ThreatDistribution />
+                </div>
+
+                {/* Attack Types — wide */}
+                <div className="lg:col-span-2 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Bug size={15} className="text-[var(--color-text-muted)]" />
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Attack Types</h3>
+                    </div>
+                    <AttackTypes />
+                </div>
+
+                {/* Targeted URLs — narrow */}
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Target size={15} className="text-[var(--color-text-muted)]" />
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Top Targeted URLs</h3>
+                    </div>
+                    <TopTargetedURLs />
+                </div>
             </div>
         </div>
     );

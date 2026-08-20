@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Activity, RotateCw, ShieldAlert, TriangleAlert } from "lucide-react";
+import { RotateCw, ShieldAlert, TriangleAlert } from "lucide-react";
 
 import { getThreatActivity } from "../services/api";
 
@@ -40,44 +40,6 @@ const RANGES = [
   },
 ];
 
-/* Scoped animations / shimmer styles (unique prefix to avoid clashes). */
-const chartStyles = `
-@keyframes threat-card-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes threat-tooltip-in {
-  from { opacity: 0; transform: translateY(4px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes threat-ping {
-  0% { transform: scale(0.6); opacity: 0.9; }
-  70%, 100% { transform: scale(2.4); opacity: 0; }
-}
-@keyframes threat-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-.threat-halo {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: threat-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-.threat-tooltip {
-  animation: threat-tooltip-in 160ms ease-out both;
-}
-.threat-shimmer {
-  background: linear-gradient(
-    100deg,
-    rgba(51, 65, 85, 0.55) 30%,
-    rgba(100, 116, 139, 0.4) 50%,
-    rgba(51, 65, 85, 0.55) 70%
-  );
-  background-size: 200% 100%;
-  animation: threat-shimmer 1.6s linear infinite;
-}
-`;
-
 const fmtNumber = (value) =>
   Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 });
 
@@ -94,11 +56,6 @@ async function fetchThreatActivity() {
 /* Helpers                                                             */
 /* ------------------------------------------------------------------ */
 
-/**
- * Distributes the 24 hourly counts into `buckets` equal-width windows
- * (lossless — the total is preserved). This lets the same API payload
- * power the 24H / 7D / 30D views without touching the backend.
- */
 function buildSeries(hours, buckets) {
   const points = [];
   const window = 24 / buckets;
@@ -149,16 +106,15 @@ function ChartSkeleton() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex items-center gap-6 mb-6">
-        <div className="threat-shimmer h-4 w-24 rounded-md" />
-        <div className="threat-shimmer h-4 w-16 rounded-md" />
-        <div className="threat-shimmer h-4 w-16 rounded-md" />
+        <div className="h-4 w-24 rounded bg-[var(--color-surface-3)] animate-pulse" />
+        <div className="h-4 w-16 rounded bg-[var(--color-surface-3)] animate-pulse" />
+        <div className="h-4 w-16 rounded bg-[var(--color-surface-3)] animate-pulse" />
       </div>
-
-      <div className="flex items-end gap-1.5 h-64 sm:h-72 w-full overflow-hidden rounded-xl border border-slate-800/60 p-4">
+      <div className="flex items-end gap-1.5 h-64 w-full overflow-hidden rounded-md border border-[var(--color-border-subtle)] p-4">
         {Array.from({ length: 24 }).map((_, i) => (
           <div
             key={i}
-            className="threat-shimmer flex-1 rounded-t-md"
+            className="flex-1 rounded-t bg-[var(--color-surface-3)] animate-pulse"
             style={{ height: `${28 + ((i * 37) % 60)}%` }}
           />
         ))}
@@ -169,16 +125,13 @@ function ChartSkeleton() {
 
 function EmptyState() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-72 gap-3 rounded-xl border border-dashed border-slate-800 bg-slate-950/40">
-      <span className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center">
-        <ShieldAlert size={22} className="text-blue-400" />
+    <div className="flex-1 flex flex-col items-center justify-center min-h-64 gap-3 rounded-md border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)]">
+      <span className="w-10 h-10 rounded-lg bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] flex items-center justify-center">
+        <ShieldAlert size={20} className="text-[var(--color-accent)]" />
       </span>
-
-      <p className="text-slate-300 font-medium">No threat activity yet</p>
-
-      <p className="text-slate-500 text-sm text-center max-w-xs">
-        Detections will appear here in real time as they are captured by the
-        monitoring engine.
+      <p className="text-[var(--color-text-secondary)] text-sm font-medium">No threat activity yet</p>
+      <p className="text-[var(--color-text-muted)] text-xs text-center max-w-xs">
+        Detections will appear here in real time as they are captured by the monitoring engine.
       </p>
     </div>
   );
@@ -186,23 +139,18 @@ function EmptyState() {
 
 function ErrorState({ onRetry }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-72 gap-3 rounded-xl border border-dashed border-red-500/20 bg-slate-950/40">
-      <span className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/25 flex items-center justify-center">
-        <TriangleAlert size={22} className="text-red-400" />
+    <div className="flex-1 flex flex-col items-center justify-center min-h-64 gap-3 rounded-md border border-dashed border-[rgba(229,72,77,0.20)] bg-[var(--color-surface-1)]">
+      <span className="w-10 h-10 rounded-lg bg-[rgba(229,72,77,0.10)] border border-[rgba(229,72,77,0.25)] flex items-center justify-center">
+        <TriangleAlert size={20} className="text-[var(--color-critical)]" />
       </span>
-
-      <p className="text-slate-300 font-medium">Unable to load threat activity</p>
-
-      <p className="text-slate-500 text-sm">
-        The monitoring feed could not be reached.
-      </p>
-
+      <p className="text-[var(--color-text-secondary)] text-sm font-medium">Unable to load threat activity</p>
+      <p className="text-[var(--color-text-muted)] text-xs">The monitoring feed could not be reached.</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/15 border border-blue-500/30 text-blue-400 text-sm font-semibold hover:bg-blue-500/25 transition-colors"
+        className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-accent)] text-white text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
       >
-        <RotateCw size={14} />
+        <RotateCw size={13} />
         Retry
       </button>
     </div>
@@ -210,42 +158,22 @@ function ErrorState({ onRetry }) {
 }
 
 function ThreatTooltip({ active, payload, label, rangeLabel }) {
-  if (!active || !payload || payload.length === 0) {
-    return null;
-  }
+  if (!active || !payload || payload.length === 0) return null;
 
   return (
-    <div className="threat-tooltip rounded-xl border border-slate-700/70 bg-slate-900/90 backdrop-blur-xl px-4 py-3 shadow-[0_16px_40px_-16px_rgba(0,0,0,0.85)]">
-      <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+    <div className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-3)] px-3 py-2.5 shadow-[var(--shadow-2)]">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-disabled)]">
         {rangeLabel}
       </p>
-
-      <p className="text-sm font-semibold text-slate-200 mt-0.5">{label}</p>
-
-      <div className="flex items-baseline gap-2 mt-2">
-        <span className="w-2 h-2 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.9)]" />
-        <span className="text-lg font-bold text-white leading-none">
+      <p className="text-xs font-medium text-[var(--color-text-secondary)] mt-0.5">{label}</p>
+      <div className="flex items-baseline gap-2 mt-1.5">
+        <span className="w-2 h-2 rounded-full bg-[var(--color-accent)]" />
+        <span className="text-base font-bold text-[var(--color-text-primary)] leading-none tabular-nums">
           {fmtNumber(payload[0].value)}
         </span>
-        <span className="text-xs text-slate-500">threats</span>
+        <span className="text-[10px] text-[var(--color-text-muted)]">threats</span>
       </div>
     </div>
-  );
-}
-
-function renderActiveDot({ cx, cy }) {
-  return (
-    <g>
-      <circle className="threat-halo" cx={cx} cy={cy} r={5} fill="#3b82f6" />
-      <circle
-        cx={cx}
-        cy={cy}
-        r={5}
-        fill="#3b82f6"
-        stroke="#020617"
-        strokeWidth={2}
-      />
-    </g>
   );
 }
 
@@ -267,7 +195,6 @@ function ThreatChart() {
     async function poll() {
       try {
         const result = await fetchThreatActivity();
-        console.log("[ThreatChart] raw API response:", result);
         if (!cancelled) {
           setData(result);
           setError(false);
@@ -290,7 +217,6 @@ function ThreatChart() {
     };
   }, []);
 
-  /* Normalise the API payload into a full 24-hour series (0–23). */
   const hours = useMemo(() => {
     const buckets = new Array(24).fill(0);
 
@@ -303,15 +229,11 @@ function ThreatChart() {
       }
     }
 
-    console.log("[ThreatChart] transformed hours (24 buckets):", buckets);
     return buckets;
   }, [data]);
 
-  /* Bucket the hourly series for the selected range. */
   const series = useMemo(() => {
-    const points = buildSeries(hours, activeRange.buckets);
-    console.log("[ThreatChart] final series passed to AreaChart:", points);
-    return points;
+    return buildSeries(hours, activeRange.buckets);
   }, [hours, activeRange.buckets]);
 
   const hasData = series.some((point) => point.threats > 0);
@@ -343,33 +265,20 @@ function ThreatChart() {
   }
 
   return (
-    <div
-      className="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[420px] flex flex-col"
-      style={{ animation: "threat-card-in 500ms ease-out both" }}
-    >
-      <style>{chartStyles}</style>
-
+    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 min-h-[400px] flex flex-col shadow-[var(--shadow-1)]">
       {/* Header + range selector */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-semibold tracking-tight">
-              Threat Activity
-            </h2>
-
-            <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-[10px] font-bold tracking-widest text-blue-400">
-              <Activity size={11} />
-              LIVE
-            </span>
-          </div>
-
-          <p className="text-slate-400 text-sm mt-1">{activeRange.subtitle}</p>
+          <h2 className="text-sm font-semibold tracking-tight text-[var(--color-text-primary)]">
+            Threat Activity
+          </h2>
+          <p className="text-[var(--color-text-muted)] text-xs mt-0.5">{activeRange.subtitle}</p>
         </div>
 
         <div
           role="group"
           aria-label="Threat activity time range"
-          className="flex items-center gap-1 bg-slate-800/40 border border-slate-800 rounded-full p-1"
+          className="flex items-center gap-0.5 bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md p-0.5"
         >
           {RANGES.map((r) => {
             const isActive = r.key === range;
@@ -380,10 +289,10 @@ function ThreatChart() {
                 type="button"
                 onClick={() => setRange(r.key)}
                 aria-pressed={isActive}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 ${
+                className={`rounded px-3 py-1 text-xs font-medium transition-colors duration-150 ${
                   isActive
-                    ? "bg-gradient-to-r from-blue-500 to-cyan-400 text-white shadow-[0_0_14px_rgba(59,130,246,0.45)]"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[var(--color-accent)] text-white"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                 }`}
               >
                 {r.label}
@@ -402,55 +311,50 @@ function ThreatChart() {
       ) : (
         <>
           {/* Summary chips */}
-          <div className="flex items-center gap-6 text-xs text-slate-500 mb-5">
+          <div className="flex items-center gap-6 text-xs text-[var(--color-text-muted)] mb-4">
             <span>
               Total{" "}
-              <span className="text-white font-semibold text-sm">
+              <span className="text-[var(--color-text-primary)] font-semibold tabular-nums">
                 {fmtNumber(total)}
               </span>
             </span>
             <span>
               Peak{" "}
-              <span className="text-cyan-400 font-semibold text-sm">
+              <span className="text-[var(--color-accent)] font-semibold tabular-nums">
                 {fmtNumber(peak)}
               </span>
             </span>
             <span>
               Avg{" "}
-              <span className="text-slate-300 font-semibold text-sm">
+              <span className="text-[var(--color-text-secondary)] font-semibold tabular-nums">
                 {fmtNumber(avg)}
               </span>
             </span>
           </div>
 
           {/* Chart */}
-          <div className="w-full">
-            <ResponsiveContainer width="100%" height={320}>
+          <div className="w-full flex-1">
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart
                 data={series}
                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
               >
                 <defs>
                   <linearGradient id="threatFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
-                    <stop offset="55%" stopColor="#3b82f6" stopOpacity={0.12} />
-                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="threatLine" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#22d3ee" />
-                    <stop offset="100%" stopColor="#3b82f6" />
+                    <stop offset="0%" stopColor="#3d7af0" stopOpacity={0.20} />
+                    <stop offset="100%" stopColor="#3d7af0" stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke="rgba(148,163,184,0.08)"
+                  stroke="var(--color-border-subtle)"
                   vertical={false}
                 />
 
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 11, fill: "#64748b" }}
+                  tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
                   tickLine={false}
                   axisLine={false}
                   tickMargin={10}
@@ -459,10 +363,10 @@ function ThreatChart() {
                 />
 
                 <YAxis
-                  tick={{ fontSize: 11, fill: "#64748b" }}
+                  tick={{ fontSize: 11, fill: "var(--color-text-muted)" }}
                   tickLine={false}
                   axisLine={false}
-                  width={44}
+                  width={40}
                   tickFormatter={tickFormatter}
                   domain={[0, "auto"]}
                   allowDecimals={false}
@@ -473,22 +377,27 @@ function ThreatChart() {
                     <ThreatTooltip rangeLabel={`${activeRange.label} · ${activeRange.view}`} />
                   }
                   cursor={{
-                    stroke: "rgba(148,163,184,0.4)",
+                    stroke: "var(--color-border-strong)",
                     strokeWidth: 1,
-                    strokeDasharray: "5 5",
+                    strokeDasharray: "4 4",
                   }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="threats"
-                  stroke="url(#threatLine)"
-                  strokeWidth={2.5}
+                  stroke="var(--color-accent)"
+                  strokeWidth={2}
                   strokeLinecap="round"
                   fill="url(#threatFill)"
                   dot={false}
-                  activeDot={renderActiveDot}
-                  animationDuration={900}
+                  activeDot={{
+                    r: 4,
+                    fill: "var(--color-accent)",
+                    stroke: "var(--color-surface-2)",
+                    strokeWidth: 2,
+                  }}
+                  animationDuration={600}
                   animationEasing="ease-out"
                 />
               </AreaChart>

@@ -3,61 +3,49 @@ import { Link } from "react-router-dom";
 import { ArrowRight, BellRing, Globe, ShieldAlert } from "lucide-react";
 import { getRecentAlerts } from "../services/api";
 
-/* ------------------------------------------------------------------ */
-/* Helpers                                                             */
-/* ------------------------------------------------------------------ */
-
 function badgeTheme(level) {
     switch (level) {
         case "CRITICAL":
             return {
-                badge: "bg-red-500/10 border border-red-500/25 text-red-400",
-                bar: "bg-red-500",
-                text: "text-red-400",
-                dot: "bg-red-500",
+                badge: "bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25 text-[var(--color-critical)]",
+                bar: "bg-[var(--color-critical)]",
+                text: "text-[var(--color-critical)]",
+                dot: "bg-[var(--color-critical)]",
             };
         case "HIGH":
             return {
-                badge: "bg-orange-500/10 border border-orange-500/25 text-orange-400",
-                bar: "bg-orange-500",
-                text: "text-orange-400",
-                dot: "bg-orange-500",
+                badge: "bg-[var(--color-high)]/10 border border-[var(--color-high)]/25 text-[var(--color-high)]",
+                bar: "bg-[var(--color-high)]",
+                text: "text-[var(--color-high)]",
+                dot: "bg-[var(--color-high)]",
             };
         case "MEDIUM":
             return {
-                badge: "bg-yellow-500/10 border border-yellow-500/25 text-yellow-400",
-                bar: "bg-yellow-500",
-                text: "text-yellow-400",
-                dot: "bg-yellow-500",
+                badge: "bg-[var(--color-medium)]/10 border border-[var(--color-medium)]/25 text-[var(--color-medium)]",
+                bar: "bg-[var(--color-medium)]",
+                text: "text-[var(--color-medium)]",
+                dot: "bg-[var(--color-medium)]",
             };
         default:
             return {
-                badge: "bg-green-500/10 border border-green-500/25 text-green-400",
-                bar: "bg-green-500",
-                text: "text-green-400",
-                dot: "bg-green-500",
+                badge: "bg-[var(--color-success)]/10 border border-[var(--color-success)]/25 text-[var(--color-success)]",
+                bar: "bg-[var(--color-success)]",
+                text: "text-[var(--color-success)]",
+                dot: "bg-[var(--color-success)]",
             };
     }
 }
 
 function timeAgo(value) {
     if (!value) return "—";
-
     const diff = Math.max(0, Date.now() - new Date(value).getTime());
     const mins = Math.floor(diff / 60000);
-
     if (mins < 1) return "just now";
     if (mins < 60) return `${mins}m ago`;
-
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs}h ago`;
-
     return new Date(value).toLocaleDateString();
 }
-
-/* ------------------------------------------------------------------ */
-/* Component                                                           */
-/* ------------------------------------------------------------------ */
 
 function RecentAlerts() {
     const [alerts, setAlerts] = useState([]);
@@ -71,11 +59,8 @@ function RecentAlerts() {
                 console.error(error);
             }
         }
-
         loadAlerts();
-
         const interval = setInterval(loadAlerts, 5000);
-
         return () => clearInterval(interval);
     }, []);
 
@@ -84,37 +69,35 @@ function RecentAlerts() {
     ).length;
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[420px] flex flex-col">
-            {/* Header */}
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] min-h-[420px] flex flex-col">
             <div className="flex items-start justify-between gap-3 mb-5">
                 <div>
-                    <h2 className="text-xl font-semibold tracking-tight">
+                    <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
                         Recent Alerts
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <p className="text-[var(--color-text-muted)] text-sm mt-1">
                         Latest detections requiring attention
                     </p>
                 </div>
 
                 <Link
                     to="/alerts"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-slate-800/60 border border-slate-700 text-slate-300 hover:border-blue-500/40 hover:text-white hover:bg-slate-800 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
                 >
                     View All
                     <ArrowRight size={13} />
                 </Link>
             </div>
 
-            {/* Body */}
             {alerts.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-800 bg-slate-950/40">
-                    <span className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
-                        <BellRing size={22} className="text-emerald-400" />
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)]">
+                    <span className="w-12 h-12 rounded-lg bg-[var(--color-success)]/10 border border-[var(--color-success)]/25 flex items-center justify-center">
+                        <BellRing size={22} className="text-[var(--color-success)]" />
                     </span>
-                    <p className="text-slate-300 font-medium">
+                    <p className="text-[var(--color-text-primary)] font-medium">
                         No recent alerts
                     </p>
-                    <p className="text-slate-500 text-sm text-center max-w-xs">
+                    <p className="text-[var(--color-text-muted)] text-sm text-center max-w-xs">
                         Your network is quiet — new alerts will surface here
                         instantly.
                     </p>
@@ -127,21 +110,18 @@ function RecentAlerts() {
                         return (
                             <div
                                 key={alert.id}
-                                className="group relative flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-950/40 px-4 py-3.5 hover:border-slate-700 hover:bg-slate-800/40 transition-all duration-200"
+                                className="group relative flex items-start gap-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] px-4 py-3.5 hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-3)] transition-all duration-200"
                             >
-                                {/* Severity accent bar */}
                                 <span
                                     className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-full ${theme.bar}`}
                                 />
 
-                                {/* Icon */}
                                 <span
                                     className={`mt-0.5 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${theme.badge}`}
                                 >
                                     <ShieldAlert size={15} />
                                 </span>
 
-                                {/* Content */}
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
                                         <span
@@ -153,16 +133,16 @@ function RecentAlerts() {
                                             {alert.threat_level}
                                         </span>
 
-                                        <span className="text-[11px] text-slate-500 whitespace-nowrap ml-auto">
+                                        <span className="text-[11px] text-[var(--color-text-muted)] whitespace-nowrap ml-auto tabular-nums">
                                             {timeAgo(alert.created_at)}
                                         </span>
                                     </div>
 
-                                    <p className="mt-2 text-sm text-slate-200 font-medium leading-snug">
+                                    <p className="mt-2 text-sm text-[var(--color-text-primary)] font-medium leading-snug">
                                         {alert.message}
                                     </p>
 
-                                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
+                                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
                                         <Globe size={12} className="shrink-0" />
                                         <span className="font-mono">
                                             {alert.ip_address}
@@ -175,15 +155,14 @@ function RecentAlerts() {
                 </div>
             )}
 
-            {/* Footer summary */}
             {alerts.length > 0 && (
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-800/70">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-800 text-[11px] font-semibold text-slate-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--color-border-default)]">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-critical)]" />
                         {criticalCount} critical
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/60 border border-slate-800 text-[11px] font-semibold text-slate-400">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-muted)]" />
                         {alerts.length} total
                     </span>
                 </div>

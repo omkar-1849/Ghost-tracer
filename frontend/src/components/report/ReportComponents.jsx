@@ -14,13 +14,13 @@ import {
     Globe,
     Printer,
     Server,
-    Shield,
     ShieldAlert,
     ShieldCheck,
     Terminal,
     Zap,
 } from "lucide-react";
-import { formatDuration, formatDate, StatusPill } from "../scanner/shared";
+import { StatusPill } from "../scanner/shared";
+import { formatDuration, formatDate } from "../scanner/scannerUtils";
 
 // Top Navigation Bar
 export function TopBar({ scan }) {
@@ -49,45 +49,47 @@ export function TopBar({ scan }) {
     };
 
     return (
-        <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
                 <button
+                    type="button"
                     onClick={handleBack}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/50 hover:bg-slate-800 px-4 py-2 rounded-xl border border-slate-800/60"
+                    className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] px-3 py-1.5 rounded-md border border-[var(--color-border-default)]"
                 >
-                    <ArrowLeft size={16} />
+                    <ArrowLeft size={14} />
                     Back to Scanner
                 </button>
-                <div className="h-6 w-px bg-slate-800"></div>
-                <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
-                    <span onClick={handleBack} className="text-slate-400 hover:text-slate-300 cursor-pointer">Scanner</span>
-                    <ChevronRight size={14} className="text-slate-700" />
-                    <span className="text-slate-400 hover:text-slate-300 cursor-pointer">Reports</span>
-                    <ChevronRight size={14} className="text-slate-700" />
-                    <span className="text-white">Assessment #{scan?.id}</span>
+                <div className="h-4 w-px bg-[var(--color-border-default)]" />
+                <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                    <span onClick={handleBack} className="hover:text-[var(--color-text-primary)] cursor-pointer">Scanner</span>
+                    <ChevronRight size={12} className="text-[var(--color-text-disabled)]" />
+                    <span className="text-[var(--color-text-primary)] font-mono">Assessment #{scan?.id}</span>
                 </div>
             </div>
 
-            <div className="hidden md:flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2">
                 <button
+                    type="button"
                     onClick={handleExportJSON}
-                    className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors bg-slate-900/30 hover:bg-slate-800 px-4 py-2 rounded-xl border border-slate-800/60 text-sm font-medium"
+                    className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] px-3 py-1.5 rounded-md border border-[var(--color-border-default)]"
                 >
-                    <ExternalLink size={14} /> Export JSON
+                    <ExternalLink size={13} /> Export JSON
                 </button>
                 <button
+                    type="button"
                     disabled
                     title="Export to PDF is coming soon"
-                    className="flex items-center gap-2 text-slate-600 bg-slate-900/10 px-4 py-2 rounded-xl border border-slate-800/30 text-sm font-medium cursor-not-allowed"
+                    className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-disabled)] bg-[var(--color-surface-1)] px-3 py-1.5 rounded-md border border-[var(--color-border-default)] cursor-not-allowed opacity-50"
                 >
-                    <Download size={14} /> Download PDF
+                    <Download size={13} /> Download PDF
                 </button>
                 <button
+                    type="button"
                     disabled
                     title="Print report is coming soon"
-                    className="flex items-center gap-2 text-slate-600 bg-slate-900/10 px-4 py-2 rounded-xl border border-slate-800/30 text-sm font-medium cursor-not-allowed"
+                    className="flex items-center gap-1.5 text-xs font-medium text-[var(--color-text-disabled)] bg-[var(--color-surface-1)] px-3 py-1.5 rounded-md border border-[var(--color-border-default)] cursor-not-allowed opacity-50"
                 >
-                    <Printer size={14} /> Print
+                    <Printer size={13} /> Print
                 </button>
             </div>
         </div>
@@ -95,10 +97,10 @@ export function TopBar({ scan }) {
 }
 
 function riskLabelFromScore(score) {
-    if (score >= 70) return { label: "High", color: "text-red-400" };
-    if (score >= 40) return { label: "Medium", color: "text-amber-400" };
-    if (score > 0) return { label: "Low", color: "text-emerald-400" };
-    return { label: "Unknown", color: "text-slate-400" };
+    if (score >= 70) return { label: "High", color: "text-[var(--color-critical)]" };
+    if (score >= 40) return { label: "Medium", color: "text-[var(--color-high)]" };
+    if (score > 0) return { label: "Low", color: "text-[var(--color-success)]" };
+    return { label: "Unknown", color: "text-[var(--color-text-secondary)]" };
 }
 
 // 1. Assessment Hero
@@ -110,50 +112,44 @@ export function AssessmentHero({ scan, report }) {
     const duration = summary.duration || formatDuration(scan.created_at, scan.completed_at);
 
     return (
-        <div className="relative bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-3xl p-8 md:p-12 shadow-2xl shadow-black/50 overflow-hidden mb-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.04] via-transparent to-cyan-500/[0.04] pointer-events-none" />
-
-            <div className="absolute -top-24 -right-24 p-8 opacity-[0.03] pointer-events-none transform rotate-12">
-                <Shield size={400} />
-            </div>
-
-            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8 relative z-10">
-                <div className="max-w-4xl">
-                    <div className="flex items-center gap-4 mb-5">
-                        <span className="px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
-                            <Activity size={14} /> {engineName} Assessment
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-6 shadow-[var(--shadow-1)] mb-6">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
+                <div className="max-w-3xl">
+                    <div className="flex items-center gap-3 mb-3">
+                        <span className="px-2.5 py-1 rounded text-xs font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] flex items-center gap-1.5">
+                            <Activity size={13} /> {engineName} Assessment
                         </span>
                         <StatusPill status={scan.status} />
                     </div>
 
-                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 break-words leading-tight">
+                    <h1 className="text-xl md:text-2xl font-bold text-[var(--color-text-primary)] mb-2 font-mono break-words">
                         {summary.target || scan.target}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-sm text-slate-400 mt-6">
-                        <span className="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-800/50">
-                            <Clock size={16} className="text-cyan-400" />
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-[var(--color-text-muted)] mt-4">
+                        <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)]">
+                            <Clock size={13} className="text-[var(--color-text-muted)]" />
                             {duration || "—"}
                         </span>
-                        <span className="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-800/50">
-                            <Zap size={16} className="text-purple-400" />
-                            ID: #{scan.id}
+                        <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)] font-mono">
+                            <Zap size={13} className="text-[var(--color-accent)]" />
+                            Scan #{scan.id}
                         </span>
-                        <span className="flex items-center gap-2 bg-slate-950/50 px-3 py-1.5 rounded-lg border border-slate-800/50">
-                            <Globe size={16} className="text-emerald-400" />
-                            Target Scanned
+                        <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)]">
+                            <Globe size={13} className="text-[var(--color-success)]" />
+                            Target Verified
                         </span>
                     </div>
                 </div>
 
-                <div className="flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md border border-slate-800 rounded-3xl p-8 min-w-[240px] shadow-xl">
-                    <span className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-3">
+                <div className="flex flex-col items-center justify-center bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg p-5 min-w-[200px]">
+                    <span className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
                         Risk Score
                     </span>
-                    <div className={`text-5xl font-bold flex flex-col items-center gap-3 ${risk.color}`}>
-                        {isHighRisk ? <ShieldAlert size={48} className="drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" /> : <ShieldCheck size={48} className="drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]" />}
-                        <span className="drop-shadow-lg tabular-nums">{scan.risk_score ?? 0}</span>
-                        <span className="text-sm font-bold uppercase tracking-widest text-slate-400">/ 100 · {risk.label}</span>
+                    <div className={`flex flex-col items-center gap-1.5 ${risk.color}`}>
+                        {isHighRisk ? <ShieldAlert size={36} /> : <ShieldCheck size={36} />}
+                        <span className="text-3xl font-bold tabular-nums text-[var(--color-text-primary)]">{scan.risk_score ?? 0}</span>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">/ 100 · {risk.label}</span>
                     </div>
                 </div>
             </div>
@@ -170,22 +166,22 @@ export function SummaryCard({ scan, report }) {
 
     if (status === "FAILED") {
         return (
-            <div className="bg-red-950/20 border border-red-500/20 rounded-2xl p-8 shadow-lg shadow-black/20">
-                <div className="flex items-center gap-3 mb-4">
-                    <AlertTriangle size={22} className="text-red-400" />
-                    <h3 className="text-xl font-bold text-white">Scan Failed</h3>
+            <div className="bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.25)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle size={18} className="text-[var(--color-critical)]" />
+                    <h3 className="text-sm font-semibold text-[var(--color-critical)]">Scan Execution Failed</h3>
                 </div>
-                <p className="text-slate-300 leading-relaxed">
-                    The <strong className="text-white">{engineName}</strong> assessment against{" "}
-                    <strong className="text-white">{scan.target}</strong> did not complete successfully.
+                <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
+                    The <strong className="text-[var(--color-text-primary)]">{engineName}</strong> assessment against{" "}
+                    <strong className="text-[var(--color-text-primary)] font-mono">{scan.target}</strong> did not complete successfully.
                 </p>
                 {scan.error && (
-                    <p className="mt-4 text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 break-words">
+                    <div className="mt-3 text-xs text-[var(--color-critical)] bg-[var(--color-surface-1)] border border-[rgba(229,72,77,0.25)] rounded p-3 font-mono break-words">
                         {scan.error}
-                    </p>
+                    </div>
                 )}
-                <p className="text-slate-400 text-sm mt-4 italic">
-                    Review the raw console output below for the underlying error.
+                <p className="text-[11px] text-[var(--color-text-muted)] mt-3">
+                    Inspect the raw console logs below for underlying trace data.
                 </p>
             </div>
         );
@@ -194,31 +190,26 @@ export function SummaryCard({ scan, report }) {
     const duration = summary.duration || formatDuration(scan.created_at, scan.completed_at);
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 shadow-lg shadow-black/40">
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-                    <FileWarning size={20} className="text-purple-400" />
-                </span>
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+                <FileWarning size={16} className="text-[var(--color-accent)]" />
                 Executive Summary
             </h3>
-            <div className="text-slate-300 leading-relaxed text-base space-y-4 max-w-5xl">
+            <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed space-y-2 max-w-4xl">
                 <p>
-                    A comprehensive security assessment was conducted targeting <strong className="text-white">{summary.target || scan.target}</strong> using the <strong className="text-white">{engineName}</strong> engine.{" "}
+                    A comprehensive security assessment was conducted targeting <strong className="text-[var(--color-text-primary)] font-mono">{summary.target || scan.target}</strong> using the <strong className="text-[var(--color-text-primary)]">{engineName}</strong> engine.{" "}
                     {status === "COMPLETED" ? (
-                        <>The scan completed in <strong className="text-white">{duration || "an unknown duration"}</strong>.</>
+                        <>The scan completed in <strong className="text-[var(--color-text-primary)]">{duration || "an unknown duration"}</strong>.</>
                     ) : (
                         <>The scan is currently {status.toLowerCase()}.</>
                     )}
                 </p>
                 <p>
-                    The overall risk score for this target is <strong className={risk.color}>{scan.risk_score ?? 0}/100 ({risk.label})</strong> with{" "}
-                    <strong className="text-white">{scan.findings ?? 0}</strong> reported findings.
+                    The calculated risk score for this target is <strong className={risk.color}>{scan.risk_score ?? 0}/100 ({risk.label})</strong> with{" "}
+                    <strong className="text-[var(--color-text-primary)] font-bold">{scan.findings ?? 0}</strong> reported findings.
                     {risk.label === "High"
-                        ? " Immediate remediation is strongly advised for the critical vulnerabilities discovered."
-                        : " No critical vulnerabilities were discovered during this assessment."}
-                </p>
-                <p className="text-slate-400 text-sm mt-2 italic">
-                    This report contains automated findings. Analysts should verify high-severity indicators and review raw output if necessary.
+                        ? " Immediate remediation is recommended for the identified vulnerability indicators."
+                        : " No high-severity exploits were triggered during this automated scan."}
                 </p>
             </div>
         </div>
@@ -230,16 +221,14 @@ export function RiskMetric({ label, value, icon: Icon, colorClass }) {
     const displayValue = value === null || value === undefined ? "N/A" : String(value);
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 flex flex-col gap-4 shadow-lg shadow-black/20 hover:bg-slate-800/50 transition-colors">
-            <div className="flex items-center gap-3">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-lg bg-slate-950 border border-slate-800 ${colorClass}`}>
-                    <Icon size={22} />
-                </div>
-                <p className="text-sm font-bold text-slate-500 uppercase tracking-widest">{label}</p>
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-4 flex flex-col justify-between shadow-[var(--shadow-1)]">
+            <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider">{label}</span>
+                <span className={`w-7 h-7 rounded flex items-center justify-center bg-[var(--color-surface-1)] border border-[var(--color-border-default)] ${colorClass}`}>
+                    <Icon size={14} />
+                </span>
             </div>
-            <div>
-                <p className="text-2xl font-bold text-white truncate" title={displayValue}>{displayValue}</p>
-            </div>
+            <p className="text-xl font-bold text-[var(--color-text-primary)] truncate tabular-nums font-mono" title={displayValue}>{displayValue}</p>
         </div>
     );
 }
@@ -247,11 +236,11 @@ export function RiskMetric({ label, value, icon: Icon, colorClass }) {
 // 4. Severity Distribution
 const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"];
 const SEVERITY_STYLES = {
-    critical: { bar: "bg-red-500", text: "text-red-400" },
-    high: { bar: "bg-orange-500", text: "text-orange-400" },
-    medium: { bar: "bg-amber-500", text: "text-amber-400" },
-    low: { bar: "bg-yellow-500", text: "text-yellow-300" },
-    info: { bar: "bg-sky-500", text: "text-sky-300" },
+    critical: { bar: "bg-[var(--color-critical)]", text: "text-[var(--color-critical)]" },
+    high: { bar: "bg-[var(--color-high)]", text: "text-[var(--color-high)]" },
+    medium: { bar: "bg-[var(--color-medium)]", text: "text-[var(--color-medium)]" },
+    low: { bar: "bg-[var(--color-low)]", text: "text-[var(--color-low)]" },
+    info: { bar: "bg-[var(--color-accent)]", text: "text-[var(--color-accent)]" },
 };
 
 function computeSeverityBreakdown(report) {
@@ -278,38 +267,37 @@ export function SeverityDistribution({ report }) {
     const total = SEVERITY_ORDER.reduce((acc, sev) => acc + (breakdown[sev] || 0), 0);
 
     return (
-        <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-8 shadow-lg shadow-black/40">
-            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
-                    <AlertTriangle size={20} className="text-amber-400" />
-                </span>
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                <AlertTriangle size={16} className="text-[var(--color-high)]" />
                 Severity Distribution
             </h3>
 
             {total === 0 ? (
-                <div className="text-center py-8 text-slate-500">
-                    No findings to distribute — this scan is clean.
+                <div className="text-center py-6 text-xs text-[var(--color-text-muted)]">
+                    No findings recorded for this assessment.
                 </div>
             ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {SEVERITY_ORDER.map((sev) => {
                         const count = breakdown[sev] || 0;
                         const style = SEVERITY_STYLES[sev];
                         const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                         if (count === 0) return null;
+
                         return (
                             <div key={sev}>
-                                <div className="flex items-center justify-between text-sm mb-1.5">
-                                    <span className={`font-semibold uppercase tracking-wider text-xs ${style.text}`}>
+                                <div className="flex items-center justify-between text-xs mb-1">
+                                    <span className={`font-semibold uppercase tracking-wider text-[10px] ${style.text}`}>
                                         {sev}
                                     </span>
-                                    <span className="text-slate-400 tabular-nums">
-                                        {count} <span className="text-slate-600">({pct}%)</span>
+                                    <span className="text-[var(--color-text-secondary)] tabular-nums text-xs">
+                                        {count} <span className="text-[var(--color-text-muted)]">({pct}%)</span>
                                     </span>
                                 </div>
-                                <div className="h-2.5 rounded-full bg-slate-800/80 overflow-hidden">
+                                <div className="h-2 rounded-full bg-[var(--color-surface-1)] overflow-hidden border border-[var(--color-border-subtle)]">
                                     <div
-                                        className={`h-full rounded-full ${style.bar} transition-all duration-700`}
+                                        className={`h-full rounded-full ${style.bar}`}
                                         style={{ width: `${pct}%` }}
                                     />
                                 </div>
@@ -325,55 +313,50 @@ export function SeverityDistribution({ report }) {
 // 5. Metadata Panel
 export function MetadataPanel({ scan }) {
     const [expanded, setExpanded] = useState(false);
-    const status = (scan.status || "").toUpperCase();
     const duration = formatDuration(scan.created_at, scan.completed_at);
 
     return (
-        <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg overflow-hidden shadow-[var(--shadow-1)]">
             <button
+                type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between p-6 bg-slate-900/60 hover:bg-slate-800/80 transition-colors focus:outline-none"
+                className="w-full flex items-center justify-between p-4 bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] transition-colors focus:outline-none"
             >
-                <div className="flex items-center gap-3">
-                    <Server size={18} className="text-slate-400" />
-                    <h3 className="text-lg font-bold text-white">Scanner Metadata</h3>
+                <div className="flex items-center gap-2.5">
+                    <Server size={15} className="text-[var(--color-text-muted)]" />
+                    <h3 className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">Scanner Metadata</h3>
                 </div>
-                {expanded ? <ChevronDown size={20} className="text-slate-500" /> : <ChevronRight size={20} className="text-slate-500" />}
+                {expanded ? <ChevronDown size={16} className="text-[var(--color-text-muted)]" /> : <ChevronRight size={16} className="text-[var(--color-text-muted)]" />}
             </button>
 
             {expanded && (
-                <div className="p-6 border-t border-slate-800">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div className="p-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Engine</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">{scan.scanner}</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Engine</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{scan.scanner}</p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Version</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">N/A</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Version</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">1.0</p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Started</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">{formatDate(scan.created_at)}</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Started</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{formatDate(scan.created_at)}</p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Completed</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">{scan.completed_at ? formatDate(scan.completed_at) : "In Progress"}</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Completed</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{scan.completed_at ? formatDate(scan.completed_at) : "In Progress"}</p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Status</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">{scan.status || "N/A"}</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Status</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{scan.status || "N/A"}</p>
                         </div>
                         <div>
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Duration</p>
-                            <p className="text-sm text-white font-mono bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 inline-block">{duration || "N/A"}</p>
+                            <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Duration</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{duration || "N/A"}</p>
                         </div>
                     </div>
-                    {status === "FAILED" && scan.error && (
-                        <div className="mt-4 text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 break-words">
-                            {scan.error}
-                        </div>
-                    )}
                 </div>
             )}
         </div>
@@ -410,38 +393,41 @@ export function TerminalViewer({ output }) {
     }
 
     return (
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg overflow-hidden shadow-[var(--shadow-1)]">
             <button
+                type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between p-6 bg-[#0f172a] hover:bg-[#1e293b] transition-colors focus:outline-none border-b border-slate-800"
+                className="w-full flex items-center justify-between p-4 bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] transition-colors focus:outline-none"
                 aria-expanded={expanded}
             >
-                <div className="flex items-center gap-3">
-                    <Terminal size={20} className="text-cyan-400" />
-                    <span className="text-lg font-bold text-slate-200">Raw Console Output</span>
+                <div className="flex items-center gap-2.5">
+                    <Terminal size={15} className="text-[var(--color-text-muted)]" />
+                    <span className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">Raw Console Output</span>
                 </div>
-                {expanded ? <ChevronDown size={22} className="text-slate-500" /> : <ChevronRight size={22} className="text-slate-500" />}
+                {expanded ? <ChevronDown size={16} className="text-[var(--color-text-muted)]" /> : <ChevronRight size={16} className="text-[var(--color-text-muted)]" />}
             </button>
 
             {expanded && (
-                <div className="relative">
-                    <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                <div className="relative border-t border-[var(--color-border-subtle)]">
+                    <div className="absolute top-3 right-3 flex items-center gap-1.5 z-10">
                         <button
+                            type="button"
                             onClick={handleCopy}
-                            className="bg-slate-800/80 hover:bg-slate-700 backdrop-blur-md text-slate-300 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-slate-700 transition-colors shadow-lg"
+                            className="bg-[var(--color-surface-3)] hover:bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] text-[11px] font-medium px-2.5 py-1 rounded border border-[var(--color-border-default)] transition-colors"
                         >
                             {copied ? "Copied!" : "Copy"}
                         </button>
                         <button
+                            type="button"
                             onClick={handleDownload}
-                            className="bg-slate-800/80 hover:bg-slate-700 backdrop-blur-md text-slate-300 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-slate-700 transition-colors shadow-lg flex items-center gap-2"
+                            className="bg-[var(--color-surface-3)] hover:bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] text-[11px] font-medium px-2.5 py-1 rounded border border-[var(--color-border-default)] transition-colors flex items-center gap-1"
                         >
-                            <Download size={14} /> Log
+                            <Download size={12} /> Log
                         </button>
                     </div>
-                    <div className="p-6 max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent bg-[#09090b]">
-                        <pre className="font-mono text-[13px] leading-relaxed text-slate-300 whitespace-pre-wrap">
-                            {output || "No raw output available."}
+                    <div className="p-4 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border-strong)] scrollbar-track-transparent bg-[var(--color-surface-1)]">
+                        <pre className="font-mono text-xs leading-relaxed text-[var(--color-text-secondary)] whitespace-pre-wrap">
+                            {output || "No raw console output available."}
                         </pre>
                     </div>
                 </div>
@@ -468,34 +454,36 @@ export function ParsedJsonViewer({ report }) {
     }
 
     return (
-        <div className="bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/60">
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg overflow-hidden shadow-[var(--shadow-1)]">
             <button
+                type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="w-full flex items-center justify-between p-6 bg-[#0f172a] hover:bg-[#1e293b] transition-colors focus:outline-none border-b border-slate-800"
+                className="w-full flex items-center justify-between p-4 bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] transition-colors focus:outline-none"
                 aria-expanded={expanded}
             >
-                <div className="flex items-center gap-3">
-                    <Braces size={20} className="text-purple-400" />
-                    <span className="text-lg font-bold text-slate-200">Parsed JSON</span>
-                    <span className="px-2 py-0.5 rounded bg-purple-500/10 border border-purple-500/30 text-purple-300 text-[10px] font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-2.5">
+                    <Braces size={15} className="text-[var(--color-accent)]" />
+                    <span className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">Parsed JSON Document</span>
+                    <span className="px-1.5 py-0.2 rounded bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] text-[10px] font-mono">
                         Developer Mode
                     </span>
                 </div>
-                {expanded ? <ChevronDown size={22} className="text-slate-500" /> : <ChevronRight size={22} className="text-slate-500" />}
+                {expanded ? <ChevronDown size={16} className="text-[var(--color-text-muted)]" /> : <ChevronRight size={16} className="text-[var(--color-text-muted)]" />}
             </button>
 
             {expanded && (
-                <div className="relative">
-                    <div className="absolute top-4 right-4 z-10">
+                <div className="relative border-t border-[var(--color-border-subtle)]">
+                    <div className="absolute top-3 right-3 z-10">
                         <button
+                            type="button"
                             onClick={handleCopy}
-                            className="bg-slate-800/80 hover:bg-slate-700 backdrop-blur-md text-slate-300 text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-xl border border-slate-700 transition-colors shadow-lg"
+                            className="bg-[var(--color-surface-3)] hover:bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] text-[11px] font-medium px-2.5 py-1 rounded border border-[var(--color-border-default)] transition-colors"
                         >
-                            {copied ? "Copied!" : "Copy"}
+                            {copied ? "Copied!" : "Copy JSON"}
                         </button>
                     </div>
-                    <div className="p-6 max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent bg-[#09090b]">
-                        <pre className="font-mono text-[12px] leading-relaxed text-cyan-200/90 whitespace-pre-wrap">{json}</pre>
+                    <div className="p-4 max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-[var(--color-border-strong)] scrollbar-track-transparent bg-[var(--color-surface-1)]">
+                        <pre className="font-mono text-xs leading-relaxed text-[var(--color-text-secondary)] whitespace-pre-wrap">{json}</pre>
                     </div>
                 </div>
             )}

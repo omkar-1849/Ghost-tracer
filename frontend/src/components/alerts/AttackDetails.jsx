@@ -9,15 +9,7 @@ import {
     Waypoints,
 } from "lucide-react";
 
-/**
- * AttackDetails
- * -------------
- * Elegant fact grid for the selected incident: source, target, attack
- * family, MITRE reference, protocol, ports, rule and confidence.
- */
 function AttackDetails({ incident }) {
-    const theme = incident.severityTheme;
-
     const fields = [
         { icon: Globe, label: "Source", value: incident.source, mono: true },
         { icon: Target, label: "Target", value: incident.target, mono: true },
@@ -26,38 +18,30 @@ function AttackDetails({ incident }) {
         { icon: Binary, label: "Protocol", value: incident.protocol, mono: true },
         { icon: Boxes, label: "Vector", value: incident.vector },
         { icon: Radar, label: "Ports", value: `${incident.sourcePort} → ${incident.targetPort}`, mono: true },
-        { icon: Shield, label: "Rule", value: incident.ruleId, mono: true },
+        { icon: Shield, label: "Rule ID", value: incident.ruleId, mono: true },
     ];
 
     return (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {fields.map((field, index) => {
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {fields.map((field) => {
                 const Icon = field.icon;
                 return (
                     <div
                         key={field.label}
-                        className="alerts-tl-node group relative overflow-hidden rounded-xl border border-white/[0.07] bg-slate-950/30 px-4 py-3 transition-colors duration-300 hover:border-white/[0.14] hover:bg-slate-800/30"
-                        style={{ animationDelay: `${index * 40}ms` }}
+                        className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2.5 transition-colors"
                     >
-                        {/* Soft corner glow on hover */}
-                        <span
-                            className={`pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-100 ${theme.iconWrap}`}
-                        />
-
-                        <div className="relative flex items-start gap-3">
-                            <span
-                                className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-900/60 transition-all duration-300 group-hover:brightness-125 ${theme.text}`}
-                            >
-                                <Icon size={15} />
+                        <div className="flex items-start gap-2.5">
+                            <span className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-[var(--color-surface-3)] text-[var(--color-text-muted)]">
+                                <Icon size={14} />
                             </span>
 
                             <div className="min-w-0">
-                                <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500">
-                                    {field.label.toUpperCase()}
+                                <p className="text-[10px] font-semibold tracking-wider text-[var(--color-text-muted)] uppercase">
+                                    {field.label}
                                 </p>
                                 <p
-                                    className={`mt-0.5 truncate text-[14px] font-semibold text-slate-100 ${
-                                        field.mono ? "font-mono text-[13px]" : ""
+                                    className={`mt-0.5 truncate text-xs font-semibold text-[var(--color-text-primary)] ${
+                                        field.mono ? "font-mono" : ""
                                     }`}
                                 >
                                     {field.value}

@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 
 import Sidebar from "./components/Sidebar";
+import Spinner from "./components/ui/Spinner";
 import { isAuthenticated } from "./services/authClient";
 
 // Route-level code splitting — heavy charting pages load on demand
@@ -17,9 +17,9 @@ const Login = lazy(() => import("./pages/Login"));
 
 function PageLoader() {
     return (
-        <div className="h-full flex flex-col items-center justify-center gap-3 text-slate-400">
-            <Loader2 size={28} className="animate-spin text-cyan-400" />
-            <p className="text-sm font-semibold">Loading module…</p>
+        <div className="h-full flex flex-col items-center justify-center gap-3 text-[var(--color-text-muted)]">
+            <Spinner size={24} />
+            <p className="text-xs font-medium">Loading module…</p>
         </div>
     );
 }
@@ -30,9 +30,9 @@ function PageLoader() {
  */
 function AppLayout() {
     return (
-        <div className="flex bg-slate-950 text-white h-screen overflow-hidden">
+        <div className="flex bg-[var(--color-canvas)] text-[var(--color-text-primary)] h-screen overflow-hidden">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto scroll-smooth p-8">
+            <main className="flex-1 overflow-y-auto scroll-smooth">
                 <Suspense fallback={<PageLoader />}>
                     <Outlet />
                 </Suspense>

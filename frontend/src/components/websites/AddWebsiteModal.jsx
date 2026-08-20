@@ -14,13 +14,13 @@ const createEmptyForm = () => ({
 function Field({ label, icon: Icon, error, children, hint }) {
     return (
         <div className="space-y-1.5">
-            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                <span className="flex items-center gap-1.5"><Icon size={12} className="text-slate-500" />{label}</span>
-                {hint && <span className="text-slate-600 font-medium normal-case tracking-normal">{hint}</span>}
+            <label className="text-[11px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider flex items-center justify-between">
+                <span className="flex items-center gap-1.5"><Icon size={12} className="text-[var(--color-text-muted)]" />{label}</span>
+                {hint && <span className="text-[var(--color-text-disabled)] font-medium normal-case tracking-normal">{hint}</span>}
             </label>
             {children}
             {error && (
-                <p className="flex items-center gap-1 text-xs font-medium text-red-400 animate-fade-in" role="alert">
+                <p className="flex items-center gap-1 text-xs font-medium text-[var(--color-critical)] animate-fade-in" role="alert">
                     <AlertCircle size={12} />
                     {error}
                 </p>
@@ -72,29 +72,29 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
     };
 
     const inputClass = (hasError) =>
-        `w-full bg-slate-950/80 border rounded-xl py-2.5 text-sm text-white placeholder:text-slate-600 transition-all duration-200 focus:outline-none focus:ring-2 ${
+        `w-full bg-[var(--color-canvas)] border rounded-md py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] transition-all duration-200 focus:outline-none focus:ring-2 ${
             hasError
-                ? "border-red-500/60 focus:border-red-500 focus:ring-red-500/20"
-                : "border-slate-700/80 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/15"
+                ? "border-[var(--color-critical)] focus:border-[var(--color-critical)] focus:ring-[var(--color-critical)]"
+                : "border-[var(--color-border-default)] focus:border-[var(--color-success)] focus:ring-2 focus:ring-[var(--color-success)]"
         }`;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm animate-backdrop-in" onClick={() => !saving && onClose()} />
+            <div className="absolute inset-0 bg-[var(--color-canvas)]  animate-backdrop-in" onClick={() => !saving && onClose()} />
 
             {/* Panel */}
-            <div className="relative bg-slate-900 border border-slate-700/80 w-full max-w-2xl rounded-2xl shadow-2xl shadow-black overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
+            <div className="relative bg-[var(--color-surface-1)] border border-[var(--color-border-default)] w-full max-w-2xl rounded-lg shadow-[var(--shadow-3)] overflow-hidden flex flex-col max-h-[90vh] animate-scale-in">
                 {/* Header */}
-                <div className="shrink-0 p-6 pb-5 border-b border-slate-700/40 bg-slate-900/60 flex justify-between items-center">
+                <div className="shrink-0 p-6 pb-5 border-b border-[var(--color-border-default)] bg-[var(--color-surface-1)] flex justify-between items-center">
                     <div>
-                        <h3 className="text-xl font-bold text-white flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/25">
+                        <h3 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
+                            <div className="p-2 bg-[var(--color-success)] text-[var(--color-success)] rounded-lg border border-[var(--color-success)]">
                                 <Globe size={20} />
                             </div>
                             {isEdit ? "Edit Website" : "Add Website"}
                         </h3>
-                        <p className="text-sm text-slate-500 mt-1 ml-12">
+                        <p className="text-sm text-[var(--color-text-muted)] mt-1 ml-12">
                             {isEdit ? "Update the target's configuration and monitoring preferences." : "Register a new target for continuous security monitoring."}
                         </p>
                     </div>
@@ -102,7 +102,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                         onClick={onClose}
                         disabled={saving}
                         aria-label="Close dialog"
-                        className="p-2 text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 rounded-full border border-slate-700/60 transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                        className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] rounded-full border border-[var(--color-border-default)] transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                     >
                         <X size={16} />
                     </button>
@@ -113,14 +113,14 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                     <form id="website-form" onSubmit={handleSubmit} className="space-y-6" noValidate>
                         {/* Identity */}
                         <section className="space-y-5">
-                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3.5 rounded-full bg-emerald-400/80" /> Target Identity
+                            <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-1 h-3.5 rounded-full bg-[var(--color-success)]" /> Target Identity
                             </h4>
                             <div className="grid grid-cols-2 gap-5">
                                 <div className="col-span-2 md:col-span-1">
                                     <Field label="Website Name" icon={Globe} error={errors.name} hint="Required">
                                         <div className="relative">
-                                            <Globe size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                                            <Globe size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                             <input
                                                 type="text"
                                                 value={formData.name}
@@ -135,7 +135,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                                 <div className="col-span-2 md:col-span-1">
                                     <Field label="Target URL" icon={Link} error={errors.url} hint="Required">
                                         <div className="relative">
-                                            <Link size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                                            <Link size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                             <input
                                                 type="text"
                                                 value={formData.url}
@@ -152,13 +152,13 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
 
                         {/* Context */}
                         <section className="space-y-5">
-                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3.5 rounded-full bg-cyan-400/80" /> Deployment Context
+                            <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-1 h-3.5 rounded-full bg-[var(--color-info)]" /> Deployment Context
                             </h4>
                             <div className="grid grid-cols-2 gap-5">
                                 <div className="col-span-2 md:col-span-1">
                                     <Field label="Environment" icon={Server} hint="Deployment tier">
-                                        <div className="bg-slate-950/80 border border-slate-700/80 rounded-xl px-3">
+                                        <div className="bg-[var(--color-canvas)] border border-[var(--color-border-default)] rounded-md px-3">
                                             <CustomSelect
                                                 id="modal-environment"
                                                 value={formData.environment}
@@ -172,7 +172,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                                 <div className="col-span-2 md:col-span-1">
                                     <Field label="Owner / Contact" icon={User} hint="Optional">
                                         <div className="relative">
-                                            <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                                            <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                             <input
                                                 type="text"
                                                 value={formData.owner}
@@ -187,7 +187,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
 
                             <Field label="Tags" icon={Tags} hint="Comma separated">
                                 <div className="relative">
-                                    <Tags size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+                                    <Tags size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                                     <input
                                         type="text"
                                         value={formData.tags}
@@ -201,12 +201,12 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
 
                         {/* Notes */}
                         <section className="space-y-5">
-                            <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                                <span className="w-1 h-3.5 rounded-full bg-purple-400/80" /> Notes
+                            <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
+                                <span className="w-1 h-3.5 rounded-full bg-[var(--color-accent)]" /> Notes
                             </h4>
                             <Field label="Description" icon={AlignLeft} hint="Optional">
                                 <div className="relative">
-                                    <AlignLeft size={16} className="absolute left-3.5 top-4 text-slate-500" />
+                                    <AlignLeft size={16} className="absolute left-3.5 top-4 text-[var(--color-text-muted)]" />
                                     <textarea
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -217,24 +217,24 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                             </Field>
 
                             {/* Monitoring toggle */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800 relative overflow-hidden">
-                                <div className="absolute top-0 left-4 right-4 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                            <div className="flex items-center gap-4 p-4 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] relative overflow-hidden">
+                                <div className="absolute top-0 left-4 right-4 h-px bg-[var(--color-border-default)]" />
                                 <div className="flex-1">
-                                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                                        <ShieldAlert size={16} className="text-emerald-400" />
+                                    <h4 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                                        <ShieldAlert size={16} className="text-[var(--color-success)]" />
                                         Active Monitoring
                                     </h4>
-                                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">Enable background uptime and basic vulnerability polling for this target.</p>
+                                    <p className="text-xs text-[var(--color-text-secondary)] mt-1 leading-relaxed">Enable background uptime and basic vulnerability polling for this target.</p>
                                 </div>
                                 <button
                                     type="button"
                                     role="switch"
                                     aria-checked={formData.monitoringEnabled}
                                     onClick={() => setFormData({ ...formData, monitoringEnabled: !formData.monitoringEnabled })}
-                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-emerald-400/50 ${
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-success)] ${
                                         formData.monitoringEnabled
-                                            ? "bg-emerald-500"
-                                            : "bg-slate-700"
+                                            ? "bg-[var(--color-success)]"
+                                            : "bg-[var(--color-surface-3)]"
                                     }`}
                                 >
                                     <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-200 ${formData.monitoringEnabled ? "translate-x-6" : "translate-x-1"}`} />
@@ -245,11 +245,11 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                 </div>
 
                 {/* Footer */}
-                <div className="shrink-0 px-6 py-5 border-t border-slate-700/40 bg-slate-900/60 flex justify-end gap-3">
+                <div className="shrink-0 px-6 py-5 border-t border-[var(--color-border-default)] bg-[var(--color-surface-1)] flex justify-end gap-3">
                     <button
                         onClick={onClose}
                         disabled={saving}
-                        className="px-5 py-2.5 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-colors duration-150 border border-slate-700/60 active:opacity-70 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-md text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] transition-colors duration-150 border border-[var(--color-border-default)] active:opacity-70 disabled:opacity-50"
                     >
                         Discard
                     </button>
@@ -257,7 +257,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                         type="submit"
                         form="website-form"
                         disabled={saving}
-                        className="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-colors duration-150 border border-emerald-400/20 active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-md text-sm font-bold text-[var(--color-text-primary)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
                     >
                         {saving && <Loader2 size={15} className="animate-spin" />}
                         {isEdit ? (saving ? "Saving…" : "Save Changes") : (saving ? "Creating…" : "Create Website")}

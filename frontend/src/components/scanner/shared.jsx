@@ -1,154 +1,83 @@
 import { Ban, CheckCircle2, Clock, FileText, Loader2, Scan, Trash2, XCircle } from "lucide-react";
 import { ACTIVE_STATUSES } from "./constants";
-
-export function formatDate(value) {
-    if (!value) return "—";
-    return new Date(value).toLocaleString();
-}
-
-export function formatDuration(from, to) {
-    if (!from || !to) return "—";
-    const ms = new Date(to) - new Date(from);
-    if (Number.isNaN(ms) || ms < 0) return "—";
-    const seconds = Math.floor(ms / 1000);
-    if (seconds < 60) return `${seconds}s`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
-    const hours = Math.floor(minutes / 60);
-    return `${hours}h ${minutes % 60}m`;
-}
-
-export function isValidTargetUrl(value) {
-    try {
-        const url = new URL(value);
-        return url.protocol === "http:" || url.protocol === "https:";
-    } catch {
-        return false;
-    }
-}
-
-export function statusColor(status) {
-    switch ((status || "").toUpperCase()) {
-        case "COMPLETED":
-            return "bg-green-500/15 text-green-400 border-green-500/30 shadow-[0_0_12px_rgba(74,222,128,0.18)]";
-        case "RUNNING":
-            return "bg-cyan-500/15 text-cyan-300 border-cyan-500/30 shadow-[0_0_12px_rgba(34,211,238,0.25)]";
-        case "PENDING":
-        case "QUEUED":
-            return "bg-yellow-500/15 text-yellow-400 border-yellow-500/30 shadow-[0_0_12px_rgba(251,191,36,0.18)]";
-        case "FAILED":
-            return "bg-red-500/15 text-red-400 border-red-500/30 shadow-[0_0_12px_rgba(239,68,68,0.18)]";
-        case "CANCELLED":
-            return "bg-slate-500/15 text-slate-400 border-slate-500/30";
-        default:
-            return "bg-slate-500/15 text-slate-400 border-slate-500/30";
-    }
-}
+import { formatDate, formatDuration, COL_WIDTHS } from "./scannerUtils";
 
 export function StatusPill({ status }) {
     const normalized = (status || "").toUpperCase();
+
+    let style = "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
+    if (normalized === "COMPLETED") {
+        style = "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]";
+    } else if (normalized === "RUNNING") {
+        style = "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]";
+    } else if (normalized === "PENDING" || normalized === "QUEUED") {
+        style = "bg-[rgba(221,179,42,0.10)] text-[var(--color-medium)] border-[rgba(221,179,42,0.25)]";
+    } else if (normalized === "FAILED") {
+        style = "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
+    } else if (normalized === "CANCELLED") {
+        style = "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border-[var(--color-border-default)]";
+    }
+
     return (
         <span
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap ${statusColor(
-                normalized
-            )}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold border whitespace-nowrap ${style}`}
         >
-            {normalized === "PENDING" || normalized === "QUEUED" ? <Clock size={12} /> : null}
-            {normalized === "RUNNING" && <Loader2 size={12} className="animate-spin" />}
-            {normalized === "COMPLETED" && <CheckCircle2 size={12} />}
-            {normalized === "FAILED" && <XCircle size={12} />}
-            {normalized === "CANCELLED" && <Ban size={12} />}
+            {normalized === "PENDING" || normalized === "QUEUED" ? <Clock size={11} /> : null}
+            {normalized === "RUNNING" && <Loader2 size={11} className="animate-spin" />}
+            {normalized === "COMPLETED" && <CheckCircle2 size={11} />}
+            {normalized === "FAILED" && <XCircle size={11} />}
+            {normalized === "CANCELLED" && <Ban size={11} />}
             {normalized === "PENDING" ? "Queued" : normalized || "UNKNOWN"}
         </span>
     );
 }
 
-export const COL_WIDTHS = {
-    id: "w-[64px]",
-    target: "",
-    scanner: "w-[110px]",
-    status: "w-[140px]",
-    created: "w-[170px]",
-    duration: "w-[110px]",
-    risk: "w-[90px]",
-    findings: "w-[90px]",
-    action: "w-[190px]",
-};
-
-const tileThemes = {
-    purple: {
-        chip: "from-purple-500/25 to-fuchsia-600/10",
-        text: "text-purple-300",
-        glow: "shadow-[0_0_20px_rgba(168,85,247,0.35)]",
-        glowHover: "group-hover:shadow-[0_0_28px_rgba(168,85,247,0.55)]",
-        dot: "bg-purple-400",
-        dotGlow: "group-hover:shadow-[0_0_10px_rgba(168,85,247,0.9)]",
-    },
-    yellow: {
-        chip: "from-yellow-500/25 to-amber-600/10",
-        text: "text-yellow-300",
-        glow: "shadow-[0_0_20px_rgba(251,191,36,0.35)]",
-        glowHover: "group-hover:shadow-[0_0_28px_rgba(251,191,36,0.55)]",
-        dot: "bg-yellow-400",
-        dotGlow: "group-hover:shadow-[0_0_10px_rgba(251,191,36,0.9)]",
-    },
-    cyan: {
-        chip: "from-cyan-500/25 to-blue-600/10",
-        text: "text-cyan-300",
-        glow: "shadow-[0_0_20px_rgba(34,211,238,0.35)]",
-        glowHover: "group-hover:shadow-[0_0_28px_rgba(34,211,238,0.55)]",
-        dot: "bg-cyan-400",
-        dotGlow: "group-hover:shadow-[0_0_10px_rgba(34,211,238,0.9)]",
-    },
-    green: {
-        chip: "from-green-500/25 to-emerald-600/10",
-        text: "text-green-300",
-        glow: "shadow-[0_0_20px_rgba(74,222,128,0.35)]",
-        glowHover: "group-hover:shadow-[0_0_28px_rgba(74,222,128,0.55)]",
-        dot: "bg-green-400",
-        dotGlow: "group-hover:shadow-[0_0_10px_rgba(74,222,128,0.9)]",
-    },
-    red: {
-        chip: "from-red-500/25 to-rose-600/10",
-        text: "text-red-400",
-        glow: "shadow-[0_0_20px_rgba(239,68,68,0.35)]",
-        glowHover: "group-hover:shadow-[0_0_28px_rgba(239,68,68,0.55)]",
-        dot: "bg-red-500",
-        dotGlow: "group-hover:shadow-[0_0_10px_rgba(239,68,68,0.9)]",
-    },
-};
+export function EngineStatusBadge({ status }) {
+    const isReady = status === "Ready";
+    return (
+        <span
+            className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border uppercase tracking-wider ${
+                isReady
+                    ? "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]"
+                    : "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border-[var(--color-border-default)]"
+            }`}
+        >
+            {status}
+        </span>
+    );
+}
 
 export function StatTile({ label, value, icon: Icon, themeKey }) {
-    const theme = tileThemes[themeKey];
+    let iconColor = "text-[var(--color-text-muted)]";
+    if (themeKey === "purple") iconColor = "text-[var(--color-accent)]";
+    if (themeKey === "yellow") iconColor = "text-[var(--color-medium)]";
+    if (themeKey === "cyan") iconColor = "text-[var(--color-accent)]";
+    if (themeKey === "green") iconColor = "text-[var(--color-success)]";
+    if (themeKey === "red") iconColor = "text-[var(--color-critical)]";
+
     return (
-        <div className="group relative bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 border-t-2 border-t-slate-700/60 rounded-2xl p-5 shadow-lg shadow-black/40 overflow-hidden transition-all duration-250 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-16px_rgba(0,0,0,0.6)]">
-            <div className="absolute top-4 right-4 flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${theme.dot} transition-shadow duration-250 ${theme.dotGlow}`} />
-                <span className="text-[9px] font-bold tracking-widest text-slate-500">
-                    LIVE
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-3.5 shadow-[var(--shadow-1)] flex flex-col justify-between">
+            <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider truncate">
+                    {label}
+                </span>
+                <Icon size={15} className={iconColor} />
+            </div>
+
+            <div className="mt-2">
+                <span className="text-xl font-bold tracking-tight text-[var(--color-text-primary)] tabular-nums">
+                    {value}
                 </span>
             </div>
-
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br ${theme.chip} ${theme.glow} transition-all duration-250 group-hover:scale-110 ${theme.glowHover}`}>
-                <Icon size={22} className={theme.text} />
-            </div>
-
-            <p className="text-sm font-medium text-slate-400 mt-4">
-                {label}
-            </p>
-
-            <h1 className="text-3xl font-bold text-white mt-1">
-                {value}
-            </h1>
         </div>
     );
 }
 
 function riskClasses(score) {
-    if (score >= 70) return "bg-red-500/10 text-red-400 border-red-500/30";
-    if (score >= 40) return "bg-amber-500/10 text-amber-400 border-amber-500/30";
-    if (score > 0) return "bg-green-500/10 text-green-400 border-green-500/30";
-    return "bg-slate-800/60 text-slate-500 border-slate-700/60";
+    if (score >= 70) return "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
+    if (score >= 40) return "bg-[rgba(237,125,28,0.10)] text-[var(--color-high)] border-[rgba(237,125,28,0.25)]";
+    if (score > 0) return "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]";
+    return "bg-[var(--color-surface-3)] text-[var(--color-text-muted)] border-[var(--color-border-default)]";
 }
 
 export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelete, onViewReport }) {
@@ -163,99 +92,74 @@ export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelet
               : formatDuration(scan.created_at, scan.completed_at);
 
     return (
-        <tr className="group relative border-b border-slate-800/60 transition-colors duration-200 hover:bg-slate-800/25">
-            <td className={`relative py-4 pl-1 ${COL_WIDTHS.id}`}>
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-0.5 rounded-full bg-gradient-to-b from-cyan-400 to-purple-500 opacity-0 shadow-[0_0_10px_rgba(34,211,238,0.7)] transition-opacity duration-200 group-hover:opacity-100" />
-                <span className="text-slate-500 transition-colors duration-200 group-hover:text-cyan-300">
-                    #{scan.id}
-                </span>
+        <tr className="border-b border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-2)] transition-colors">
+            <td className={`py-3 pl-3 text-xs font-mono text-[var(--color-text-muted)] ${COL_WIDTHS.id}`}>
+                #{scan.id}
             </td>
-            <td className={`py-4 text-slate-100 font-medium max-w-xs truncate transition-colors duration-200 group-hover:text-white ${COL_WIDTHS.target}`} title={scan.target}>
+            <td className={`py-3 text-xs font-mono font-medium text-[var(--color-text-primary)] max-w-xs truncate ${COL_WIDTHS.target}`} title={scan.target}>
                 {scan.target}
             </td>
-            <td className={`py-4 ${COL_WIDTHS.scanner}`}>
-                <span className="flex items-center gap-2 text-slate-300 whitespace-nowrap">
-                    <Scan size={14} className="text-purple-400" />
+            <td className={`py-3 text-xs text-[var(--color-text-secondary)] whitespace-nowrap ${COL_WIDTHS.scanner}`}>
+                <span className="flex items-center gap-1.5">
+                    <Scan size={13} className="text-[var(--color-text-muted)]" />
                     {scan.scanner}
                 </span>
             </td>
-            <td className={`py-4 ${COL_WIDTHS.status}`}>
+            <td className={`py-3 ${COL_WIDTHS.status}`}>
                 <StatusPill status={scan.status} />
             </td>
-            <td className={`py-4 text-slate-400 text-[13px] whitespace-nowrap ${COL_WIDTHS.created}`}>
+            <td className={`py-3 text-xs text-[var(--color-text-muted)] whitespace-nowrap ${COL_WIDTHS.created}`}>
                 {formatDate(scan.created_at)}
             </td>
-            <td className={`py-4 text-slate-400 text-[13px] whitespace-nowrap ${COL_WIDTHS.duration}`}>
-                <span className="flex items-center gap-1.5">
-                    <Clock size={13} className="text-cyan-400/80" />
+            <td className={`py-3 text-xs text-[var(--color-text-muted)] whitespace-nowrap ${COL_WIDTHS.duration}`}>
+                <span className="flex items-center gap-1">
+                    <Clock size={12} className="text-[var(--color-text-disabled)]" />
                     {durationLabel}
                 </span>
             </td>
-            <td className={`py-4 ${COL_WIDTHS.risk}`}>
-                <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold border tabular-nums ${riskClasses(scan.risk_score)}`}>
-                    {scan.risk_score ?? "—"}
+            <td className={`py-3 ${COL_WIDTHS.risk}`}>
+                <span className={`inline-flex px-2 py-0.5 rounded text-[11px] font-semibold border tabular-nums ${riskClasses(scan.risk_score)}`}>
+                    {scan.risk_score != null ? scan.risk_score : "—"}
                 </span>
             </td>
-            <td className={`py-4 ${COL_WIDTHS.findings}`}>
-                <span className="text-slate-300 font-medium tabular-nums">
-                    {scan.findings ?? "—"}
-                </span>
+            <td className={`py-3 text-xs font-medium text-[var(--color-text-secondary)] tabular-nums ${COL_WIDTHS.findings}`}>
+                {scan.findings != null ? scan.findings : "—"}
             </td>
-            <td className={`py-4 pr-1 ${COL_WIDTHS.action}`}>
+            <td className={`py-3 pr-3 ${COL_WIDTHS.action}`}>
                 {isActive ? (
                     <button
+                        type="button"
                         onClick={() => onCancel(scan.id)}
                         disabled={cancellingId === scan.id}
-                        className="bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-all duration-200 disabled:opacity-50"
+                        className="px-2 py-1 rounded text-xs font-medium text-[var(--color-critical)] bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] hover:bg-[rgba(229,72,77,0.18)] transition-colors disabled:opacity-50 flex items-center gap-1"
+                        title="Cancel scan"
                     >
-                        {cancellingId === scan.id ? <Loader2 size={14} className="animate-spin" /> : <Ban size={14} />}
-                        Cancel
+                        {cancellingId === scan.id ? <Loader2 size={11} className="animate-spin" /> : <XCircle size={11} />}
+                        <span>Cancel</span>
                     </button>
                 ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
+                            type="button"
                             onClick={() => onViewReport(scan.id)}
-                            className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 whitespace-nowrap transition-all duration-200"
+                            className="px-2 py-1 rounded text-xs font-medium text-[var(--color-accent)] bg-[var(--color-surface-3)] border border-[var(--color-border-default)] hover:border-[var(--color-accent)] transition-colors flex items-center gap-1"
+                            title="View report"
                         >
-                            <FileText size={14} />
-                            View Report
+                            <FileText size={11} />
+                            <span>Report</span>
                         </button>
-                        {onDelete && (
-                            <button
-                                onClick={() => onDelete(scan)}
-                                disabled={deletingId === scan.id}
-                                title="Delete scan"
-                                className="bg-slate-800/50 border border-slate-800 rounded-lg p-2 text-slate-400 hover:bg-red-600/15 hover:text-red-400 hover:border-red-500/40 transition-all duration-200 disabled:opacity-50"
-                            >
-                                {deletingId === scan.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => onDelete(scan)}
+                            disabled={deletingId === scan.id}
+                            className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-critical)] hover:bg-[rgba(229,72,77,0.08)] transition-colors disabled:opacity-50"
+                            title="Delete scan"
+                        >
+                            <Trash2 size={13} />
+                        </button>
                     </div>
                 )}
             </td>
-            {isActive && (
-                <td className="absolute bottom-0 left-0 right-0 h-0.5 overflow-hidden">
-                    <div className="h-full w-1/3 bg-gradient-to-r from-transparent via-cyan-400 to-transparent" style={{ animation: "scanner-bar 1.2s ease-in-out infinite" }} />
-                </td>
-            )}
         </tr>
-    );
-}
-
-export function EngineStatusBadge({ status }) {
-    let colorClasses = "bg-slate-800 text-slate-400 border-slate-700"; // default / Disabled
-    
-    if (status === "Ready") {
-        colorClasses = "bg-green-500/10 text-green-400 border-green-500/30";
-    } else if (status === "Coming Soon") {
-        colorClasses = "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
-    } else if (status === "Planned") {
-        colorClasses = "bg-blue-500/10 text-blue-400 border-blue-500/30";
-    }
-
-    return (
-        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colorClasses}`}>
-            {status}
-        </span>
     );
 }

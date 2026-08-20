@@ -1,18 +1,6 @@
 import { ArrowDownWideNarrow, ChevronsLeft, ChevronsRight, Inbox } from "lucide-react";
 import IncidentRow from "./IncidentRow";
 
-/**
- * IncidentQueue
- * -------------
- * Left investigation workspace (35% on desktop). A scrollable queue of
- * incidents with an Outlook/Teams-style rhythm: rows, hover states,
- * selected state, and a quiet footer with the total count.
- *
- * Collapsible to an 88px rail (minimal local UI state): the parent grid
- * switches to the rail column via the `.alerts-workspace-grid--collapsed`
- * modifier, and rows render a compact variant — severity indicator,
- * incident icon, status colour and a small title.
- */
 function IncidentQueue({
     incidents,
     selectedId,
@@ -23,15 +11,14 @@ function IncidentQueue({
 }) {
     return (
         <section
-            className={`alerts-enter alerts-panel alerts-queue-panel flex min-h-0 flex-col overflow-hidden rounded-3xl ${
+            className={`flex min-h-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] shadow-[var(--shadow-1)] ${
                 mobileHidden ? "hidden md:flex" : "flex"
             }`}
-            style={{ animationDelay: "260ms" }}
         >
             {/* Panel header */}
             <div
-                className={`relative z-10 flex items-center gap-3 pb-3 pt-4 ${
-                    collapsed ? "justify-center px-2" : "justify-between px-6"
+                className={`flex items-center gap-3 py-3 border-b border-[var(--color-border-subtle)] ${
+                    collapsed ? "justify-center px-2" : "justify-between px-4"
                 }`}
             >
                 {collapsed ? (
@@ -41,71 +28,68 @@ function IncidentQueue({
                         aria-expanded={false}
                         aria-label="Expand incident queue"
                         title="Expand incident queue"
-                        className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-950/40 text-slate-400 transition-colors duration-300 hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
                     >
-                        <ChevronsRight size={16} />
+                        <ChevronsRight size={14} />
                     </button>
                 ) : (
                     <>
-                        <div className="min-w-0">
-                            <p className="text-[11px] font-bold tracking-[0.24em] text-slate-400">
-                                INCIDENT QUEUE
-                            </p>
-                            <h2 className="mt-1 text-xl font-bold tracking-tight text-white">
-                                Active Incidents
+                        <div>
+                            <h2 className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">
+                                Incident Queue
                             </h2>
+                            <p className="text-[11px] text-[var(--color-text-muted)]">
+                                Prioritized security alerts
+                            </p>
                         </div>
 
-                        <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-slate-950/40 px-2.5 py-1 text-[11px] font-bold tracking-widest text-slate-400">
-                            <ArrowDownWideNarrow size={11} className="text-cyan-400" />
-                            {incidents.length} TOTAL
-                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] tabular-nums">
+                                <ArrowDownWideNarrow size={11} className="text-[var(--color-accent)]" />
+                                {incidents.length} TOTAL
+                            </span>
 
-                        <button
-                            type="button"
-                            onClick={onToggleCollapse}
-                            aria-expanded={true}
-                            aria-label="Collapse incident queue"
-                            title="Collapse incident queue"
-                            className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-white/10 bg-slate-950/40 text-slate-400 transition-colors duration-300 hover:border-white/25 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
-                        >
-                            <ChevronsLeft size={16} />
-                        </button>
+                            <button
+                                type="button"
+                                onClick={onToggleCollapse}
+                                aria-expanded={true}
+                                aria-label="Collapse incident queue"
+                                title="Collapse incident queue"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
+                            >
+                                <ChevronsLeft size={14} />
+                            </button>
+                        </div>
                     </>
                 )}
             </div>
 
-            {/* Accent hairline */}
-            {!collapsed && <div className="alerts-hairline relative z-10 mx-6 h-px" />}
-
             {/* Scrollable list */}
             <div
-                className={`alerts-scroll relative z-10 flex-1 space-y-2 overflow-y-auto ${
-                    collapsed ? "px-1.5 py-2" : "px-4 py-3 lg:px-5"
+                className={`flex-1 space-y-2 overflow-y-auto max-h-[640px] p-3 scrollbar-thin scrollbar-thumb-[var(--color-border-strong)] scrollbar-track-transparent ${
+                    collapsed ? "px-1" : ""
                 }`}
             >
                 {incidents.length === 0 ? (
-                    <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-white/10 bg-slate-950/30 px-6 py-14 text-center">
-                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-slate-800/50">
-                            <Inbox size={20} className="text-slate-500" />
+                    <div className="flex h-full flex-col items-center justify-center gap-2.5 rounded-md border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)] p-8 text-center">
+                        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[var(--color-surface-3)] text-[var(--color-text-disabled)]">
+                            <Inbox size={20} />
                         </span>
-                        <p className="text-sm font-semibold text-slate-300">
-                            No incidents match
+                        <p className="text-xs font-medium text-[var(--color-text-secondary)]">
+                            No matching incidents
                         </p>
-                        <p className="max-w-[16rem] text-xs leading-relaxed text-slate-500">
-                            Adjust your search or clear the active filters to see
-                            the full queue.
+                        <p className="max-w-[14rem] text-[11px] text-[var(--color-text-muted)]">
+                            Adjust your search query or clear the active severity and status filters.
                         </p>
                     </div>
                 ) : (
-                    incidents.map((incident, index) => (
+                    incidents.map((incident) => (
                         <IncidentRow
                             key={incident.id}
                             incident={incident}
                             selected={incident.id === selectedId}
                             onSelect={onSelect}
                             collapsed={collapsed}
-                            delay={Math.min(300 + index * 45, 700)}
                         />
                     ))
                 )}
@@ -113,13 +97,12 @@ function IncidentQueue({
 
             {/* Footer */}
             {!collapsed && (
-                <div className="relative z-10 border-t border-white/5 px-6 py-2.5">
-                    <p className="text-[11px] text-slate-500">
-                        <span className="font-semibold text-slate-300">
+                <div className="border-t border-[var(--color-border-subtle)] px-4 py-2 bg-[var(--color-surface-1)]">
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
+                        <span className="font-semibold text-[var(--color-text-primary)] tabular-nums">
                             {incidents.length}
                         </span>{" "}
-                        incident{incidents.length === 1 ? "" : "s"} in queue · selecting
-                        one updates the investigation workspace instantly
+                        incident{incidents.length === 1 ? "" : "s"} loaded · select to inspect
                     </p>
                 </div>
             )}

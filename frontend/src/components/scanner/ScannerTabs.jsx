@@ -3,45 +3,45 @@ import { Radar, Scan, Shield } from "lucide-react";
 
 export default function ScannerTabs({ activeTab, onTabChange }) {
     return (
-        <div className="flex items-center gap-1 mb-8 border-b border-slate-800/60 overflow-x-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 mb-6 border-b border-[var(--color-border-default)] pb-2 overflow-x-auto scrollbar-none">
             {SCANNER_ENGINES.map((engine) => {
                 const isActive = activeTab === engine.id;
-                
+
                 return (
                     <button
                         key={engine.id}
+                        type="button"
                         onClick={() => onTabChange(engine.id)}
-                        className={`group relative px-4 py-3 flex items-center gap-2 font-medium text-[13px] transition-all duration-200 whitespace-nowrap focus:outline-none ${
+                        className={`px-3 py-2 rounded-md flex items-center gap-2 text-xs font-medium transition-colors duration-150 whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] ${
                             isActive
-                                ? "text-white"
-                                : "text-slate-400 hover:text-slate-200"
+                                ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent)]"
+                                : "text-[var(--color-text-muted)] bg-transparent border border-transparent hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-subtle)]"
                         }`}
                     >
                         {!engine.isEngine ? (
-                            <Radar size={15} className={`transition-colors duration-200 ${isActive ? "text-purple-400" : "text-slate-500 group-hover:text-slate-400"}`} />
+                            <Radar
+                                size={15}
+                                className={isActive ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}
+                            />
                         ) : engine.status === "Ready" ? (
-                            <Scan size={15} className={`transition-colors duration-200 ${isActive ? "text-cyan-400" : "text-slate-500 group-hover:text-slate-400"}`} />
+                            <Scan
+                                size={15}
+                                className={isActive ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"}
+                            />
                         ) : (
-                            <Shield size={15} className={`transition-colors duration-200 ${isActive ? "text-slate-300" : "text-slate-600 group-hover:text-slate-500"}`} />
+                            <Shield
+                                size={15}
+                                className={isActive ? "text-[var(--color-accent)]" : "text-[var(--color-text-disabled)]"}
+                            />
                         )}
-                        
-                        <span className={isActive ? "drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" : ""}>
-                            {engine.name}
-                        </span>
-                        
+
+                        <span>{engine.name}</span>
+
                         {engine.status !== "Ready" && !isActive && (
-                            <span className="ml-1 px-1.5 py-0.5 rounded-sm bg-slate-800/80 text-slate-500 text-[9px] font-bold tracking-widest uppercase">
+                            <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] uppercase tracking-wider">
                                 {engine.status === "Coming Soon" ? "Soon" : "Plan"}
                             </span>
                         )}
-
-                        {/* Active Indicator Line */}
-                        {isActive && (
-                            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-purple-500 via-cyan-400 to-purple-500 shadow-[0_-2px_10px_rgba(34,211,238,0.5)]" />
-                        )}
-                        
-                        {/* Subtle hover background (doesn't extend full height) */}
-                        <div className={`absolute inset-x-1 inset-y-1 rounded-lg -z-10 transition-colors duration-200 ${isActive ? "bg-slate-800/40" : "group-hover:bg-slate-800/30"}`} />
                     </button>
                 );
             })}

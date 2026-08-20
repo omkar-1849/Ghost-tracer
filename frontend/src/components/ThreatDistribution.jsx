@@ -8,13 +8,13 @@ import { getThreatDistribution } from "../services/api";
  */
 
 const COLORS = [
-    "#22d3ee",
-    "#818cf8",
-    "#fbbf24",
-    "#f87171",
+    "#3d7af0",
+    "#ed7d1c",
+    "#ddb32a",
+    "#e5484d",
 ];
 
-/* Glassy tooltip that matches the Analytics design language. */
+/* Solid tooltip that matches the new design language. */
 function DistributionTooltip({ active, payload }) {
     if (!active || !payload || payload.length === 0) return null;
 
@@ -26,17 +26,17 @@ function DistributionTooltip({ active, payload }) {
         COLORS[index % COLORS.length];
 
     return (
-        <div className="rounded-xl border border-white/10 bg-slate-900/95 px-3.5 py-2.5 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.8)] backdrop-blur-xl">
-            <p className="flex items-center gap-2 text-xs font-semibold text-slate-200">
+        <div className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] px-3.5 py-2.5 shadow-[var(--shadow-2)]">
+            <p className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-primary)]">
                 <span
                     className="h-2 w-2 rounded-full"
                     style={{ background: color }}
                 />
                 {entry.name}
             </p>
-            <p className="mt-1 text-sm font-bold tabular-nums text-white">
+            <p className="mt-1 text-sm font-bold tabular-nums text-[var(--color-text-primary)]">
                 {Number(entry.value).toLocaleString()}
-                <span className="ml-1 text-[10px] font-medium uppercase tracking-wider text-slate-500">
+                <span className="ml-1 text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-muted)]">
                     events
                 </span>
             </p>
@@ -66,10 +66,10 @@ function ThreatDistribution() {
 
     if (data.length === 0) {
         return (
-            <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-slate-700/60 bg-slate-950/30 px-6 py-10 text-center">
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-500/10">
+            <div className="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] px-6 py-10 text-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)]">
                     <svg
-                        className="h-5 w-5 text-amber-400"
+                        className="h-5 w-5 text-[var(--color-text-muted)]"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -81,10 +81,10 @@ function ThreatDistribution() {
                         <path d="M22 12A10 10 0 0 0 12 2v10z" />
                     </svg>
                 </span>
-                <p className="text-sm font-medium text-slate-300">
+                <p className="text-sm font-medium text-[var(--color-text-primary)]">
                     No distribution data yet
                 </p>
-                <p className="max-w-xs text-xs text-slate-500">
+                <p className="max-w-xs text-xs text-[var(--color-text-muted)]">
                     Classified event mix will be visualized here once detections
                     start streaming in.
                 </p>
@@ -119,9 +119,6 @@ function ThreatDistribution() {
                                 <Cell
                                     key={index}
                                     fill={COLORS[index % COLORS.length]}
-                                    style={{
-                                        filter: `drop-shadow(0 0 6px ${COLORS[index % COLORS.length]}55)`,
-                                    }}
                                 />
                             ))}
                         </Pie>
@@ -133,10 +130,10 @@ function ThreatDistribution() {
                 </ResponsiveContainer>
 
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-3xl font-bold tabular-nums tracking-tight text-white">
+                    <span className="text-3xl font-bold tabular-nums tracking-tight text-[var(--color-text-primary)]">
                         {total.toLocaleString()}
                     </span>
-                    <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
+                    <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--color-text-muted)]">
                         detections
                     </span>
                 </div>
@@ -150,23 +147,23 @@ function ThreatDistribution() {
                     return (
                         <li
                             key={index}
-                            className="group/legend flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors duration-200 hover:bg-white/[0.03]"
+                            className="group/legend flex items-center justify-between gap-3 rounded-lg px-2 py-1.5 transition-colors duration-200 hover:bg-[var(--color-surface-3)]"
                         >
                             <span className="flex min-w-0 items-center gap-2.5">
                                 <span
                                     className="h-2 w-2 flex-shrink-0 rounded-full"
                                     style={{ background: color }}
                                 />
-                                <span className="truncate text-[13px] font-medium text-slate-300">
+                                <span className="truncate text-[13px] font-medium text-[var(--color-text-secondary)]">
                                     {entry.name}
                                 </span>
                             </span>
 
                             <span className="flex items-baseline gap-2">
-                                <span className="text-xs font-bold tabular-nums text-slate-200">
+                                <span className="text-xs font-bold tabular-nums text-[var(--color-text-primary)]">
                                     {Number(entry.value).toLocaleString()}
                                 </span>
-                                <span className="w-10 text-right text-[10px] font-semibold tabular-nums text-slate-500">
+                                <span className="w-10 text-right text-[10px] font-semibold tabular-nums text-[var(--color-text-muted)]">
                                     {total > 0
                                         ? `${Math.round(
                                               (Number(entry.value) / total) *

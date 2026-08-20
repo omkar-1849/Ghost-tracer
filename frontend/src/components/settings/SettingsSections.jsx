@@ -1,10 +1,10 @@
 import { 
-    Cpu, HardDrive, Server, Activity, Clock, ShieldCheck, 
-    Database, ActivitySquare, Terminal, Globe, User, Fingerprint, Lock, 
-    Bell, Mail, Monitor, Code, Play, RefreshCw, Zap, Upload, Download, Trash2, RotateCcw, Info
+    Cpu, HardDrive, Server, Clock, ShieldCheck, 
+    Database, ActivitySquare, Terminal, Globe, 
+    Bell, Zap, Info
 } from "lucide-react";
 import { 
-    SectionHeader, SettingGroup, ToggleCard, InputCard, SelectCard, ActionCard, DangerZone, StatusBadge
+    SectionHeader, SettingGroup, ToggleCard, InputCard, SelectCard, ActionCard, DangerZone
 } from "./SettingsShared";
 
 function matchesSearch(text, query) {
@@ -52,7 +52,7 @@ export function ScanningSection({ settings, updateSetting, query }) {
             <SectionHeader title="Scanning" description="Configure global scanning parameters and engine integrations." icon={Terminal} />
             
             <SettingGroup>
-                <h3 className="text-sm font-semibold text-white mb-2 mt-4 flex items-center gap-2"><Globe size={16} className="text-slate-400" /> General Engine Settings</h3>
+                <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2 mt-4 flex items-center gap-2"><Globe size={16} className="text-[var(--color-text-muted)]" /> General Engine Settings</h3>
                 {isVisible("Default Scanner", "Primary") && (
                     <SelectCard label="Default Scanner" description="Primary engine for ad-hoc scans." status="Configurable" value={settings.defaultScanner} onChange={(val) => updateSetting("defaultScanner", val)} options={[{label: "SQLMap", value: "sqlmap"}]} />
                 )}
@@ -68,7 +68,7 @@ export function ScanningSection({ settings, updateSetting, query }) {
             </SettingGroup>
 
             <SettingGroup>
-                <h3 className="text-sm font-semibold text-white mb-2 mt-6 flex items-center gap-2"><Terminal size={16} className="text-slate-400" /> SQLMap Configuration</h3>
+                <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2 mt-6 flex items-center gap-2"><Terminal size={16} className="text-[var(--color-text-muted)]" /> SQLMap Configuration</h3>
                 {isVisible("Executable Path", "Absolute") && (
                     <InputCard label="Executable Path" description="Absolute system path to the sqlmap engine binary." status="Implemented" value={settings.sqlmapPath} onChange={(val) => updateSetting("sqlmapPath", val)} validation={settings.sqlmapPath === "" ? "warning" : "valid"} />
                 )}
@@ -84,7 +84,7 @@ export function ScanningSection({ settings, updateSetting, query }) {
             </SettingGroup>
 
             <SettingGroup>
-                <h3 className="text-sm font-semibold text-white mb-2 mt-6 flex items-center gap-2"><Clock size={16} className="text-slate-400" /> Future Engines</h3>
+                <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2 mt-6 flex items-center gap-2"><Clock size={16} className="text-[var(--color-text-muted)]" /> Future Engines</h3>
                 <ActionCard label="Nmap Integration" description="Network discovery and port scanning engine." status="Coming Soon" buttonText="Configure" disabled />
                 <ActionCard label="Nuclei Integration" description="Template based fast vulnerability scanner." status="Coming Soon" buttonText="Configure" disabled />
                 <ActionCard label="OWASP ZAP" description="Integrated web application security scanner." status="Coming Soon" buttonText="Configure" disabled />
@@ -208,34 +208,34 @@ export function SystemSection() {
 
 function HealthCard({ title, icon: Icon, status, metric, color }) {
     const colorMap = {
-        green: "from-green-500/20 to-emerald-500/5 text-green-400 border-green-500/30",
-        amber: "from-amber-500/20 to-orange-500/5 text-amber-400 border-amber-500/30",
-        red: "from-red-500/20 to-rose-500/5 text-red-400 border-red-500/30",
-        cyan: "from-cyan-500/20 to-blue-500/5 text-cyan-400 border-cyan-500/30",
-        purple: "from-purple-500/20 to-fuchsia-500/5 text-purple-400 border-purple-500/30",
+        green: "text-[var(--color-success)] border-[var(--color-success)]/30",
+        amber: "text-[var(--color-warning)] border-[var(--color-warning)]/30",
+        red: "text-[var(--color-critical)] border-[var(--color-critical)]/30",
+        cyan: "text-[var(--color-info)] border-[var(--color-info)]/30",
+        purple: "text-[var(--color-accent)] border-[var(--color-accent)]/30",
     };
 
     const dotMap = {
-        green: "bg-green-400",
-        amber: "bg-amber-400",
-        red: "bg-red-400 animate-pulse",
-        cyan: "bg-cyan-400",
-        purple: "bg-purple-400",
+        green: "bg-[var(--color-success)]",
+        amber: "bg-[var(--color-warning)]",
+        red: "bg-[var(--color-critical)]",
+        cyan: "bg-[var(--color-info)]",
+        purple: "bg-[var(--color-accent)]",
     }
 
     return (
-        <div className={`p-5 rounded-2xl border bg-gradient-to-br bg-slate-900/60 backdrop-blur-sm ${colorMap[color]} shadow-lg`}>
+        <div className={`p-5 rounded-lg border bg-[var(--color-surface-2)] ${colorMap[color]}`}>
             <div className="flex items-center justify-between mb-4">
-                <div className="w-10 h-10 rounded-xl bg-slate-950/50 flex items-center justify-center border border-slate-700/50 shadow-inner">
-                    <Icon size={20} />
+                <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-3)] flex items-center justify-center border border-[var(--color-border-default)]">
+                    <Icon size={20} className="text-[var(--color-text-secondary)]" />
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-950/40 px-2 py-1 rounded border border-slate-800/80">
+                <div className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2 py-1 rounded border border-[var(--color-border-default)]">
                     <span className={`w-2 h-2 rounded-full ${dotMap[color]}`} />
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300">{status}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-secondary)]">{status}</span>
                 </div>
             </div>
-            <h3 className="text-white font-semibold mb-1">{title}</h3>
-            <p className="text-sm font-medium opacity-80">{metric}</p>
+            <h3 className="text-[var(--color-text-primary)] font-semibold mb-1">{title}</h3>
+            <p className="text-sm font-medium text-[var(--color-text-secondary)] tabular-nums">{metric}</p>
         </div>
     );
 }
@@ -286,44 +286,44 @@ export function AboutSection() {
         <div className="space-y-8 animate-in fade-in duration-500">
             <SectionHeader title="About Sentinel AI" description="System information and licensing." icon={Info} />
             
-            <div className="p-6 rounded-2xl border border-slate-800/60 bg-slate-900/40 space-y-6">
-                <div className="flex items-center gap-4 border-b border-slate-800/60 pb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_24px_rgba(168,85,247,0.3)]">
+            <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] space-y-6">
+                <div className="flex items-center gap-4 border-b border-[var(--color-border-default)] pb-6">
+                    <div className="w-16 h-16 rounded-lg bg-[var(--color-accent)] flex items-center justify-center">
                         <ShieldCheck size={32} className="text-white" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-300 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">Sentinel AI</h2>
-                        <p className="text-slate-400 text-sm">Enterprise Security Platform</p>
+                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Sentinel AI</h2>
+                        <p className="text-[var(--color-text-secondary)] text-sm">Enterprise Security Platform</p>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                     <div>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Version</p>
-                        <p className="text-sm font-medium text-white">v2.4.0-enterprise</p>
+                        <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mb-1">Version</p>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">v2.4.0-enterprise</p>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Build</p>
-                        <p className="text-sm font-medium text-white">#8942a1b (Latest)</p>
+                        <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mb-1">Build</p>
+                        <p className="text-sm font-medium text-[var(--color-text-primary)]">#8942a1b (Latest)</p>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">License</p>
-                        <p className="text-sm font-medium text-cyan-400">Commercial / Valid</p>
+                        <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mb-1">License</p>
+                        <p className="text-sm font-medium text-[var(--color-info)]">Commercial / Valid</p>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Environment</p>
-                        <p className="text-sm font-medium text-purple-400">Production</p>
+                        <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mb-1">Environment</p>
+                        <p className="text-sm font-medium text-[var(--color-accent)]">Production</p>
                     </div>
                 </div>
 
-                <div className="border-t border-slate-800/60 pt-6">
-                    <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">Core Technology Stack</p>
+                <div className="border-t border-[var(--color-border-default)] pt-6">
+                    <p className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider font-semibold mb-3">Core Technology Stack</p>
                     <div className="flex flex-wrap gap-2">
-                        <span className="px-3 py-1.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300">FastAPI</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300">React 18</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300">TailwindCSS</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300">PostgreSQL</span>
-                        <span className="px-3 py-1.5 rounded-lg bg-slate-950/50 border border-slate-800 text-xs text-slate-300">SQLMap</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)]">FastAPI</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)]">React 18</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)]">TailwindCSS</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)]">PostgreSQL</span>
+                        <span className="px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs text-[var(--color-text-secondary)]">SQLMap</span>
                     </div>
                 </div>
             </div>

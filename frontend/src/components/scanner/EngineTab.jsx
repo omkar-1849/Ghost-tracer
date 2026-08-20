@@ -2,19 +2,12 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Activity, AlertTriangle, CheckCircle2, FileText, Loader2, Play, Radio, Target } from "lucide-react";
 import { startScan } from "../../services/scannerApi";
-import { StatusPill, EngineStatusBadge, formatDuration, formatDate } from "./shared";
+import { StatusPill, EngineStatusBadge } from "./shared";
+import { formatDuration, formatDate } from "./scannerUtils";
 import { ACTIVE_STATUSES } from "./constants";
 import { EngineResults, RecommendationsList } from "./engineResults";
 import TargetSelect from "./TargetSelect";
 import ScanHistoryTable from "./ScanHistoryTable";
-
-const accents = {
-    cyan: { tile: "from-cyan-500/20 to-blue-600/10", border: "border-cyan-500/20", glow: "shadow-[0_0_15px_rgba(34,211,238,0.15)]", text: "text-cyan-400", button: "from-indigo-600 via-purple-600 to-fuchsia-600" },
-    blue: { tile: "from-blue-500/20 to-indigo-600/10", border: "border-blue-500/20", glow: "shadow-[0_0_15px_rgba(59,130,246,0.15)]", text: "text-blue-400", button: "from-indigo-600 via-purple-600 to-fuchsia-600" },
-    amber: { tile: "from-amber-500/20 to-orange-600/10", border: "border-amber-500/20", glow: "shadow-[0_0_15px_rgba(245,158,11,0.15)]", text: "text-amber-400", button: "from-indigo-600 via-purple-600 to-fuchsia-600" },
-    emerald: { tile: "from-emerald-500/20 to-teal-600/10", border: "border-emerald-500/20", glow: "shadow-[0_0_15px_rgba(16,185,129,0.15)]", text: "text-emerald-400", button: "from-indigo-600 via-purple-600 to-fuchsia-600" },
-    rose: { tile: "from-rose-500/20 to-pink-600/10", border: "border-rose-500/20", glow: "shadow-[0_0_15px_rgba(244,63,94,0.15)]", text: "text-rose-400", button: "from-indigo-600 via-purple-600 to-fuchsia-600" },
-};
 
 export default function EngineTab({
     engine,
@@ -29,7 +22,6 @@ export default function EngineTab({
     onDeleteScan,
     showToast,
 }) {
-    const theme = accents[engine.accent] || accents.cyan;
     const Icon = engine.icon;
     const navigate = useNavigate();
     const [selectedWebsiteId, setSelectedWebsiteId] = useState(null);
@@ -80,179 +72,188 @@ export default function EngineTab({
     const currentScan = activeScan || lastCompleted || lastFailed;
 
     return (
-        <div style={{ animation: "section-in 0.45s ease-out both" }} className="space-y-8">
+        <div className="space-y-6">
             {/* Scanner Introduction Header */}
-            <div className="flex items-start gap-5 bg-slate-900/40 backdrop-blur-sm border border-slate-800/40 rounded-2xl p-6">
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${theme.tile} ${theme.glow} flex items-center justify-center border ${theme.border} shrink-0`}>
-                    <Icon size={28} className={theme.text} />
+            <div className="flex items-start gap-4 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                <div className="w-11 h-11 rounded-lg bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] flex items-center justify-center shrink-0">
+                    <Icon size={20} className="text-[var(--color-accent)]" />
                 </div>
-                <div>
-                    <div className="flex items-center gap-3 mb-1">
-                        <h2 className="text-2xl font-bold text-white">{engine.name}</h2>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5 mb-1">
+                        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">{engine.name}</h2>
                         <EngineStatusBadge status={engine.status} />
                     </div>
-                    <h3 className="text-sm font-semibold text-slate-300 mb-2">{engine.description}</h3>
-                    <p className="text-slate-400 text-sm max-w-3xl">
-                        Configure a registered target website below and launch the {engine.name} assessment. Results, risk scoring and recommendations are streamed live from the scanner engine.
+                    <p className="text-xs text-[var(--color-text-muted)] mb-2">{engine.description}</p>
+                    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed max-w-2xl">
+                        Select a registered target website below to launch the {engine.name} assessment. Discovered vulnerabilities, risk posture metrics, and remediation guidance will stream directly into the reporting console.
                     </p>
                 </div>
             </div>
 
             {/* Target Configuration */}
-            <div className="relative z-20 bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40">
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-500/[0.04] via-transparent to-transparent" />
-                <div className="relative z-10">
-                    <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-                        <h2 className="text-xl font-semibold flex items-center gap-2">
-                            <Target size={20} className="text-purple-400" />
-                            Target Configuration
-                        </h2>
-                        {engineBusy && (
-                            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
-                                <Loader2 size={13} className="animate-spin" />
-                                {engine.name} scan in progress
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                        <TargetSelect value={selectedWebsiteId} onChange={(website) => setSelectedWebsiteId(website.id)} disabled={loading} />
-                        <button
-                            onClick={handleStartScan}
-                            disabled={startDisabled}
-                            title={engineBusy ? `Another ${engine.name} scan is already running` : "Start scan"}
-                            className={`${
-                                startDisabled
-                                    ? "bg-slate-700 text-slate-400 shadow-none cursor-not-allowed"
-                                    : `bg-gradient-to-r ${theme.button} shadow-[0_0_24px_rgba(168,85,247,0.35)] hover:from-indigo-500 hover:via-purple-500 hover:to-fuchsia-500 hover:shadow-[0_0_32px_rgba(217,70,239,0.55)] hover:scale-[1.02] active:scale-95`
-                            } rounded-xl px-7 py-3 font-semibold flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-300`}
-                        >
-                            {loading ? <Loader2 size={18} className="animate-spin" /> : <Play size={18} />}
-                            {loading ? "Starting..." : "Run Scan"}
-                        </button>
-                    </div>
-                    {!selectedWebsiteId && (
-                        <p className="flex items-center gap-1.5 text-slate-500 text-xs mt-3">
-                            <AlertTriangle size={13} /> Select a registered website to enable the scan.
-                        </p>
+            <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                        <Target size={16} className="text-[var(--color-text-muted)]" />
+                        Target Configuration
+                    </h3>
+                    {engineBusy && (
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)]">
+                            <Loader2 size={11} className="animate-spin" />
+                            {engine.name} scan in progress
+                        </span>
                     )}
                 </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex-1">
+                        <TargetSelect
+                            value={selectedWebsiteId}
+                            onChange={(website) => setSelectedWebsiteId(website.id)}
+                            disabled={loading}
+                        />
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleStartScan}
+                        disabled={startDisabled}
+                        title={engineBusy ? `Another ${engine.name} scan is already running` : "Start scan"}
+                        className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-xs font-medium transition-colors duration-150 whitespace-nowrap ${
+                            startDisabled
+                                ? "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border border-[var(--color-border-default)] cursor-not-allowed opacity-70"
+                                : "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] cursor-pointer shadow-sm"
+                        }`}
+                    >
+                        {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+                        {loading ? "Starting…" : "Run Scan"}
+                    </button>
+                </div>
+
+                {!selectedWebsiteId && (
+                    <p className="flex items-center gap-1.5 text-[var(--color-text-muted)] text-[11px] mt-2.5">
+                        <AlertTriangle size={12} className="text-[var(--color-warning)]" /> Select a registered target website to enable scan execution.
+                    </p>
+                )}
             </div>
 
             {/* Live Status + Latest Results */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Current Status */}
-                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40 flex flex-col">
-                    <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                            <Activity className="text-cyan-400" size={18} />
-                            Current Status
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                            <Activity size={15} className="text-[var(--color-text-muted)]" />
+                            Current Execution Status
                         </h3>
                         {currentScan && <StatusPill status={currentScan.status} />}
                     </div>
 
                     {activeScan ? (
-                        <div className="flex-1 bg-slate-950/30 rounded-xl border border-slate-800/40 p-5 flex flex-col justify-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <Radio size={96} />
-                            </div>
-                            <div className="relative z-10">
-                                <p className="text-xs text-slate-500 font-mono mb-2">#{activeScan.id}</p>
-                                <h4 className="text-lg font-bold text-white mb-1 truncate" title={activeScan.target}>{activeScan.target}</h4>
-                                <p className="text-sm text-slate-400 mb-4">
+                        <div className="flex-1 bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] p-4 flex flex-col justify-between">
+                            <div>
+                                <p className="text-[11px] text-[var(--color-text-muted)] font-mono mb-1">Scan #{activeScan.id}</p>
+                                <h4 className="text-sm font-semibold text-[var(--color-text-primary)] font-mono truncate" title={activeScan.target}>{activeScan.target}</h4>
+                                <p className="text-xs text-[var(--color-text-secondary)] mt-1">
                                     {activeScan.scanner} ·{" "}
-                                    <span className="text-cyan-400">{formatDuration(activeScan.created_at, now)} elapsed</span>
+                                    <span className="text-[var(--color-accent)] font-medium">{formatDuration(activeScan.created_at, now)} elapsed</span>
                                 </p>
+                            </div>
+                            <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)]">
                                 <button
+                                    type="button"
                                     onClick={() => onCancelScan(activeScan.id)}
                                     disabled={cancellingId === activeScan.id}
-                                    className="bg-red-500/10 text-red-400 hover:bg-red-600 hover:text-white rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-200 disabled:opacity-50 w-max"
+                                    className="bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border border-[rgba(229,72,77,0.25)] hover:bg-[rgba(229,72,77,0.20)] rounded-md px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50"
                                 >
-                                    {cancellingId === activeScan.id ? <Loader2 size={14} className="animate-spin" /> : <AlertTriangle size={14} />}
+                                    {cancellingId === activeScan.id ? <Loader2 size={13} className="animate-spin" /> : <AlertTriangle size={13} />}
                                     Cancel Scan
                                 </button>
                             </div>
                         </div>
                     ) : currentScan ? (
-                        <div className="flex-1 bg-slate-950/30 rounded-xl border border-slate-800/40 p-5 flex flex-col justify-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <FileText size={96} />
-                            </div>
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-2 mb-3">
+                        <div className="flex-1 bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] p-4 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
                                     {(currentScan.status || "").toUpperCase() === "COMPLETED" ? (
-                                        <CheckCircle2 size={18} className="text-green-400" />
+                                        <CheckCircle2 size={15} className="text-[var(--color-success)]" />
                                     ) : (
-                                        <AlertTriangle size={18} className="text-red-400" />
+                                        <AlertTriangle size={15} className="text-[var(--color-critical)]" />
                                     )}
-                                    <span className="text-xs text-slate-500 font-mono">#{currentScan.id}</span>
+                                    <span className="text-[11px] text-[var(--color-text-muted)] font-mono">Scan #{currentScan.id}</span>
                                 </div>
-                                <h4 className="text-lg font-bold text-white mb-1 truncate" title={currentScan.target}>{currentScan.target}</h4>
-                                <p className="text-sm text-slate-400 mb-4">
+                                <h4 className="text-sm font-semibold text-[var(--color-text-primary)] font-mono truncate" title={currentScan.target}>{currentScan.target}</h4>
+                                <p className="text-xs text-[var(--color-text-muted)] mt-1">
                                     {currentScan.scanner} · {formatDate(currentScan.completed_at || currentScan.created_at)}
                                 </p>
+
                                 {(currentScan.status || "").toUpperCase() === "COMPLETED" ? (
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300 text-sm font-bold tabular-nums">
-                                            Risk {currentScan.risk_score ?? "—"}
+                                    <div className="flex items-center gap-2 mt-3">
+                                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] tabular-nums">
+                                            Risk: {currentScan.risk_score ?? "—"}/100
                                         </span>
-                                        <span className="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm font-bold tabular-nums">
-                                            {currentScan.findings ?? 0} Findings
+                                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[rgba(61,122,240,0.10)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] tabular-nums">
+                                            {currentScan.findings ?? 0} findings
                                         </span>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2.5 mb-4 break-words">
+                                    <div className="mt-3 p-2.5 rounded bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] text-xs text-[var(--color-critical)] break-words font-mono">
                                         {currentScan.error || "Scan failed unexpectedly."}
-                                    </p>
+                                    </div>
                                 )}
+                            </div>
+
+                            <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)]">
                                 <button
+                                    type="button"
                                     onClick={() => handleViewReport(currentScan.id)}
-                                    className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-500/30 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-200 w-max"
+                                    className="bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] rounded-md px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors"
                                 >
-                                    <FileText size={14} /> View Full Report
+                                    <FileText size={13} /> View Full Report
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-                            <Radio size={32} className="text-slate-600 mb-3" />
-                            <p className="text-slate-300 font-medium">Engine Idle</p>
-                            <p className="text-slate-500 text-sm mt-1">Run a scan to see live status here.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] border-dashed">
+                            <Radio size={24} className="text-[var(--color-text-disabled)] mb-2" />
+                            <p className="text-xs font-medium text-[var(--color-text-secondary)]">Engine Idle</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Select a target above to launch an assessment.</p>
                         </div>
                     )}
                 </div>
 
                 {/* Latest Results */}
-                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40">
-                    <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                            <Radio className="text-purple-400" size={18} />
-                            Latest Results
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                            <Radio size={15} className="text-[var(--color-text-muted)]" />
+                            Latest Assessment Output
                         </h3>
                         {lastCompleted && (
                             <button
+                                type="button"
                                 onClick={() => handleViewReport(lastCompleted.id)}
-                                className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-500/30 rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-all duration-200"
+                                className="text-xs font-medium text-[var(--color-accent)] hover:underline flex items-center gap-1"
                             >
-                                <FileText size={13} /> Open Report
+                                <FileText size={12} /> Open Full Report
                             </button>
                         )}
                     </div>
 
                     {lastCompleted && lastCompleted.parsed_output ? (
-                        <div className="space-y-6 max-h-[560px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[var(--color-border-strong)] scrollbar-track-transparent flex-1">
                             <EngineResults report={lastCompleted.parsed_output} engineId={engine.id} />
                             {lastCompleted.parsed_output.recommendations?.length > 0 && (
-                                <div>
-                                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">Recommendations</h4>
+                                <div className="mt-3">
+                                    <h4 className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-2">Remediation Guidance</h4>
                                     <RecommendationsList recommendations={lastCompleted.parsed_output.recommendations} />
                                 </div>
                             )}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-12 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-                            <Radio size={32} className="text-slate-600 mb-3" />
-                            <p className="text-slate-300 font-medium">No Results Yet</p>
-                            <p className="text-slate-500 text-sm mt-1">Completed scans will render their parsed report here.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] border-dashed">
+                            <Radio size={24} className="text-[var(--color-text-disabled)] mb-2" />
+                            <p className="text-xs font-medium text-[var(--color-text-secondary)]">No Findings Recorded</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Completed assessments will render structured findings here.</p>
                         </div>
                     )}
                 </div>
@@ -260,8 +261,8 @@ export default function EngineTab({
 
             {/* History */}
             <ScanHistoryTable
-                title={`${engine.name} History`}
-                subtitle={`History of ${engine.description.toLowerCase()} assessments.`}
+                title={`${engine.name} Assessment History`}
+                subtitle={`Historical assessment timeline for the ${engine.name} scanner engine.`}
                 scans={engineScans}
                 storageKey={`scanner_${engine.id}_search`}
                 historyLoading={historyLoading}

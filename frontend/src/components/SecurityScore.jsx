@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-    Activity,
     Gauge,
     ShieldCheck,
     ShieldAlert,
@@ -12,8 +11,8 @@ import { getSecurityScore } from "../services/api";
 /* Config                                                              */
 /* ------------------------------------------------------------------ */
 
-const SIZE = 176;
-const STROKE = 13;
+const SIZE = 160;
+const STROKE = 10;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
@@ -21,41 +20,25 @@ const STATUS = [
     {
         min: 90,
         label: "Excellent",
-        badge: "bg-emerald-500/10 border-emerald-500/25 text-emerald-400",
-        text: "text-emerald-300",
-        dot: "bg-emerald-400",
-        stroke: "url(#scoreGradientExcellent)",
-        glow: "rgba(52, 211, 153, 0.45)",
+        color: "var(--color-success)",
         caption: "Threat surface is minimal and posture is strong.",
     },
     {
         min: 75,
         label: "Good",
-        badge: "bg-cyan-500/10 border-cyan-500/25 text-cyan-400",
-        text: "text-cyan-300",
-        dot: "bg-cyan-400",
-        stroke: "url(#scoreGradientGood)",
-        glow: "rgba(34, 211, 238, 0.45)",
+        color: "var(--color-accent)",
         caption: "Solid posture with minor exposure worth monitoring.",
     },
     {
         min: 50,
         label: "Fair",
-        badge: "bg-amber-500/10 border-amber-500/25 text-amber-400",
-        text: "text-amber-300",
-        dot: "bg-amber-400",
-        stroke: "url(#scoreGradientFair)",
-        glow: "rgba(251, 191, 36, 0.4)",
+        color: "var(--color-warning)",
         caption: "Notable risk detected — review active threats soon.",
     },
     {
         min: 0,
         label: "Critical",
-        badge: "bg-red-500/10 border-red-500/25 text-red-400",
-        text: "text-red-400",
-        dot: "bg-red-500",
-        stroke: "url(#scoreGradientCritical)",
-        glow: "rgba(239, 68, 68, 0.5)",
+        color: "var(--color-critical)",
         caption: "Elevated risk — investigate critical alerts immediately.",
     },
 ];
@@ -67,17 +50,8 @@ const STATUS_ICONS = {
     Critical: ShieldX,
 };
 
-const STATUS_ORDER = ["Excellent", "Good", "Fair", "Critical"];
-
 function resolveStatus(score) {
     return STATUS.find((s) => score >= s.min) ?? STATUS[STATUS.length - 1];
-}
-
-function gradientIdFor(label) {
-    if (label === "Excellent") return "scoreGradientExcellent";
-    if (label === "Good") return "scoreGradientGood";
-    if (label === "Fair") return "scoreGradientFair";
-    return "scoreGradientCritical";
 }
 
 /* ------------------------------------------------------------------ */
@@ -113,17 +87,17 @@ function SecurityScore({ stats = {} }) {
         {
             label: "Critical",
             value: stats.critical_alerts ?? "—",
-            valueClass: "text-red-400",
+            color: "var(--color-critical)",
         },
         {
             label: "High",
             value: stats.high_alerts ?? "—",
-            valueClass: "text-orange-400",
+            color: "var(--color-high)",
         },
         {
             label: "Alerts",
             value: stats.total_alerts ?? "—",
-            valueClass: "text-amber-300",
+            color: "var(--color-warning)",
         },
     ];
 
@@ -131,56 +105,29 @@ function SecurityScore({ stats = {} }) {
         CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE;
 
     return (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 min-h-[420px] flex flex-col">
+        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 min-h-[400px] flex flex-col shadow-[var(--shadow-1)]">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <h2 className="text-xl font-semibold tracking-tight">
+                    <h2 className="text-sm font-semibold tracking-tight text-[var(--color-text-primary)]">
                         Security Score
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">
+                    <p className="text-[var(--color-text-muted)] text-xs mt-0.5">
                         Overall posture
                     </p>
                 </div>
-
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-[10px] font-bold tracking-widest text-emerald-400">
-                    <span className="relative flex w-1.5 h-1.5">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
-                    </span>
-                    LIVE
-                </span>
             </div>
 
             {/* Radial gauge */}
-            <div className="relative mx-auto mt-8" style={{ width: SIZE, height: SIZE }}>
+            <div className="relative mx-auto mt-6" style={{ width: SIZE, height: SIZE }}>
                 <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90">
-                    <defs>
-                        <linearGradient id="scoreGradientExcellent" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#34d399" />
-                            <stop offset="100%" stopColor="#22d3ee" />
-                        </linearGradient>
-                        <linearGradient id="scoreGradientGood" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#22d3ee" />
-                            <stop offset="100%" stopColor="#3b82f6" />
-                        </linearGradient>
-                        <linearGradient id="scoreGradientFair" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#fbbf24" />
-                            <stop offset="100%" stopColor="#f97316" />
-                        </linearGradient>
-                        <linearGradient id="scoreGradientCritical" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#f87171" />
-                            <stop offset="100%" stopColor="#ef4444" />
-                        </linearGradient>
-                    </defs>
-
                     {/* Track */}
                     <circle
                         cx={SIZE / 2}
                         cy={SIZE / 2}
                         r={RADIUS}
                         fill="none"
-                        stroke="rgba(51, 65, 85, 0.55)"
+                        stroke="var(--color-border-default)"
                         strokeWidth={STROKE}
                     />
 
@@ -190,53 +137,65 @@ function SecurityScore({ stats = {} }) {
                         cy={SIZE / 2}
                         r={RADIUS}
                         fill="none"
-                        stroke={status.stroke}
+                        stroke={status.color}
                         strokeWidth={STROKE}
                         strokeLinecap="round"
                         strokeDasharray={CIRCUMFERENCE}
                         strokeDashoffset={dashOffset}
                         style={{
                             transition:
-                                "stroke-dashoffset 1.1s cubic-bezier(0.4, 0, 0.2, 1)",
-                            filter: `drop-shadow(0 0 8px ${status.glow})`,
+                                "stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)",
                         }}
                     />
                 </svg>
 
                 {/* Center readout */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className={`text-5xl font-bold tracking-tight ${status.text}`}>
+                    <span
+                        className="text-4xl font-bold tracking-tight tabular-nums"
+                        style={{ color: status.color }}
+                    >
                         {clamped}
                     </span>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mt-1">
+                    <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-disabled)] mt-0.5">
                         / 100
                     </span>
                 </div>
             </div>
 
-            {/* Status */}
-            <div className="mt-6 flex items-center justify-center gap-2">
-                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold tracking-wide ${status.badge}`}>
+            {/* Status badge */}
+            <div className="mt-4 flex items-center justify-center">
+                <span
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold border"
+                    style={{
+                        color: status.color,
+                        borderColor: `color-mix(in srgb, ${status.color} 25%, transparent)`,
+                        backgroundColor: `color-mix(in srgb, ${status.color} 10%, transparent)`,
+                    }}
+                >
                     <StatusIcon size={13} />
                     {status.label.toUpperCase()} POSTURE
                 </span>
             </div>
 
-            <p className="text-slate-500 text-xs text-center mt-2.5">
+            <p className="text-[var(--color-text-muted)] text-xs text-center mt-2">
                 {status.caption}
             </p>
 
             {/* Supporting metrics */}
-            <div className="grid grid-cols-3 gap-2.5 mt-auto pt-6">
+            <div className="grid grid-cols-3 gap-2 mt-auto pt-5">
                 {metrics.map((metric) => (
                     <div
                         key={metric.label}
-                        className="bg-slate-800/40 border border-slate-800 rounded-xl px-2 py-3 text-center"
+                        className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md px-2 py-2.5 text-center"
                     >
-                        <p className={`text-lg font-bold leading-none ${metric.valueClass}`}>
+                        <p
+                            className="text-base font-bold leading-none tabular-nums"
+                            style={{ color: metric.color }}
+                        >
                             {metric.value}
                         </p>
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mt-1.5">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-disabled)] mt-1">
                             {metric.label}
                         </p>
                     </div>

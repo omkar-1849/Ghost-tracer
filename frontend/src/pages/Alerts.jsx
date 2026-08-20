@@ -7,7 +7,6 @@ import {
     assignIncident,
     addIncidentNote,
 } from "../services/api";
-import AlertsBackground from "../components/alerts/AlertsBackground";
 import AlertsHero from "../components/alerts/AlertsHero";
 import SummaryStrip from "../components/alerts/SummaryStrip";
 import IncidentQueue from "../components/alerts/IncidentQueue";
@@ -20,7 +19,6 @@ import {
 } from "../components/alerts/alertsData";
 import "../components/alerts/AlertsPage.css";
 
-const DEFAULT_ANALYST = "SOC Analyst";
 
 /* SOC-appropriate status labels — backend statuses pass through,
    OPEN incidents get time-based labels for genuinely useful info. */
@@ -58,8 +56,6 @@ function mapIncident(incident, index = 0) {
         ? createdMs
         : Date.now() - index * 7 * 60000;
 
-    /* Time-based status for OPEN incidents — gives analysts genuinely
-       useful information instead of echoing the severity theme status. */
     const ageHrs = (Date.now() - timestamp) / 3_600_000;
     let status;
     if (resolved) {
@@ -74,8 +70,6 @@ function mapIncident(incident, index = 0) {
         status = "AGING";
     }
 
-    /* Deterministic titles from attack families — eliminates the
-       "Security Incident" clone problem that exposes demo data. */
     const title =
         incident.title && !/^security incident$/i.test(incident.title)
             ? incident.title
@@ -115,11 +109,6 @@ function mapIncident(incident, index = 0) {
     };
 }
 
-/* Map backend evidence rows into the shape the UI renders. The backend
-   returns the full forensic model (url/method/status_code/user_agent/
-   ip_address/risk_score/detection_reason) — pass those fields through so the
-   evidence viewer can render them; name/detail are kept as presentation
-   fallbacks. No business logic change. */
 function mapEvidence(evidence = []) {
     return (evidence ?? []).map((item) => ({
         ...item,
@@ -128,27 +117,6 @@ function mapEvidence(evidence = []) {
     }));
 }
 
-/**
- * Alerts — Security Incident Center
- * ---------------------------------
- * A premium SOC investigation workspace wired to the real Incident API:
- *
- *  · Hero            — title, subtitle, search, refresh, filters, export
- *  · Summary strip   — Critical / High / Medium / Resolved from
- *                      GET /incidents/statistics/overview
- *  · Incident queue  — left 35%, scrollable, rich hover/selection states
- *                      fed by GET /incidents (severity/status/search params)
- *  · Investigation   — right 65%, instant crossfade on selection, detail
- *                      loaded from GET /incidents/{id} (timeline, evidence,
- *                      notes)
- *
- * Response actions call the real endpoints:
- *  · Mark Resolved → PATCH /incidents/{id}/status { "status": "RESOLVED" }
- *  · Assign        → PATCH /incidents/{id}/assign
- *  · Add note      → POST /incidents/{id}/notes
- *
- * The queue polls every 5s, matching the cadence used across the app.
- */
 function Alerts() {
     const [incidents, setIncidents] = useState([]);
     const [selectedId, setSelectedId] = useState(null);
@@ -172,13 +140,11 @@ function Alerts() {
     const [syncedAt, setSyncedAt] = useState(() => formatClock(Date.now()));
     const [refreshTick, setRefreshTick] = useState(0);
 
-    /* Minimal local UI state — collapsible left queue rail (88px). */
     const [queueCollapsed, setQueueCollapsed] = useState(false);
 
     const searchRef = useRef(null);
     const selectedIdRef = useRef(selectedId);
 
-    /* Mirror the current selection for use inside the polling callback. */
     useEffect(() => {
         selectedIdRef.current = selectedId;
     }, [selectedId]);
@@ -187,7 +153,6 @@ function Alerts() {
     /* Backend loaders                                                   */
     /* ---------------------------------------------------------------- */
 
-    /* GET /incidents — filtering is delegated to backend query params. */
     const loadIncidents = useCallback(async () => {
         const params = {};
         if (filters.severity && filters.severity !== "ALL") {
@@ -203,13 +168,11 @@ function Alerts() {
         return Array.isArray(data) ? data : (data?.incidents ?? []);
     }, [query, filters.severity, filters.status]);
 
-    /* GET /incidents/statistics/overview */
     const loadStatistics = useCallback(async () => {
         const data = await getIncidentStatistics();
         return data ?? {};
     }, []);
 
-    /* GET /incidents/{id} → incident + timeline + evidence + notes */
     const loadDetail = useCallback(async (id) => {
         const data = await getIncidentById(id);
         return {
@@ -221,7 +184,7 @@ function Alerts() {
     }, []);
 
     /* ---------------------------------------------------------------- */
-    /* Live polling — same cadence as the rest of the app (5s)           */
+    /* Live polling                                                      */
     /* ---------------------------------------------------------------- */
     useEffect(() => {
         let cancelled = false;
@@ -244,7 +207,6 @@ function Alerts() {
                 });
                 setSyncedAt(formatClock(Date.now()));
 
-                /* Keep the selected incident in sync with the live queue. */
                 const activeId = selectedIdRef.current;
                 if (mapped.length > 0 && !mapped.some((item) => item.id === activeId)) {
                     setSelectedId(mapped[0].id);
@@ -266,7 +228,6 @@ function Alerts() {
         };
     }, [loadIncidents, loadStatistics, refreshTick]);
 
-    /* Fetch the full incident detail (timeline, evidence, notes) on select. */
     useEffect(() => {
         let cancelled = false;
 
@@ -285,7 +246,6 @@ function Alerts() {
         };
     }, [selectedId, loadDetail, refreshTick]);
 
-    /* "/" focuses the search field from anywhere on the page. */
     useEffect(() => {
         function handleKeyDown(event) {
             const tag = document.activeElement?.tagName;
@@ -363,7 +323,6 @@ function Alerts() {
         window.setTimeout(() => setExporting(false), 1300);
     }
 
-    /* Mark Resolved → PATCH /incidents/{id}/status { "status": "RESOLVED" } */
     async function handleResolved(id) {
         try {
             await updateIncidentStatus(id, "RESOLVED");
@@ -393,7 +352,6 @@ function Alerts() {
         }
     }
 
-    /* Assign → PATCH /incidents/{id}/assign */
     async function handleAssign(id, analyst) {
         try {
             await assignIncident(id, analyst);
@@ -409,7 +367,6 @@ function Alerts() {
         }
     }
 
-    /* Add note → POST /incidents/{id}/notes */
     async function handleAddNote(id, analyst, note) {
         if (!id || !analyst || !note) return;
 
@@ -430,54 +387,49 @@ function Alerts() {
     /* ---------------------------------------------------------------- */
 
     return (
-        <div className="relative min-h-[calc(100vh-4rem)]">
-            {/* Ambient layered background (decoration only) */}
-            <AlertsBackground />
+        <div className="p-6 max-w-[1440px]">
+            {/* Hero — title, search, refresh, filters, export */}
+            <AlertsHero
+                query={query}
+                onQueryChange={setQuery}
+                filters={filters}
+                onFiltersChange={setFilters}
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                exporting={exporting}
+                onExport={handleExport}
+                syncedAt={syncedAt}
+                total={total}
+                searchRef={searchRef}
+            />
 
-            <div className="relative z-10 mx-auto max-w-[1440px] px-1 pb-20 pt-2 sm:px-4 lg:px-6">
-                {/* Hero — title, search, refresh, filters, export */}
-                <AlertsHero
-                    query={query}
-                    onQueryChange={setQuery}
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    refreshing={refreshing}
-                    onRefresh={handleRefresh}
-                    exporting={exporting}
-                    onExport={handleExport}
-                    syncedAt={syncedAt}
-                    total={total}
-                    searchRef={searchRef}
+            {/* Summary strip — real statistics from the incidents API */}
+            <div className="mt-6">
+                <SummaryStrip counts={counts} />
+            </div>
+
+            {/* Two investigation workspaces */}
+            <div
+                className={`alerts-workspace-grid mt-6 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:grid-cols-[minmax(0,35fr)_minmax(0,65fr)] ${
+                    queueCollapsed ? "alerts-workspace-grid--collapsed" : ""
+                }`}
+            >
+                <IncidentQueue
+                    incidents={incidents}
+                    selectedId={selectedId}
+                    onSelect={handleSelect}
+                    mobileHidden={mobileOpen}
+                    collapsed={queueCollapsed}
+                    onToggleCollapse={() => setQueueCollapsed((value) => !value)}
                 />
-
-                {/* Summary strip — real statistics from the incidents API */}
-                <div className="mt-6">
-                    <SummaryStrip counts={counts} />
-                </div>
-
-                {/* Two investigation workspaces */}
-                <div
-                    className={`alerts-workspace-grid mt-6 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:grid-cols-[minmax(0,35fr)_minmax(0,65fr)] ${
-                        queueCollapsed ? "alerts-workspace-grid--collapsed" : ""
-                    }`}
-                >
-                    <IncidentQueue
-                        incidents={incidents}
-                        selectedId={selectedId}
-                        onSelect={handleSelect}
-                        mobileHidden={mobileOpen}
-                        collapsed={queueCollapsed}
-                        onToggleCollapse={() => setQueueCollapsed((value) => !value)}
-                    />
-                    <InvestigationWorkspace
-                        incident={selectedIncident}
-                        onBack={handleBack}
-                        mobileHidden={!mobileOpen}
-                        onResolved={handleResolved}
-                        onAssign={handleAssign}
-                        onAddNote={handleAddNote}
-                    />
-                </div>
+                <InvestigationWorkspace
+                    incident={selectedIncident}
+                    onBack={handleBack}
+                    mobileHidden={!mobileOpen}
+                    onResolved={handleResolved}
+                    onAssign={handleAssign}
+                    onAddNote={handleAddNote}
+                />
             </div>
         </div>
     );

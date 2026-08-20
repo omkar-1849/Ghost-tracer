@@ -6,13 +6,8 @@ import {
     Download,
     ShieldCheck,
     UserPlus,
+    Loader2,
 } from "lucide-react";
-
-/**
- * ResponseActions
- * ---------------
- * Backend-connected action bar.
- */
 
 function ResponseActions({
     incident,
@@ -22,7 +17,6 @@ function ResponseActions({
     const [assigning, setAssigning] = useState(false);
     const [showAssignModal, setShowAssignModal] = useState(false);
     const [analystName, setAnalystName] = useState("");
-
     const [resolving, setResolving] = useState(false);
     const [muted, setMuted] = useState(false);
 
@@ -34,15 +28,9 @@ function ResponseActions({
 
     async function confirmAssign() {
         if (!analystName.trim()) return;
-
         setAssigning(true);
-
         try {
-            await onAssign?.(
-                incident.id,
-                analystName.trim()
-            );
-
+            await onAssign?.(incident.id, analystName.trim());
             setShowAssignModal(false);
             setAnalystName("");
         } finally {
@@ -50,12 +38,9 @@ function ResponseActions({
         }
     }
 
-
     async function handleResolve() {
         if (resolving || resolved) return;
-
         setResolving(true);
-
         try {
             await onResolved?.(incident.id);
         } finally {
@@ -64,38 +49,31 @@ function ResponseActions({
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-2.5">
-            {/* Investigate — primary action */}
+        <div className="flex flex-wrap items-center gap-2">
+            {/* Investigate action */}
             <button
                 type="button"
-                className="alerts-btn-primary inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[14px] font-bold tracking-wide text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60 focus-visible:ring-offset-0"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[var(--color-accent)] text-white text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors shadow-sm"
             >
-                <Crosshair size={15} />
-                Investigate
+                <Crosshair size={14} />
+                <span>Investigate</span>
             </button>
 
             {/* Assign */}
             <button
                 type="button"
                 onClick={handleAssign}
-                className="alerts-btn-frost alerts-btn-assign inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/50 px-4 py-2.5 text-[14px] font-semibold text-slate-200 backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400/50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
             >
                 {assigning ? (
                     <>
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-indigo-300 border-t-transparent" />
-                        Assigning…
+                        <Loader2 size={13} className="animate-spin text-[var(--color-accent)]" />
+                        <span>Assigning…</span>
                     </>
                 ) : (
                     <>
-                        <span className="relative flex h-2 w-2">
-                            <span className="alerts-assign-dot absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-60" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-400" />
-                        </span>
-                        <UserPlus
-                            size={14}
-                            className="text-indigo-300"
-                        />
-                        Assign
+                        <UserPlus size={13} className="text-[var(--color-text-muted)]" />
+                        <span>Assign Analyst</span>
                     </>
                 )}
             </button>
@@ -104,33 +82,27 @@ function ResponseActions({
             <button
                 type="button"
                 onClick={handleResolve}
-                disabled={resolved}
-                className={`alerts-btn-frost alerts-btn-resolve inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[14px] font-semibold backdrop-blur-xl transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 ${
-                    resolved || resolving
-                        ? "is-resolving border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                        : "border-white/10 bg-slate-950/50 text-slate-200"
-                } ${resolving ? "is-resolving" : ""}`}
+                disabled={resolved || resolving}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
+                    resolved
+                        ? "bg-[rgba(63,163,77,0.10)] border-[rgba(63,163,77,0.25)] text-[var(--color-success)] cursor-default"
+                        : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"
+                }`}
             >
                 {resolved ? (
                     <>
-                        <ShieldCheck
-                            size={14}
-                            className="text-emerald-300"
-                        />
-                        Resolved
+                        <ShieldCheck size={13} className="text-[var(--color-success)]" />
+                        <span>Resolved</span>
                     </>
                 ) : resolving ? (
                     <>
-                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-emerald-300 border-t-transparent" />
-                        Resolving…
+                        <Loader2 size={13} className="animate-spin text-[var(--color-success)]" />
+                        <span>Resolving…</span>
                     </>
                 ) : (
                     <>
-                        <Check
-                            size={14}
-                            className="text-emerald-300"
-                        />
-                        Mark Resolved
+                        <Check size={13} className="text-[var(--color-success)]" />
+                        <span>Mark Resolved</span>
                     </>
                 )}
             </button>
@@ -138,88 +110,81 @@ function ResponseActions({
             {/* Export */}
             <button
                 type="button"
-                className="alerts-btn-frost alerts-btn-export inline-flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/50 px-4 py-2.5 text-[14px] font-semibold text-slate-200 backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)] transition-colors"
             >
-                <Download
-                    size={14}
-                    className="text-amber-300"
-                />
-                Export
+                <Download size={13} className="text-[var(--color-text-muted)]" />
+                <span>Export Details</span>
             </button>
 
             {/* Mute */}
             <button
                 type="button"
-                onClick={() => setMuted((value) => !value)}
-                className={`alerts-btn-frost alerts-btn-mute inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-[14px] font-semibold backdrop-blur-xl transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/50 ${
+                onClick={() => setMuted((v) => !v)}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
                     muted
-                        ? "is-muted border-slate-500/35 bg-slate-500/10 text-slate-400"
-                        : "border-white/10 bg-slate-950/50 text-slate-300"
+                        ? "bg-[var(--color-surface-3)] border-[var(--color-border-default)] text-[var(--color-text-disabled)]"
+                        : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                 }`}
             >
-                <BellOff
-                    size={14}
-                    className={muted ? "text-slate-500" : "text-slate-400"}
-                />
-                {muted ? "Muted" : "Mute"}
+                <BellOff size={13} />
+                <span>{muted ? "Muted" : "Mute"}</span>
             </button>
 
-            
+            {/* Assign Modal */}
             {showAssignModal && (
-                <div className="alerts-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-                    <div className="alerts-modal relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 p-6 shadow-[0_30px_80px_-24px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
-                        {/* Gradient top border */}
-                        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-400/70 to-transparent" />
-                        {/* Soft inner glow */}
-                        <span
-                            className="pointer-events-none absolute -top-16 left-1/2 h-32 w-64 -translate-x-1/2 opacity-30"
-                            style={{
-                                background:
-                                    "radial-gradient(closest-side, rgba(34,211,238,0.35), transparent 100%)",
-                                filter: "blur(30px)",
-                            }}
-                        />
-
-                        <h3 className="relative text-xl font-bold tracking-tight text-white">
-                            Assign Incident
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                    onClick={() => {
+                        setShowAssignModal(false);
+                        setAnalystName("");
+                    }}
+                >
+                    <div className="absolute inset-0 bg-[var(--color-overlay)] animate-[fade-in_0.15s_ease-out_both]" aria-hidden="true" />
+                    <div
+                        className="relative w-full max-w-sm rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] p-5 shadow-[var(--shadow-3)] animate-[modal-in_0.18s_cubic-bezier(0.16,1,0.3,1)_both]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+                            Assign Case Analyst
                         </h3>
 
-                        <p className="relative mt-2 text-[15px] text-slate-400">
-                            Enter the analyst name.
+                        <p className="mt-1 text-xs text-[var(--color-text-muted)]">
+                            Specify the SOC analyst taking ownership of case <span className="font-mono text-[var(--color-text-primary)]">{incident?.caseId}</span>.
                         </p>
 
                         <input
                             type="text"
                             value={analystName}
                             onChange={(e) => setAnalystName(e.target.value)}
-                            placeholder="e.g. Omkar"
-                            className="relative mt-5 w-full rounded-xl border border-white/10 bg-slate-950/60 px-4 py-3 text-[15px] text-slate-100 placeholder-slate-500 backdrop-blur-xl outline-none transition-all duration-300 focus:border-cyan-400/50 focus:bg-slate-950/80 focus:shadow-[0_0_0_3px_rgba(34,211,238,0.08),0_0_24px_-6px_rgba(34,211,238,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
+                            placeholder="Analyst Name (e.g. Omkar)"
+                            className="mt-3.5 w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                            autoFocus
                         />
 
-                        <div className="relative mt-6 flex justify-end gap-3">
+                        <div className="mt-4 flex justify-end gap-2">
                             <button
+                                type="button"
                                 onClick={() => {
                                     setShowAssignModal(false);
                                     setAnalystName("");
                                 }}
-                                className="rounded-full border border-white/10 bg-slate-950/40 px-4 py-2 text-[14px] font-semibold text-slate-300 backdrop-blur-xl transition-all duration-300 hover:border-white/20 hover:bg-slate-800/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                                className="rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] px-3 py-1.5 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
                             >
                                 Cancel
                             </button>
 
                             <button
+                                type="button"
                                 onClick={confirmAssign}
-                                disabled={assigning}
-                                className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 px-5 py-2.5 text-[14px] font-bold text-white shadow-[0_10px_30px_-10px_rgba(34,211,238,0.6)] transition-all duration-300 hover:shadow-[0_14px_36px_-10px_rgba(34,211,238,0.75)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={assigning || !analystName.trim()}
+                                className="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {assigning ? "Assigning..." : "Assign"}
+                                {assigning ? "Assigning…" : "Assign Case"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
-
         </div>
     );
 }

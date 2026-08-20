@@ -71,14 +71,14 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 aria-expanded={open}
                 onClick={() => setOpen(o => !o)}
                 onKeyDown={handleKeyDown}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-slate-300 hover:text-white rounded-lg cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/30 ${
-                    open ? "bg-slate-800/80 text-white" : "hover:bg-slate-800/50"
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-md cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] ${
+                    open ? "bg-[var(--color-surface-3)] text-[var(--color-text-primary)]" : "hover:bg-[var(--color-surface-2)]"
                 }`}
             >
                 <span className="truncate font-semibold">{active ? active.label : value}</span>
                 <ChevronDown
                     size={14}
-                    className={`text-slate-500 transition-transform duration-150 ${open ? "rotate-180 text-emerald-400" : ""}`}
+                    className={`text-[var(--color-text-muted)] transition-transform duration-150 ${open ? "rotate-180 text-[var(--color-accent)]" : ""}`}
                 />
             </button>
 
@@ -86,7 +86,7 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 <ul
                     role="listbox"
                     aria-labelledby={id}
-                    className="absolute right-0 top-[calc(100%+6px)] z-30 min-w-[180px] py-1.5 rounded-xl bg-slate-900/95 backdrop-blur-xl border border-slate-700/70 shadow-2xl shadow-black/50 animate-scale-in origin-top-right"
+                    className="absolute right-0 top-[calc(100%+6px)] z-30 min-w-[180px] py-1.5 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-default)] shadow-[var(--shadow-2)] animate-scale-in origin-top-right"
                 >
                     {options.map((opt, idx) => {
                         const selected = opt.value === value;
@@ -99,12 +99,12 @@ export default function CustomSelect({ value, onChange, options, id, className =
                                     onClick={() => selectOption(opt.value)}
                                     className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-sm text-left transition-all duration-100 ${
                                         isHighlighted
-                                            ? "bg-emerald-500/10 text-white translate-x-0.5"
-                                            : selected ? "text-emerald-300" : "text-slate-300"
+                                            ? "bg-[var(--color-surface-2)] text-[var(--color-text-primary)]"
+                                            : selected ? "text-[var(--color-accent)]" : "text-[var(--color-text-secondary)]"
                                     }`}
                                 >
                                     <span className="font-medium">{opt.label}</span>
-                                    {selected && <Check size={14} className="text-emerald-400 shrink-0 animate-fade-in" />}
+                                    {selected && <Check size={14} className="text-[var(--color-accent)] shrink-0 animate-fade-in" />}
                                 </button>
                             </li>
                         );

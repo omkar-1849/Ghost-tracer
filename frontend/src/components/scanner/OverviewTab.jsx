@@ -1,14 +1,15 @@
 import { useMemo } from "react";
 import { Activity, AlertTriangle, CheckCircle2, Clock, FileText, History, Layers, Play, Radar, XCircle, ShieldAlert, WifiOff } from "lucide-react";
-import { StatTile, formatDuration, StatusPill } from "./shared";
+import { StatTile, StatusPill } from "./shared";
+import { formatDuration } from "./scannerUtils";
 import { SCANNER_ENGINES, ACTIVE_STATUSES } from "./constants";
 import ScanHistoryTable from "./ScanHistoryTable";
 import { useNavigate } from "react-router-dom";
 
 const stateThemes = {
-    ready: { label: "Ready", classes: "bg-green-500/10 text-green-400 border-green-500/30" },
-    running: { label: "Running", classes: "bg-cyan-500/10 text-cyan-300 border-cyan-500/30" },
-    offline: { label: "Offline", classes: "bg-slate-500/10 text-slate-400 border-slate-500/30" },
+    ready: { label: "Ready", classes: "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]" },
+    running: { label: "Running", classes: "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]" },
+    offline: { label: "Offline", classes: "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]" },
 };
 
 // Count critical + high severity findings across a scan's parsed output.
@@ -28,44 +29,27 @@ function countSeverityFindings(scan, severities) {
     return 0;
 }
 
-// Collect recent vulnerability items across completed scans (newest first).
-function collectRecentVulnerabilities(scans, limit = 8) {
-    const out = [];
+function collectRecentVulnerabilities(scans) {
+    const findings = [];
     for (const scan of scans) {
+        if ((scan.status || "").toUpperCase() !== "COMPLETED" || !scan.parsed_output) continue;
         const report = scan.parsed_output;
-        if (!report) continue;
-        const list = report.findings;
-        let items = [];
-        if (Array.isArray(list)) {
-            items = list;
-        } else if (list && typeof list === "object") {
-            items = [
-                ...(list.critical || []).map((item) => ({ name: item, severity: "critical" })),
-                ...(list.warnings || []).map((item) => ({ name: item, severity: "high" })),
-            ];
-        }
-        for (const item of items) {
-            out.push({
-                id: `${scan.id}-${out.length}`,
+        const list = Array.isArray(report.findings) ? report.findings : [];
+        for (const item of list) {
+            findings.push({
                 scanId: scan.id,
-                title: item.name || item.title || item.template_id || item.type || "Finding",
-                severity: item.severity || "info",
-                scanner: scan.scanner,
                 target: scan.target,
+                scanner: scan.scanner,
+                title: item.title || item.name || "Vulnerability finding",
+                severity: (item.severity || "medium").toLowerCase(),
+                description: item.description || item.detail || "",
+                completed_at: scan.completed_at,
             });
-            if (out.length >= limit) return out;
+            if (findings.length >= 10) return findings;
         }
     }
-    return out;
+    return findings;
 }
-
-const severityText = {
-    critical: "text-red-400 border-red-500/30 bg-red-500/10",
-    high: "text-orange-400 border-orange-500/30 bg-orange-500/10",
-    medium: "text-amber-400 border-amber-500/30 bg-amber-500/10",
-    low: "text-yellow-300 border-yellow-500/30 bg-yellow-500/10",
-    info: "text-sky-300 border-sky-500/30 bg-sky-500/10",
-};
 
 export default function OverviewTab({
     stats,
@@ -123,9 +107,9 @@ export default function OverviewTab({
     ];
 
     return (
-        <div style={{ animation: "section-in 0.45s ease-out both" }} className="space-y-8">
+        <div className="space-y-6">
             {/* Command Center Tiles */}
-            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
                 {tiles.map((tile) => (
                     <StatTile key={tile.label} {...tile} />
                 ))}
@@ -133,31 +117,32 @@ export default function OverviewTab({
 
             {/* Installed Scanners / Launchpad */}
             <div>
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <Radar className="text-purple-400" size={20} />
-                    Installed Scanners
+                <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+                    <Radar className="text-[var(--color-text-muted)]" size={16} />
+                    Installed Security Engines
                 </h2>
 
                 {enginesLoading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         {[0, 1, 2, 3, 4, 5].map((row) => (
-                            <div key={row} className="h-44 rounded-2xl bg-slate-800/20 animate-pulse" />
+                            <div key={row} className="h-36 rounded-lg bg-[var(--color-surface-2)] animate-pulse" />
                         ))}
                     </div>
                 ) : enginesError ? (
-                    <div className="flex flex-col items-center justify-center py-14 text-center bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl">
-                        <WifiOff size={28} className="text-red-400 mb-3" />
-                        <p className="text-white font-semibold">Scanner engines unreachable</p>
-                        <p className="text-slate-500 text-sm mt-1 mb-4">Make sure the backend is running.</p>
+                    <div className="flex flex-col items-center justify-center py-10 text-center bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg">
+                        <WifiOff size={24} className="text-[var(--color-critical)] mb-2" />
+                        <p className="text-xs font-semibold text-[var(--color-text-primary)]">Scanner engines unreachable</p>
+                        <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 mb-3">Ensure the backend API service is running.</p>
                         <button
+                            type="button"
                             onClick={onRefreshEngines}
-                            className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white rounded-xl px-5 py-2.5 text-sm font-medium transition-all duration-200"
+                            className="bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded px-3 py-1.5 text-xs font-medium transition-colors"
                         >
                             Retry
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                         {engines.map((engineInfo) => {
                             const config = SCANNER_ENGINES.find((e) => e.engine === engineInfo.name);
                             if (!config) return null;
@@ -176,43 +161,40 @@ export default function OverviewTab({
                                 <div
                                     key={engineInfo.name}
                                     onClick={() => onTabChange(config.id)}
-                                    className="group relative bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-5 shadow-lg shadow-black/40 overflow-hidden flex flex-col transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:border-purple-500/50 hover:shadow-[0_15px_30px_-10px_rgba(0,0,0,0.6)]"
+                                    className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-4 shadow-[var(--shadow-1)] flex flex-col justify-between hover:border-[var(--color-border-strong)] transition-colors cursor-pointer group"
                                 >
-                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                    <div className="flex items-start justify-between mb-3 relative z-10">
-                                        <div className="flex items-center gap-3">
-                                            <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/25 to-fuchsia-600/10 flex items-center justify-center border border-purple-500/20">
-                                                <Icon size={18} className="text-purple-300" />
-                                            </span>
-                                            <div>
-                                                <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
-                                                    {config.name}
-                                                </h3>
-                                                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                                                    Type: {engineInfo.type || "unknown"}
-                                                </p>
+                                    <div>
+                                        <div className="flex items-start justify-between mb-2.5">
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="w-8 h-8 rounded-md bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">
+                                                    <Icon size={16} className="text-[var(--color-accent)]" />
+                                                </span>
+                                                <div>
+                                                    <h3 className="text-xs font-semibold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent)] transition-colors">
+                                                        {config.name}
+                                                    </h3>
+                                                    <p className="text-[10px] text-[var(--color-text-muted)] uppercase tracking-wider">
+                                                        {engineInfo.type || "Scanner"}
+                                                    </p>
+                                                </div>
                                             </div>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${state.classes}`}>
+                                                {state.label}
+                                            </span>
                                         </div>
-                                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${state.classes}`}>
-                                            {state.label}
-                                        </span>
+
+                                        <p className="text-xs text-[var(--color-text-secondary)] line-clamp-2 mb-3">
+                                            {engineInfo.description || config.description}
+                                        </p>
                                     </div>
 
-                                    <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1 relative z-10">
-                                        {engineInfo.description || config.description}
-                                    </p>
-
-                                    <div className="flex items-center justify-between text-xs text-slate-500 pt-3 border-t border-slate-800/60 relative z-10">
-                                        <span className="font-mono">Version: {engineInfo.version || "N/A"}</span>
-                                        <span className="flex items-center gap-1.5">
-                                            <History size={12} /> {engineCount} scans
+                                    <div className="pt-2.5 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-[11px] text-[var(--color-text-muted)]">
+                                        <span className="font-mono">v{engineInfo.version || "1.0"}</span>
+                                        <span className="flex items-center gap-1">
+                                            <History size={11} /> {engineCount} scans
                                         </span>
-                                    </div>
-
-                                    <div className="flex items-center text-sm font-medium relative z-10 mt-3">
-                                        <span className="flex items-center gap-1.5 text-purple-400 group-hover:text-purple-300 transition-colors">
-                                            <Play size={14} /> Launch Scanner →
+                                        <span className="text-[var(--color-accent)] font-medium flex items-center gap-1 group-hover:underline">
+                                            <Play size={11} /> Launch
                                         </span>
                                     </div>
                                 </div>
@@ -222,151 +204,166 @@ export default function OverviewTab({
                 )}
             </div>
 
-            {/* Dashboards Top Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Dashboards Active Queue & Last Completed */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Active Scan Queue */}
-                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40 flex flex-col">
-                    <div className="flex items-center justify-between mb-5">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                            <Activity className="text-cyan-400" size={18} />
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                            <Activity size={15} className="text-[var(--color-text-muted)]" />
                             Active Scan Queue
                         </h3>
-                        <span className="px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-semibold">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] tabular-nums">
                             {activeScans.length} Active
                         </span>
                     </div>
 
                     {activeScans.length > 0 ? (
-                        <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                        <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[260px] pr-1">
                             {activeScans.map((scan) => (
-                                <div key={scan.id} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-4 flex items-center justify-between group hover:bg-slate-800/60 transition-colors">
+                                <div key={scan.id} className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3 flex items-center justify-between">
                                     <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-slate-400 text-xs font-mono">#{scan.id}</span>
-                                            <span className="text-white font-medium text-sm truncate max-w-[200px]" title={scan.target}>{scan.target}</span>
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <span className="text-[var(--color-text-muted)] text-[11px] font-mono">#{scan.id}</span>
+                                            <span className="text-[var(--color-text-primary)] font-mono text-xs truncate max-w-[200px]" title={scan.target}>{scan.target}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-xs">
-                                            <span className="text-slate-500">{scan.scanner}</span>
-                                            <span className="flex items-center gap-1 text-cyan-400">
-                                                <Clock size={12} /> {formatDuration(scan.created_at, now)}
-                                            </span>
+                                        <div className="flex items-center gap-3 text-[11px] text-[var(--color-text-muted)]">
+                                            <span>{scan.scanner}</span>
+                                            <span className="text-[var(--color-accent)] font-medium">{formatDuration(scan.created_at, now)}</span>
                                         </div>
                                     </div>
-                                    <StatusPill status={scan.status} />
+                                    <div className="flex items-center gap-2">
+                                        <StatusPill status={scan.status} />
+                                        <button
+                                            type="button"
+                                            onClick={() => onCancelScan(scan.id)}
+                                            disabled={cancellingId === scan.id}
+                                            className="p-1 rounded text-[var(--color-critical)] hover:bg-[rgba(229,72,77,0.12)] transition-colors disabled:opacity-50"
+                                            title="Cancel Scan"
+                                        >
+                                            <XCircle size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-                            <CheckCircle2 size={32} className="text-slate-600 mb-3" />
-                            <p className="text-slate-300 font-medium">Queue is Empty</p>
-                            <p className="text-slate-500 text-sm mt-1">No scans are currently running.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] border-dashed">
+                            <Clock size={20} className="text-[var(--color-text-disabled)] mb-1.5" />
+                            <p className="text-xs font-medium text-[var(--color-text-secondary)]">Queue Idle</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">No scans currently in execution or queued.</p>
                         </div>
                     )}
                 </div>
 
-                {/* Last Scan Summary */}
-                <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40 flex flex-col">
-                    <div className="flex items-center mb-5">
-                        <h3 className="text-lg font-bold flex items-center gap-2">
-                            <FileText className="text-purple-400" size={18} />
-                            Last Scan Summary
+                {/* Last Completed Scan Summary */}
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
+                            <CheckCircle2 size={15} className="text-[var(--color-text-muted)]" />
+                            Latest Completed Assessment
                         </h3>
+                        {lastCompletedScan && (
+                            <button
+                                type="button"
+                                onClick={() => handleViewReport(lastCompletedScan.id)}
+                                className="text-xs font-medium text-[var(--color-accent)] hover:underline flex items-center gap-1"
+                            >
+                                <FileText size={12} /> View Report
+                            </button>
+                        )}
                     </div>
 
                     {lastCompletedScan ? (
-                        <div className="flex-1 bg-slate-950/30 rounded-xl border border-slate-800/40 p-5 flex flex-col justify-center relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <FileText size={100} />
-                            </div>
-
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <StatusPill status={lastCompletedScan.status} />
-                                    <span className="text-xs text-slate-500 font-mono">#{lastCompletedScan.id}</span>
+                        <div className="flex-1 bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-4 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-[11px] font-mono text-[var(--color-text-muted)]">Scan #{lastCompletedScan.id}</span>
+                                    <span className="text-[11px] text-[var(--color-text-muted)]">
+                                        {formatDuration(lastCompletedScan.created_at, lastCompletedScan.completed_at)}
+                                    </span>
                                 </div>
-
-                                <h4 className="text-xl font-bold text-white mb-1 truncate" title={lastCompletedScan.target}>
+                                <h4 className="text-sm font-semibold text-[var(--color-text-primary)] font-mono truncate mb-1" title={lastCompletedScan.target}>
                                     {lastCompletedScan.target}
                                 </h4>
-
-                                <p className="text-sm text-slate-400 mb-4">
-                                    Scanned by <strong className="text-slate-300">{lastCompletedScan.scanner}</strong> in {formatDuration(lastCompletedScan.created_at, lastCompletedScan.completed_at)}.
+                                <p className="text-xs text-[var(--color-text-muted)] mb-3">
+                                    {lastCompletedScan.scanner} · {new Date(lastCompletedScan.completed_at || lastCompletedScan.created_at).toLocaleString()}
                                 </p>
-
-                                <div className="flex items-center gap-3 mb-5">
-                                    <span className="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/30 text-purple-300 text-sm font-bold tabular-nums">
-                                        Risk {lastCompletedScan.risk_score ?? "—"}
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] tabular-nums">
+                                        Risk: {lastCompletedScan.risk_score ?? "—"}/100
                                     </span>
-                                    <span className="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm font-bold tabular-nums">
-                                        {lastCompletedScan.findings ?? 0} Findings
+                                    <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[rgba(61,122,240,0.10)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] tabular-nums">
+                                        {lastCompletedScan.findings ?? 0} findings
                                     </span>
                                 </div>
+                            </div>
 
+                            <div className="mt-3 pt-2.5 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-xs">
+                                <span className="text-[var(--color-text-muted)] text-[11px]">Assessment completed</span>
                                 <button
+                                    type="button"
                                     onClick={() => handleViewReport(lastCompletedScan.id)}
-                                    className="bg-purple-600/10 text-purple-300 hover:bg-purple-600 hover:text-white border border-purple-500/30 rounded-lg px-4 py-2 text-sm font-medium flex items-center gap-2 transition-all duration-200 w-max"
+                                    className="text-xs font-medium text-[var(--color-accent)] hover:underline"
                                 >
-                                    <FileText size={14} /> View Full Report
+                                    Inspect Findings →
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-                            <History size={32} className="text-slate-600 mb-3" />
-                            <p className="text-slate-300 font-medium">No Recent Scans</p>
-                            <p className="text-slate-500 text-sm mt-1">Complete a scan to see the summary.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center py-8 text-center bg-[var(--color-surface-1)] rounded-md border border-[var(--color-border-default)] border-dashed">
+                            <CheckCircle2 size={20} className="text-[var(--color-text-disabled)] mb-1.5" />
+                            <p className="text-xs font-medium text-[var(--color-text-secondary)]">No Completed Scans</p>
+                            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Completed assessments will display their summary here.</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Recent Vulnerabilities */}
-            <div className="bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl p-6 shadow-lg shadow-black/40">
-                <div className="flex items-center justify-between mb-5">
-                    <h3 className="text-lg font-bold flex items-center gap-2">
-                        <ShieldAlert className="text-red-400" size={18} />
-                        Recent Vulnerabilities
+            {/* Recent Vulnerabilities feed */}
+            {recentVulnerabilities.length > 0 && (
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
+                        <AlertTriangle size={15} className="text-[var(--color-warning)]" />
+                        Discovered Vulnerabilities Feed
                     </h3>
-                    <span className="px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold">
-                        {recentVulnerabilities.length}
-                    </span>
+                    <div className="space-y-2">
+                        {recentVulnerabilities.map((vuln, idx) => {
+                            const isCrit = vuln.severity === "critical";
+                            const isHigh = vuln.severity === "high";
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => handleViewReport(vuln.scanId)}
+                                    className="p-2.5 rounded bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] transition-colors flex items-center justify-between cursor-pointer"
+                                >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                        <span
+                                            className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                                                isCrit
+                                                    ? "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border border-[rgba(229,72,77,0.25)]"
+                                                    : isHigh
+                                                    ? "bg-[rgba(237,125,28,0.10)] text-[var(--color-high)] border border-[rgba(237,125,28,0.25)]"
+                                                    : "bg-[rgba(221,179,42,0.10)] text-[var(--color-medium)] border border-[rgba(221,179,42,0.25)]"
+                                            }`}
+                                        >
+                                            {vuln.severity}
+                                        </span>
+                                        <span className="text-xs font-medium text-[var(--color-text-primary)] truncate">{vuln.title}</span>
+                                        <span className="text-[11px] text-[var(--color-text-muted)] font-mono truncate hidden sm:inline">{vuln.target}</span>
+                                    </div>
+                                    <span className="text-[11px] text-[var(--color-text-muted)] shrink-0 ml-2">Scan #{vuln.scanId}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
+            )}
 
-                {recentVulnerabilities.length > 0 ? (
-                    <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                        {recentVulnerabilities.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => handleViewReport(item.scanId)}
-                                className="w-full flex items-center gap-3 bg-slate-800/40 border border-slate-700/50 rounded-xl px-4 py-3 text-left hover:bg-slate-800/70 transition-colors"
-                            >
-                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border shrink-0 ${severityText[item.severity] || severityText.info}`}>
-                                    {item.severity}
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block text-sm font-semibold text-white truncate">{item.title}</span>
-                                    <span className="block text-xs text-slate-500 truncate">
-                                        {item.scanner} · {item.target}
-                                    </span>
-                                </span>
-                                <AlertTriangle size={14} className="text-slate-600 shrink-0" />
-                            </button>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-950/30 rounded-xl border border-slate-800/40 border-dashed">
-                        <ShieldAlert size={32} className="text-slate-600 mb-3" />
-                        <p className="text-slate-300 font-medium">No Vulnerabilities Recorded</p>
-                        <p className="text-slate-500 text-sm mt-1">Completed scans with findings will appear here.</p>
-                    </div>
-                )}
-            </div>
-
-            {/* Unified Recent Scans */}
+            {/* Unified Scan History Table */}
             <ScanHistoryTable
-                title="Recent Scans"
-                subtitle="Complete log of all vulnerability assessments."
+                title="Unified Scan History"
+                subtitle="Cross-engine timeline of all automated and manual security scans."
                 scans={recentScans}
                 storageKey="scanner_overview_search"
                 historyLoading={historyLoading}
@@ -378,8 +375,9 @@ export default function OverviewTab({
                 onCancelScan={onCancelScan}
                 onDeleteScan={onDeleteScan}
                 onViewReport={handleViewReport}
-                emptyTitle="No scans yet"
-                emptySubtitle="Select an engine above to run your first assessment."
+                emptyTitle="No scans executed yet"
+                emptySubtitle="Launch a scan from any engine above to start assessing your assets."
+                accent="purple"
             />
         </div>
     );

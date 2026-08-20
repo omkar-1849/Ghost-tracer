@@ -1,30 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Radar, AlertTriangle, CheckCircle2, Loader2, Trash2, WifiOff } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, Trash2, WifiOff } from "lucide-react";
 import { getAllScans, cancelScan, deleteScan, getScannerEngines } from "../../services/scannerApi";
 
 import ScannerTabs from "./ScannerTabs";
 import OverviewTab from "./OverviewTab";
 import EngineTab from "./EngineTab";
+import LiveDot from "../ui/LiveDot";
 import { SCANNER_ENGINES, ACTIVE_STATUSES } from "./constants";
-
-const keyframes = `
-@keyframes scanner-sweep {
-  0% { transform: translateX(-140%) skewX(-12deg); }
-  100% { transform: translateX(440%) skewX(-12deg); }
-}
-@keyframes scanner-bar {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(420%); }
-}
-@keyframes toast-in {
-  from { opacity: 0; transform: translateY(12px) scale(0.96); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-@keyframes section-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-`;
 
 export default function ScannerLayout() {
     const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("scanner_tab") || "overview");
@@ -77,7 +59,6 @@ export default function ScannerLayout() {
         [recentScans]
     );
 
-    // Keep the polling interval from re-binding on every status flip.
     const hasActiveRef = useRef(hasActive);
     useEffect(() => {
         hasActiveRef.current = hasActive;
@@ -108,9 +89,9 @@ export default function ScannerLayout() {
             }
 
             try {
-                const engines = await getScannerEngines();
+                const enginesData = await getScannerEngines();
                 if (!cancelled) {
-                    setEngines(engines);
+                    setEngines(enginesData);
                     setEnginesError(false);
                 }
             } catch (error) {
@@ -191,8 +172,7 @@ export default function ScannerLayout() {
         }
     }
 
-    // Render the active tab. Every engine uses the same generic EngineTab;
-    // only the engine config (id, name, icon, accent) differs.
+    // Render the active tab
     const renderTabContent = () => {
         if (activeTab === "overview") {
             return (
@@ -218,6 +198,8 @@ export default function ScannerLayout() {
         }
 
         const engine = SCANNER_ENGINES.find((e) => e.id === activeTab);
+        if (!engine) return null;
+
         return (
             <EngineTab
                 engine={engine}
@@ -236,53 +218,36 @@ export default function ScannerLayout() {
     };
 
     return (
-        <div className="flex-1 p-8">
-            <style>{keyframes}</style>
-
+        <div className="p-6 max-w-[1440px]">
             {/* Page header */}
-            <div className="relative flex items-center justify-between gap-4 mb-8 p-6 bg-slate-900/60 backdrop-blur-xl border border-slate-800/60 rounded-2xl shadow-lg shadow-black/40 overflow-hidden">
-                <div
-                    className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-purple-500/[0.08] to-transparent"
-                    style={{ animation: "scanner-sweep 9s linear infinite" }}
-                />
-
-                <div className="relative z-10 flex items-center gap-4">
-                    <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-fuchsia-600 flex items-center justify-center shadow-[0_0_24px_rgba(168,85,247,0.5)] ring-1 ring-purple-400/30">
-                        <Radar size={24} className="text-white" />
-                    </span>
-
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-cyan-300 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-                            Scanner Module
-                        </h1>
-                        <p className="text-slate-400 mt-1 text-sm">
-                            Multi-engine security testing and vulnerability assessment platform.
-                        </p>
-                    </div>
+            <div className="flex items-center justify-between gap-4 mb-6">
+                <div>
+                    <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+                        Scanner Module
+                    </h1>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                        Multi-engine security testing and vulnerability assessment console
+                    </p>
                 </div>
 
-                <div className="relative z-10 hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/30">
-                    <span className="relative flex w-2 h-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-                    </span>
-                    <span className="text-xs font-bold tracking-widest text-green-400">
-                        LIVE
-                    </span>
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)]">
+                    <LiveDot color="var(--color-success)" size={5} />
+                    SCANNER READY
                 </div>
             </div>
 
-            {/* Backend offline banner */}
+            {/* Backend offline warning banner - only when error AND no scans */}
             {historyError && recentScans.length === 0 && (
-                <div className="mb-6 flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
-                    <p className="flex items-center gap-2 text-sm text-red-300">
-                        <WifiOff size={16} />
+                <div className="mb-6 flex items-center justify-between gap-3 bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] rounded-md px-4 py-3 text-xs text-[var(--color-critical)]">
+                    <p className="flex items-center gap-2 font-medium">
+                        <WifiOff size={15} />
                         Backend unreachable — scan history could not be loaded.
                     </p>
                     <button
+                        type="button"
                         onClick={loadScans}
                         disabled={historyLoading}
-                        className="text-xs font-bold text-red-300 hover:text-white uppercase tracking-wider transition-colors disabled:opacity-50"
+                        className="font-semibold hover:underline uppercase tracking-wider disabled:opacity-50"
                     >
                         Retry
                     </button>
@@ -296,36 +261,39 @@ export default function ScannerLayout() {
             {/* Delete confirmation dialog */}
             {deleteTarget && (
                 <div
-                    className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm animate-backdrop-in"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     onClick={() => setDeleteTarget(null)}
                 >
+                    <div className="absolute inset-0 bg-[var(--color-overlay)] animate-[fade-in_0.15s_ease-out_both]" aria-hidden="true" />
                     <div
-                        className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl shadow-black/60 animate-scale-in"
+                        className="relative bg-[var(--color-surface-3)] border border-[var(--color-border-default)] rounded-lg p-5 w-full max-w-sm shadow-[var(--shadow-3)] animate-[modal-in_0.18s_cubic-bezier(0.16,1,0.3,1)_both]"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center">
-                                <Trash2 size={18} className="text-red-400" />
+                        <div className="flex items-center gap-3 mb-3">
+                            <span className="w-8 h-8 rounded-md bg-[rgba(229,72,77,0.12)] border border-[rgba(229,72,77,0.25)] flex items-center justify-center">
+                                <Trash2 size={16} className="text-[var(--color-critical)]" />
                             </span>
-                            <h3 className="text-lg font-bold text-white">Delete Scan</h3>
+                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Delete Scan Record</h3>
                         </div>
-                        <p className="text-sm text-slate-400 mb-6">
-                            Delete scan <span className="font-mono text-white">#{deleteTarget.id}</span> targeting{" "}
-                            <span className="text-white">{deleteTarget.target}</span>? This action cannot be undone.
+                        <p className="text-xs text-[var(--color-text-secondary)] mb-5">
+                            Permanently delete scan <span className="font-mono text-[var(--color-text-primary)]">#{deleteTarget.id}</span> targeting{" "}
+                            <span className="text-[var(--color-text-primary)] font-mono">{deleteTarget.target}</span>? This action cannot be undone.
                         </p>
-                        <div className="flex justify-end gap-3">
+                        <div className="flex justify-end gap-2">
                             <button
+                                type="button"
                                 onClick={() => setDeleteTarget(null)}
-                                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-sm font-medium transition-colors"
+                                className="px-3 py-1.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] border border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] text-xs font-medium transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
+                                type="button"
                                 onClick={() => handleDeleteScan(deleteTarget.id)}
                                 disabled={deletingId === deleteTarget.id}
-                                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+                                className="px-3 py-1.5 rounded-md bg-[var(--color-critical)] text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 hover:bg-[var(--color-critical)]/90"
                             >
-                                {deletingId === deleteTarget.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                {deletingId === deleteTarget.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                                 Delete
                             </button>
                         </div>
@@ -337,19 +305,18 @@ export default function ScannerLayout() {
             {toast && (
                 <div
                     key={toast.id}
-                    className={`fixed bottom-6 right-6 z-[60] flex items-center gap-3 px-5 py-3.5 rounded-xl border backdrop-blur-xl shadow-2xl shadow-black/50 ${
+                    className={`fixed bottom-4 right-4 z-50 flex items-center gap-2.5 px-4 py-3 rounded-md border shadow-[var(--shadow-2)] animate-[toast-in_0.18s_ease-out_both] ${
                         toast.type === "success"
-                            ? "bg-green-500/15 border-green-500/40"
-                            : "bg-red-500/15 border-red-500/40"
+                            ? "bg-[var(--color-surface-3)] border-l-[3px] border-l-[var(--color-success)] border-[var(--color-border-default)] text-[var(--color-text-primary)]"
+                            : "bg-[var(--color-surface-3)] border-l-[3px] border-l-[var(--color-critical)] border-[var(--color-border-default)] text-[var(--color-text-primary)]"
                     }`}
-                    style={{ animation: "toast-in 0.25s ease-out" }}
                 >
                     {toast.type === "success" ? (
-                        <CheckCircle2 size={18} className="text-green-400" />
+                        <CheckCircle2 size={15} className="text-[var(--color-success)] shrink-0" />
                     ) : (
-                        <AlertTriangle size={18} className="text-red-400" />
+                        <AlertTriangle size={15} className="text-[var(--color-critical)] shrink-0" />
                     )}
-                    <p className="text-sm font-medium text-white">
+                    <p className="text-xs font-medium text-[var(--color-text-secondary)]">
                         {toast.message}
                     </p>
                 </div>

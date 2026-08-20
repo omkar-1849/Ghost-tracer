@@ -9,77 +9,67 @@ import {
 } from "lucide-react";
 
 import { NavLink } from "react-router-dom";
+import LiveDot from "./ui/LiveDot";
 
 const navItems = [
     {
         to: "/",
         label: "Dashboard",
         icon: LayoutDashboard,
-        iconColor: "text-cyan-400",
     },
     {
         to: "/scanner",
         label: "Scanner",
         icon: Scan,
-        iconColor: "text-blue-400",
     },
     {
         to: "/websites",
         label: "Websites",
         icon: Globe,
-        iconColor: "text-emerald-400",
     },
     {
         to: "/alerts",
         label: "Alerts",
         icon: TriangleAlert,
-        iconColor: "text-orange-400",
     },
     {
         to: "/analytics",
         label: "Analytics",
         icon: ChartColumn,
-        iconColor: "text-purple-400",
     },
     {
         to: "/settings",
         label: "Settings",
         icon: Settings,
-        iconColor: "text-slate-400",
     },
 ];
 
 function Sidebar() {
     return (
-            <aside className="w-80 h-screen flex-shrink-0 bg-slate-950/85 backdrop-blur-xl border-r border-slate-800/60 shadow-2xl shadow-black/50 flex flex-col">
-            <div className="p-8 pb-6 border-b border-slate-800/60">
-
-                <h1 className="flex items-center gap-3 text-2xl font-bold tracking-tight">
-                    <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.45)] ring-1 ring-cyan-400/20">
-                        <Shield size={24} className="text-white" />
+        <aside className="w-60 h-screen flex-shrink-0 bg-[var(--color-surface-1)] border-r border-[var(--color-border-subtle)] flex flex-col">
+            {/* Brand */}
+            <div className="px-5 py-5 border-b border-[var(--color-border-subtle)]">
+                <h1 className="flex items-center gap-2.5 text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <span className="w-8 h-8 rounded-lg bg-[var(--color-accent)] flex items-center justify-center">
+                        <Shield size={16} className="text-white" />
                     </span>
-
-                    <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-                        Sentinel AI
-                    </span>
+                    Sentinel AI
                 </h1>
-
-                <div className="flex items-center gap-2 mt-3">
-                    <p className="text-slate-400 text-xs font-medium">
-                        Threat Monitoring Platform
+                <div className="flex items-center gap-2 mt-2">
+                    <p className="text-[var(--color-text-muted)] text-[11px] font-medium">
+                        Security Operations
                     </p>
-
-                    <span className="px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-bold tracking-widest animate-pulse">
+                    <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider text-[var(--color-success)] bg-[rgba(63,163,77,0.10)] border border-[rgba(63,163,77,0.20)]">
+                        <LiveDot color="var(--color-success)" size={5} />
                         LIVE
                     </span>
                 </div>
-
             </div>
 
-            <nav className="flex-1 p-5 space-y-1.5 overflow-y-auto">
-
-                <p className="px-4 pb-2 text-[10px] font-bold tracking-[0.2em] text-slate-500">
-                    NAVIGATION
+            {/* Navigation */}
+            <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+                <p className="px-3 pb-2 text-[10px] font-semibold tracking-[0.12em] text-[var(--color-text-disabled)] uppercase">
+                    Navigation
                 </p>
 
                 {navItems.map((item) => (
@@ -88,65 +78,49 @@ function Sidebar() {
                         to={item.to}
                         end={item.to === "/"}
                         className={({ isActive }) =>
-                            `relative w-full flex items-center gap-3 text-left px-4 py-3 rounded-xl transition-all duration-300 ${
+                            `relative w-full flex items-center gap-2.5 text-left px-3 py-2 rounded-md text-[13px] font-medium transition-colors duration-150 ${
                                 isActive
-                                    ? "bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 text-white shadow-[0_0_25px_rgba(59,130,246,0.45)] scale-[1.03] border border-cyan-400/30"
-                                    : "text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-purple-500/10"
+                                    ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)]"
+                                    : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)]"
                             }`
                         }
                     >
                         {({ isActive }) => (
                             <>
                                 {isActive && (
-                                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-cyan-400 to-blue-500 shadow-[0_0_12px_rgba(34,211,238,0.9)]" />
+                                    <span className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-[var(--color-accent)]" />
                                 )}
 
-                                <item.icon
-                                    size={20}
-                                    className={isActive ? "text-white" : item.iconColor}
-                                />
+                                <item.icon size={18} />
 
-                                <span className="font-medium text-sm tracking-wide">
-                                    {item.label}
-                                </span>
+                                <span>{item.label}</span>
                             </>
                         )}
                     </NavLink>
                 ))}
-
             </nav>
 
-            <div className="p-5 border-t border-slate-800/60">
-
-                <div className="bg-slate-900/60 border border-slate-800/60 rounded-2xl p-4 shadow-inner shadow-black/20">
-
-                    <p className="text-[10px] font-bold tracking-[0.2em] text-slate-500 mb-3">
-                        SYSTEM STATUS
+            {/* System Status */}
+            <div className="px-3 pb-4">
+                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] rounded-md px-3 py-3">
+                    <p className="text-[10px] font-semibold tracking-[0.12em] text-[var(--color-text-disabled)] uppercase mb-2.5">
+                        System Status
                     </p>
 
-                    <div className="space-y-2.5">
-
-                        <div className="flex items-center gap-2.5 text-xs">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,1)]" />
-                            <span className="text-slate-300">Backend Online</span>
-                        </div>
-
-                        <div className="flex items-center gap-2.5 text-xs">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,1)]" />
-                            <span className="text-slate-300">Scanner Ready</span>
-                        </div>
-
-                        <div className="flex items-center gap-2.5 text-xs">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(74,222,128,1)]" />
-                            <span className="text-slate-300">Database Connected</span>
-                        </div>
-
+                    <div className="space-y-2">
+                        {["Backend Online", "Scanner Ready", "Database Connected"].map(
+                            (label) => (
+                                <div key={label} className="flex items-center gap-2 text-xs">
+                                    <LiveDot color="var(--color-success)" size={6} />
+                                    <span className="text-[var(--color-text-secondary)]">
+                                        {label}
+                                    </span>
+                                </div>
+                            )
+                        )}
                     </div>
-
                 </div>
-
             </div>
-
         </aside>
     );
 }

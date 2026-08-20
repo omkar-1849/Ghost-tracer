@@ -1,19 +1,11 @@
 import { useState } from "react";
-import { ArrowLeft, Clock3, Fingerprint, MessageSquare, Plus, ShieldAlert, User } from "lucide-react";
+import { ArrowLeft, Clock3, Fingerprint, Plus, ShieldAlert, User } from "lucide-react";
 import { formatDateTime, timeAgo } from "./alertsData";
 import AttackDetails from "./AttackDetails";
 import IncidentTimeline from "./IncidentTimeline";
 import EvidencePanel from "./EvidencePanel";
 import ResponseActions from "./ResponseActions";
 
-/**
- * InvestigationWorkspace
- * ----------------------
- * Right investigation workspace (65% on desktop). Shows the selected
- * incident's identity header, attack facts, animated timeline, evidence
- * and the response action bar. Crossfades on incident change via the
- * `key` remount pattern.
- */
 function InvestigationWorkspace({
     incident,
     onBack,
@@ -23,23 +15,22 @@ function InvestigationWorkspace({
     onAddNote,
 }) {
     const [noteText, setNoteText] = useState("");
+
     if (!incident) {
         return (
             <section
-                className={`alerts-enter alerts-panel flex min-h-[24rem] flex-col items-center justify-center gap-3 rounded-3xl p-10 text-center ${
+                className={`flex min-h-[24rem] flex-col items-center justify-center gap-3 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-10 text-center shadow-[var(--shadow-1)] ${
                     mobileHidden ? "hidden md:flex" : "flex"
                 }`}
-                style={{ animationDelay: "300ms" }}
             >
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-slate-800/50">
-                    <ShieldAlert size={24} className="text-slate-500" />
+                <span className="flex h-12 w-12 items-center justify-center rounded-md bg-[var(--color-surface-3)] text-[var(--color-text-disabled)]">
+                    <ShieldAlert size={22} />
                 </span>
-                <p className="text-base font-semibold text-slate-300">
-                    No incident selected
+                <p className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                    No Incident Selected
                 </p>
-                <p className="max-w-xs text-sm leading-relaxed text-slate-500">
-                    Choose an incident from the queue to open its investigation
-                    workspace.
+                <p className="max-w-xs text-[11px] leading-relaxed text-[var(--color-text-muted)]">
+                    Choose an alert or incident record from the queue to open its full forensic workspace.
                 </p>
             </section>
         );
@@ -49,188 +40,161 @@ function InvestigationWorkspace({
 
     return (
         <section
-            className={`alerts-enter alerts-panel flex min-h-0 flex-col overflow-hidden rounded-3xl ${
+            className={`flex min-h-0 flex-col overflow-hidden rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] shadow-[var(--shadow-1)] ${
                 mobileHidden ? "hidden md:flex" : "flex"
             }`}
-            style={{ animationDelay: "300ms" }}
         >
-            {/* ---------------------------------------------------------- */}
-            {/* Incident identity header                                   */}
-            {/* ---------------------------------------------------------- */}
-            <div className="relative z-10 px-6 pb-4 pt-4 sm:px-7">
-                {/* Mobile back affordance */}
-                <div className="mb-3 flex items-center justify-between md:hidden">
+            {/* Header */}
+            <div className="p-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]">
+                {/* Mobile back button */}
+                <div className="mb-2.5 flex items-center justify-between md:hidden">
                     <button
                         type="button"
                         onClick={onBack}
-                        className="alerts-back-btn inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-[11px] font-semibold text-slate-300 backdrop-blur-xl"
+                        className="inline-flex items-center gap-1 rounded bg-[var(--color-surface-2)] border border-[var(--color-border-default)] px-2.5 py-1 text-xs font-medium text-[var(--color-text-secondary)]"
                     >
                         <ArrowLeft size={12} />
                         Queue
                     </button>
 
-                    <span className="font-mono text-[10px] tracking-widest text-slate-500">
+                    <span className="font-mono text-[10px] text-[var(--color-text-muted)]">
                         {incident.caseId}
                     </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    {/* Severity chip */}
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold tracking-[0.16em] ${theme.chip}`}
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${theme.chip}`}
                     >
-                        <span className={`h-1.5 w-1.5 rounded-full ${theme.chipDot}`} />
-                        {theme.label.toUpperCase()}
+                        <span className={`w-1.5 h-1.5 rounded-full ${theme.chipDot}`} />
+                        {theme.label}
                     </span>
 
-                    {/* Status chip */}
                     <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold tracking-[0.16em] ${
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
                             incident.resolved
-                                ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                                ? "bg-[rgba(63,163,77,0.10)] border border-[rgba(63,163,77,0.25)] text-[var(--color-success)]"
                                 : theme.statusChip
                         }`}
                     >
-                        <span className={`h-1.5 w-1.5 rounded-full ${theme.chipDot}`} />
-                        {incident.status.toUpperCase()}
+                        <span className={`w-1.5 h-1.5 rounded-full ${theme.chipDot}`} />
+                        {incident.status}
                     </span>
 
-                    <span className="hidden items-center gap-1.5 rounded-full border border-white/10 bg-slate-950/40 px-2.5 py-1 font-mono text-[11px] tracking-widest text-slate-500 sm:inline-flex">
-                        <Fingerprint size={10} className="text-slate-500" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)]">
+                        <Fingerprint size={10} className="text-[var(--color-text-muted)]" />
                         {incident.caseId}
                     </span>
                 </div>
 
-                <h2 className="mt-3.5 text-2xl font-bold leading-tight tracking-tight text-white sm:text-[28px]">
+                <h2 className="text-base font-semibold tracking-tight text-[var(--color-text-primary)]">
                     {incident.title}
                 </h2>
 
-                <p className="mt-2 max-w-3xl text-[14px] leading-relaxed text-slate-300">
+                <p className="mt-1 text-xs text-[var(--color-text-secondary)] leading-relaxed max-w-2xl">
                     {incident.description}
                 </p>
 
-                <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-slate-500">
-                    <span className="inline-flex items-center gap-1.5">
-                        <Clock3 size={13} className="text-slate-600" />
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-[var(--color-text-muted)] pt-2.5 border-t border-[var(--color-border-subtle)]">
+                    <span className="inline-flex items-center gap-1 text-[11px]">
+                        <Clock3 size={12} className="text-[var(--color-text-muted)]" />
                         {formatDateTime(incident.timestamp)}
                     </span>
-                    <span className="text-slate-700">•</span>
-                    <span>
-                        <span className="font-semibold text-slate-300">
-                            {timeAgo(incident.created_at)}
-                        </span>{" "}
-                        since detection
+                    <span>·</span>
+                    <span className="text-[11px]">
+                        Detected <strong className="text-[var(--color-text-primary)] font-medium">{timeAgo(incident.created_at)}</strong>
                     </span>
-                    <span className="text-slate-700">•</span>
-                    <span>
-                        Confidence{" "}
-                        <span
-                            className={`rounded-full border px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums ${
-                                incident.confidence >= 85
-                                    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
-                                    : incident.confidence >= 70
-                                      ? "border-amber-500/25 bg-amber-500/10 text-amber-300"
-                                      : "border-white/10 bg-white/[0.03] text-slate-300"
-                            }`}
-                        >
+                    <span>·</span>
+                    <span className="text-[11px]">
+                        Confidence:{" "}
+                        <span className="font-mono font-semibold text-[var(--color-text-primary)]">
                             {incident.confidence}%
                         </span>
                     </span>
                 </div>
             </div>
 
-            {/* ---------------------------------------------------------- */}
-            {/* Investigation sections (keyed → crossfade on change)       */}
-            {/* ---------------------------------------------------------- */}
-            <div
-                key={`workspace-${incident.id}`}
-                className="alerts-enter alerts-scroll relative z-10 flex-1 space-y-5 overflow-y-auto px-6 py-5 sm:px-7 lg:space-y-6"
-                style={{ animationDelay: "120ms" }}
-            >
-                {/* Attack Details */}
-                <section>
+            {/* Scrollable sections */}
+            <div className="flex-1 space-y-6 overflow-y-auto max-h-[640px] p-5 scrollbar-thin scrollbar-thumb-[var(--color-border-strong)] scrollbar-track-transparent">
+                {/* 01. Attack Surface Details */}
+                <div>
                     <SectionHeading
                         index="01"
-                        title="Attack Details"
-                        caption="Identified attack surface and classification"
+                        title="Attack Surface Details"
+                        caption="Ingress vectors and MITRE ATT&CK taxonomy"
                     />
-                    <div className="mt-4">
+                    <div className="mt-3">
                         <AttackDetails incident={incident} />
                     </div>
-                </section>
+                </div>
 
-                {/* Timeline */}
-                <section>
+                {/* 02. Timeline */}
+                <div>
                     <SectionHeading
                         index="02"
-                        title="Timeline"
-                        caption="Detection-to-resolution investigation trail"
+                        title="Investigation Timeline"
+                        caption="Chronological record of detections and case milestones"
                     />
-                    <div className="mt-4 rounded-2xl border border-white/[0.06] bg-slate-950/20 px-5 py-4">
+                    <div className="mt-3 rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] p-4">
                         <IncidentTimeline incident={incident} />
                     </div>
-                </section>
+                </div>
 
-                {/* Evidence */}
-                <section>
+                {/* 03. Forensic Evidence */}
+                <div>
                     <SectionHeading
                         index="03"
-                        title="Evidence"
-                        caption="Correlated logs tied to this incident"
+                        title="Forensic Evidence"
+                        caption="Correlated network payloads and telemetry artifacts"
                     />
-                    <div className="mt-4">
+                    <div className="mt-3">
                         <EvidencePanel incident={incident} />
                     </div>
-                </section>
+                </div>
 
-                {/* Investigation Notes */}
-                <section>
+                {/* 04. Case Notes */}
+                <div>
                     <SectionHeading
                         index="04"
-                        title="Investigation Notes"
-                        caption="Analyst observations and case annotations"
+                        title="Case Notes"
+                        caption="Analyst log and investigation annotations"
                     />
-                    <div className="mt-4 rounded-2xl border border-white/[0.06] bg-slate-950/20 px-5 py-4">
-                        {/* Existing notes */}
+                    <div className="mt-3 rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] p-4">
                         {incident.notes && incident.notes.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-2 mb-3">
                                 {incident.notes.map((n) => (
                                     <div
                                         key={n.id}
-                                        className="rounded-xl border border-white/[0.06] bg-slate-950/30 px-4 py-3"
+                                        className="rounded border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-2.5"
                                     >
-                                        <div className="flex items-center gap-2">
-                                            <span className="flex h-5 w-5 items-center justify-center rounded-md bg-cyan-500/10">
-                                                <User size={11} className="text-cyan-400" />
-                                            </span>
-                                            <span className="text-[12px] font-semibold text-slate-300">
+                                        <div className="flex items-center gap-1.5 mb-1">
+                                            <User size={11} className="text-[var(--color-accent)]" />
+                                            <span className="text-xs font-semibold text-[var(--color-text-primary)]">
                                                 {n.analyst}
                                             </span>
-                                            <span className="text-[11px] text-slate-600">•</span>
-                                            <span className="font-mono text-[11px] text-slate-500">
+                                            <span className="text-[10px] text-[var(--color-text-muted)] font-mono ml-auto">
                                                 {timeAgo(n.created_at)}
                                             </span>
                                         </div>
-                                        <p className="mt-2 text-[13px] leading-relaxed text-slate-400">
+                                        <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                                             {n.note}
                                         </p>
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-[12px] text-slate-500">
-                                No investigation notes yet. Add an observation below.
+                            <p className="text-xs text-[var(--color-text-muted)] mb-3">
+                                No case annotations recorded. Add an observation below.
                             </p>
                         )}
 
-                        {/* Add note form */}
-                        <div className="mt-3 flex gap-2">
+                        <div className="flex gap-2">
                             <textarea
                                 value={noteText}
                                 onChange={(e) => setNoteText(e.target.value)}
-                                placeholder="Add a note…"
+                                placeholder="Add analyst case note…"
                                 rows={2}
-                                className="flex-1 resize-none rounded-xl border border-white/[0.08] bg-slate-950/40 px-3.5 py-2.5 text-[13px] leading-relaxed text-slate-200 placeholder-slate-600 outline-none transition-colors duration-300 focus:border-cyan-400/40 focus:ring-1 focus:ring-cyan-400/20"
+                                className="flex-1 resize-none rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-accent)] focus:outline-none"
                             />
                             <button
                                 type="button"
@@ -240,53 +204,46 @@ function InvestigationWorkspace({
                                     onAddNote?.(incident.id, "SOC Analyst", noteText.trim());
                                     setNoteText("");
                                 }}
-                                className="alerts-btn-frost inline-flex h-9 w-9 flex-shrink-0 items-center justify-center self-end rounded-xl border border-white/10 bg-white/[0.04] text-cyan-400 transition-all duration-300 hover:border-cyan-400/30 hover:bg-cyan-500/10 disabled:cursor-not-allowed disabled:opacity-30"
+                                className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center self-end rounded-md bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-40 transition-colors"
+                                title="Add note"
                             >
-                                <Plus size={16} />
+                                <Plus size={14} />
                             </button>
                         </div>
                     </div>
-                </section>
+                </div>
 
-                {/* Response Actions */}
-                <section className="pb-2">
-
+                {/* 05. Response Actions */}
+                <div className="pb-2">
                     <SectionHeading
                         index="05"
                         title="Response Actions"
-                        caption="Next steps for the assigned analyst"
+                        caption="Orchestrate containment and case mitigation"
                     />
-                    <div className="mt-4 rounded-2xl border border-white/[0.06] bg-slate-950/20 px-5 py-4">
+                    <div className="mt-3 rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] p-4">
                         <ResponseActions
                             incident={incident}
                             onResolved={onResolved}
                             onAssign={onAssign}
                         />
-
-                        <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-                            Response actions are connected to the Sentinel AI backend.
-                            Incident status, analyst assignment and investigation workflow
-                            are synchronized with the database in real time.
-                        </p>
                     </div>
-                </section>
+                </div>
             </div>
         </section>
     );
 }
 
-/* Section heading with a subtle index marker */
 function SectionHeading({ index, title, caption }) {
     return (
-        <div className="flex items-baseline gap-3">
-            <span className="font-mono text-[12px] font-bold tracking-widest text-cyan-400/70">
-                {index}
+        <div className="flex items-baseline gap-2">
+            <span className="font-mono text-[11px] font-semibold text-[var(--color-accent)]">
+                {index}.
             </span>
             <div>
-                <h3 className="text-[18px] font-bold tracking-tight text-white">
+                <h3 className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">
                     {title}
                 </h3>
-                <p className="mt-0 text-[12px] text-slate-500">{caption}</p>
+                <p className="text-[11px] text-[var(--color-text-muted)]">{caption}</p>
             </div>
         </div>
     );
