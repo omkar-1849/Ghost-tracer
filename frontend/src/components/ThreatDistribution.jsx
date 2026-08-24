@@ -7,11 +7,13 @@ import { getThreatDistribution } from "../services/api";
  * Data fetching / polling logic is unchanged.
  */
 
+/* Severity-ordered semantic ramp — restrained, no rainbow, no jade
+   (green is reserved for healthy states, not threat mix). */
 const COLORS = [
-    "#3d7af0",
-    "#ed7d1c",
-    "#ddb32a",
-    "#e5484d",
+    "#df5b5b",
+    "#e08544",
+    "#d3a53e",
+    "#8aa6bd",
 ];
 
 /* Solid tooltip that matches the new design language. */

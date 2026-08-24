@@ -89,7 +89,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                 <div className="shrink-0 p-6 pb-5 border-b border-[var(--color-border-default)] bg-[var(--color-surface-1)] flex justify-between items-center">
                     <div>
                         <h3 className="text-xl font-bold text-[var(--color-text-primary)] flex items-center gap-3">
-                            <div className="p-2 bg-[var(--color-success)] text-[var(--color-success)] rounded-lg border border-[var(--color-success)]">
+                            <div className="p-2 bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] rounded-lg border border-[rgba(85,176,123,0.25)]">
                                 <Globe size={20} />
                             </div>
                             {isEdit ? "Edit Website" : "Add Website"}

@@ -18,10 +18,10 @@ from app.models.integration import Integration
 from app.models.user import User
 from app.models.scan import Scan
 from app.models.password_reset_token import PasswordResetToken
-
 from app.models.organization import Organization
 from app.models.organization_member import OrganizationMember
 from app.models.session import Session
+from app.models.response_action import ResponseAction
 
 # Routers
 from app.routers.log_router import router as log_router
@@ -39,23 +39,21 @@ from app.routers.event_router import router as event_router
 from app.routers.profile_router import router as profile_router
 from app.routers.session_router import router as session_router
 from app.routers.auth_router import router as auth_router
-
 from app.routers.audit_log_router import router as audit_log_router
-
-from app.routers.organization_router import (
-    router as organization_router,
-)
-
+from app.routers.organization_router import router as organization_router
 from app.routers.scan_router import router as scan_router
+from app.routers.response_action_router import router as response_action_router
 
 
 Base.metadata.create_all(bind=engine)
 
+
 app = FastAPI(
     title="Sentinel AI",
     description="Intelligent Website Security Monitoring and Threat Detection Platform",
-    version="1.0.0"
+    version="1.0.0",
 )
+
 
 # CORS Configuration
 app.add_middleware(
@@ -71,6 +69,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Routers
 app.include_router(log_router)
 app.include_router(dashboard_router)
@@ -81,22 +80,26 @@ app.include_router(incident_router)
 app.include_router(incident_timeline_router)
 app.include_router(incident_evidence_router)
 app.include_router(incident_note_router)
+
 app.include_router(settings_router)
 app.include_router(website_router)
 app.include_router(integration_router)
 app.include_router(event_router)
-app.include_router(organization_router)
 
+app.include_router(organization_router)
 app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(session_router)
 app.include_router(scan_router)
 app.include_router(audit_log_router)
 
+app.include_router(response_action_router)
+
+
 @app.get("/")
 def home():
     return {
         "status": "running",
         "project": "Sentinel AI",
-        "message": "Backend is running successfully 🚀"
+        "message": "Backend is running successfully 🚀",
     }

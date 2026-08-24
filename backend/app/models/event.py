@@ -48,6 +48,8 @@ class Event(Base):
     created_at = Column(
         DateTime,
         default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
+        nullable=False,
+        index=True,
     )
 
     website = relationship("Website")

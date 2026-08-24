@@ -91,7 +91,7 @@ def create_alert(
         description=f"Incident '{incident.incident_code}' created from alert {alert.id}.",
     )
 
-    return alert
+    return alert, incident
 
 
 def get_recent_alerts(db: Session):

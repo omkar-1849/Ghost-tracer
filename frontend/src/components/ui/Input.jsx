@@ -38,7 +38,7 @@ export default function Input({
             placeholder:text-[var(--color-text-disabled)]
             px-3 py-2
             hover:border-[var(--color-border-strong)]
-            focus:outline-none focus:border-[var(--color-accent)] focus:ring-1 focus:ring-[var(--color-accent)]
+            focus:outline-none focus:border-[var(--color-signal)] focus:ring-1 focus:ring-[var(--color-signal-strong)]
             transition-colors duration-150
             ${Icon ? "pl-9" : ""}
           `.trim()}

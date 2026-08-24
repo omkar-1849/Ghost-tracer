@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bug, Globe, Radar, Target, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 /* Existing intelligence widgets (logic untouched). */
 import TopAttackingIPs from "../components/TopAttackingIPs";
@@ -9,6 +9,43 @@ import AttackTypes from "../components/AttackTypes";
 import LiveDot from "../components/ui/LiveDot";
 
 import { getDashboardStats } from "../services/api";
+
+/* ------------------------------------------------------------------ */
+/* Composition helpers — shared with the Dashboard's language          */
+/* ------------------------------------------------------------------ */
+
+function SectionHeading({ label, title, className = "" }) {
+    return (
+        <div className={`flex items-baseline gap-3 ${className}`}>
+            <p className="section-label shrink-0">{label}</p>
+            <div className="h-px flex-1 bg-[var(--color-border-subtle)]" aria-hidden="true" />
+            {title && (
+                <p className="text-[11px] text-[var(--color-text-muted)] shrink-0">{title}</p>
+            )}
+        </div>
+    );
+}
+
+/* One analytical surface — related analyses share a single panel and
+   are separated by a hairline, not by independent card borders. */
+function WorkSurface({ children, className = "" }) {
+    return (
+        <div
+            className={`bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg shadow-[var(--shadow-1)] ${className}`}
+        >
+            {children}
+        </div>
+    );
+}
+
+function SurfaceTitle({ title, hint }) {
+    return (
+        <div className="flex items-baseline justify-between gap-3 mb-2">
+            <h3 className="card-title">{title}</h3>
+            {hint && <p className="text-[11px] text-[var(--color-text-muted)]">{hint}</p>}
+        </div>
+    );
+}
 
 function Analytics() {
     const [stats, setStats] = useState(null);
@@ -43,19 +80,19 @@ function Analytics() {
     return (
         <div className="p-6 max-w-[1440px]">
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-6">
+            <div className="flex items-start justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <p className="section-label mb-1.5">Intelligence</p>
+                    <h1 className="page-title">
                         Threat Analytics
                     </h1>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
                         Attack surface analysis and threat intelligence
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Live badge */}
-                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)]">
+                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)]">
                         <LiveDot color="var(--color-success)" size={5} />
                         AUTO-REFRESH
                     </span>
@@ -72,68 +109,64 @@ function Analytics() {
                 </div>
             </div>
 
-            {/* KPI strip */}
-            {stats && (
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
-                        <p className="text-xs text-[var(--color-text-muted)]">Detections</p>
-                        <p className="text-xl font-bold tabular-nums text-[var(--color-text-primary)] mt-0.5">
-                            {(stats.total_logs ?? 0).toLocaleString()}
-                        </p>
-                    </div>
-                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
-                        <p className="text-xs text-[var(--color-text-muted)]">Critical Alerts</p>
-                        <p className="text-xl font-bold tabular-nums text-[var(--color-critical)] mt-0.5">
-                            {stats.critical_alerts ?? 0}
-                        </p>
-                    </div>
-                    <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg px-4 py-3">
-                        <p className="text-xs text-[var(--color-text-muted)]">High Alerts</p>
-                        <p className="text-xl font-bold tabular-nums text-[var(--color-high)] mt-0.5">
-                            {stats.high_alerts ?? 0}
-                        </p>
-                    </div>
+            {/* Volume readout — typography on the canvas, not cards */}
+            <div className="flex flex-wrap items-end gap-x-10 gap-y-4 pb-7">
+                <div>
+                    <p className="section-label mb-1">Detections</p>
+                    <p className="metric-value text-[34px] leading-none">
+                        {stats ? (stats.total_logs ?? 0).toLocaleString() : "—"}
+                    </p>
                 </div>
-            )}
-
-            {/* Intelligence grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                {/* Source IPs — wide */}
-                <div className="lg:col-span-2 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Globe size={15} className="text-[var(--color-text-muted)]" />
-                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Top Attacking IPs</h3>
-                    </div>
-                    <TopAttackingIPs />
+                <div className="hidden sm:block w-px self-stretch bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                <div>
+                    <p className="section-label mb-1 text-[var(--color-critical)]">Critical alerts</p>
+                    <p className="metric-value text-[34px] leading-none text-[var(--color-critical)]">
+                        {stats ? (stats.critical_alerts ?? 0).toLocaleString() : "—"}
+                    </p>
                 </div>
-
-                {/* Threat Distribution — narrow */}
-                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Radar size={15} className="text-[var(--color-text-muted)]" />
-                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Threat Distribution</h3>
-                    </div>
-                    <ThreatDistribution />
+                <div className="hidden sm:block w-px self-stretch bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                <div>
+                    <p className="section-label mb-1 text-[var(--color-high)]">High alerts</p>
+                    <p className="metric-value text-[34px] leading-none text-[var(--color-high)]">
+                        {stats ? (stats.high_alerts ?? 0).toLocaleString() : "—"}
+                    </p>
                 </div>
-
-                {/* Attack Types — wide */}
-                <div className="lg:col-span-2 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Bug size={15} className="text-[var(--color-text-muted)]" />
-                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Attack Types</h3>
-                    </div>
-                    <AttackTypes />
-                </div>
-
-                {/* Targeted URLs — narrow */}
-                <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Target size={15} className="text-[var(--color-text-muted)]" />
-                        <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Top Targeted URLs</h3>
-                    </div>
-                    <TopTargetedURLs />
-                </div>
+                <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed max-w-[240px] sm:ml-auto sm:text-right">
+                    Live counts from the monitoring engine — refreshed every 5 seconds.
+                </p>
             </div>
+
+            {/* Threat sources — one surface: ranked origins + classification mix */}
+            <SectionHeading label="Threat Sources" title="Origin IPs & classification mix" className="mb-3" />
+            <WorkSurface className="p-5 mb-8">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_1px_minmax(0,2fr)]">
+                    <div className="min-w-0">
+                        <SurfaceTitle title="Top Attacking IPs" hint="by attack volume" />
+                        <TopAttackingIPs />
+                    </div>
+                    <div className="hidden lg:block bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                    <div className="min-w-0">
+                        <SurfaceTitle title="Threat Distribution" hint="event mix" />
+                        <ThreatDistribution />
+                    </div>
+                </div>
+            </WorkSurface>
+
+            {/* Vectors & targets — one surface: what hits us, and where */}
+            <SectionHeading label="Vectors & Targets" title="Attack patterns & exposed endpoints" className="mb-3" />
+            <WorkSurface className="p-5">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_1px_minmax(0,2fr)]">
+                    <div className="min-w-0">
+                        <SurfaceTitle title="Attack Types" hint="severity-graded" />
+                        <AttackTypes />
+                    </div>
+                    <div className="hidden lg:block bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                    <div className="min-w-0">
+                        <SurfaceTitle title="Top Targeted URLs" hint="most-hit endpoints" />
+                        <TopTargetedURLs />
+                    </div>
+                </div>
+            </WorkSurface>
         </div>
     );
 }

@@ -71,14 +71,14 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 aria-expanded={open}
                 onClick={() => setOpen(o => !o)}
                 onKeyDown={handleKeyDown}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-md cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] ${
+                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-md cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] ${
                     open ? "bg-[var(--color-surface-3)] text-[var(--color-text-primary)]" : "hover:bg-[var(--color-surface-2)]"
                 }`}
             >
                 <span className="truncate font-semibold">{active ? active.label : value}</span>
                 <ChevronDown
                     size={14}
-                    className={`text-[var(--color-text-muted)] transition-transform duration-150 ${open ? "rotate-180 text-[var(--color-accent)]" : ""}`}
+                    className={`text-[var(--color-text-muted)] transition-transform duration-150 ${open ? "rotate-180 text-[var(--color-signal)]" : ""}`}
                 />
             </button>
 
@@ -100,11 +100,11 @@ export default function CustomSelect({ value, onChange, options, id, className =
                                     className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-sm text-left transition-all duration-100 ${
                                         isHighlighted
                                             ? "bg-[var(--color-surface-2)] text-[var(--color-text-primary)]"
-                                            : selected ? "text-[var(--color-accent)]" : "text-[var(--color-text-secondary)]"
+                                            : selected ? "text-[var(--color-signal-readable)]" : "text-[var(--color-text-secondary)]"
                                     }`}
                                 >
                                     <span className="font-medium">{opt.label}</span>
-                                    {selected && <Check size={14} className="text-[var(--color-accent)] shrink-0 animate-fade-in" />}
+                                    {selected && <Check size={14} className="text-[var(--color-signal)] shrink-0 animate-fade-in" />}
                                 </button>
                             </li>
                         );

@@ -41,7 +41,7 @@ function IncidentTimeline({ incident }) {
                                     className={
                                         isFinal
                                             ? "text-[var(--color-success)]"
-                                            : "text-[var(--color-accent)]"
+                                            : "text-[var(--color-text-secondary)]"
                                     }
                                 />
                             </div>

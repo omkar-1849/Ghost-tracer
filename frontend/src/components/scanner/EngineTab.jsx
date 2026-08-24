@@ -73,10 +73,11 @@ export default function EngineTab({
 
     return (
         <div className="space-y-6">
-            {/* Scanner Introduction Header */}
+            {/* Scanner Introduction Header — echoes the brass selection
+                language of the engine tab that opened this workspace */}
             <div className="flex items-start gap-4 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                <div className="w-11 h-11 rounded-lg bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] flex items-center justify-center shrink-0">
-                    <Icon size={20} className="text-[var(--color-accent)]" />
+                <div className="w-11 h-11 rounded-lg bg-[var(--color-signal-subtle)] border border-[var(--color-signal-strong)] flex items-center justify-center shrink-0">
+                    <Icon size={20} className="text-[var(--color-signal)]" />
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 mb-1">
@@ -98,7 +99,7 @@ export default function EngineTab({
                         Target Configuration
                     </h3>
                     {engineBusy && (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)]">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(69,165,131,0.25)] text-[var(--color-accent)]">
                             <Loader2 size={11} className="animate-spin" />
                             {engine.name} scan in progress
                         </span>
@@ -121,7 +122,7 @@ export default function EngineTab({
                         className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-xs font-medium transition-colors duration-150 whitespace-nowrap ${
                             startDisabled
                                 ? "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border border-[var(--color-border-default)] cursor-not-allowed opacity-70"
-                                : "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] cursor-pointer shadow-sm"
+                                : "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] cursor-pointer shadow-sm"
                         }`}
                     >
                         {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
@@ -155,7 +156,7 @@ export default function EngineTab({
                                 <h4 className="text-sm font-semibold text-[var(--color-text-primary)] font-mono truncate" title={activeScan.target}>{activeScan.target}</h4>
                                 <p className="text-xs text-[var(--color-text-secondary)] mt-1">
                                     {activeScan.scanner} ·{" "}
-                                    <span className="text-[var(--color-accent)] font-medium">{formatDuration(activeScan.created_at, now)} elapsed</span>
+                                    <span className="font-mono text-[var(--color-text-secondary)] font-medium">{formatDuration(activeScan.created_at, now)} elapsed</span>
                                 </p>
                             </div>
                             <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)]">
@@ -163,7 +164,7 @@ export default function EngineTab({
                                     type="button"
                                     onClick={() => onCancelScan(activeScan.id)}
                                     disabled={cancellingId === activeScan.id}
-                                    className="bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border border-[rgba(229,72,77,0.25)] hover:bg-[rgba(229,72,77,0.20)] rounded-md px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                                    className="bg-[rgba(223,91,91,0.10)] text-[var(--color-critical)] border border-[rgba(223,91,91,0.25)] hover:bg-[rgba(223,91,91,0.20)] rounded-md px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50"
                                 >
                                     {cancellingId === activeScan.id ? <Loader2 size={13} className="animate-spin" /> : <AlertTriangle size={13} />}
                                     Cancel Scan
@@ -191,12 +192,12 @@ export default function EngineTab({
                                         <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] tabular-nums">
                                             Risk: {currentScan.risk_score ?? "—"}/100
                                         </span>
-                                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[rgba(61,122,240,0.10)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] tabular-nums">
+                                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] tabular-nums">
                                             {currentScan.findings ?? 0} findings
                                         </span>
                                     </div>
                                 ) : (
-                                    <div className="mt-3 p-2.5 rounded bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] text-xs text-[var(--color-critical)] break-words font-mono">
+                                    <div className="mt-3 p-2.5 rounded bg-[rgba(223,91,91,0.08)] border border-[rgba(223,91,91,0.20)] text-xs text-[var(--color-critical)] break-words font-mono">
                                         {currentScan.error || "Scan failed unexpectedly."}
                                     </div>
                                 )}
@@ -232,7 +233,7 @@ export default function EngineTab({
                             <button
                                 type="button"
                                 onClick={() => handleViewReport(lastCompleted.id)}
-                                className="text-xs font-medium text-[var(--color-accent)] hover:underline flex items-center gap-1"
+                                className="text-xs font-medium text-[var(--color-signal-readable)] hover:underline flex items-center gap-1"
                             >
                                 <FileText size={12} /> Open Full Report
                             </button>

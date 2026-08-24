@@ -116,7 +116,7 @@ export function AssessmentHero({ scan, report }) {
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
                 <div className="max-w-3xl">
                     <div className="flex items-center gap-3 mb-3">
-                        <span className="px-2.5 py-1 rounded text-xs font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] text-[var(--color-accent)] flex items-center gap-1.5">
+                        <span className="px-2.5 py-1 rounded text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] flex items-center gap-1.5">
                             <Activity size={13} /> {engineName} Assessment
                         </span>
                         <StatusPill status={scan.status} />
@@ -132,7 +132,7 @@ export function AssessmentHero({ scan, report }) {
                             {duration || "—"}
                         </span>
                         <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)] font-mono">
-                            <Zap size={13} className="text-[var(--color-accent)]" />
+                            <Zap size={13} className="text-[var(--color-text-muted)]" />
                             Scan #{scan.id}
                         </span>
                         <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)]">
@@ -166,7 +166,7 @@ export function SummaryCard({ scan, report }) {
 
     if (status === "FAILED") {
         return (
-            <div className="bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.25)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+            <div className="bg-[rgba(223,91,91,0.08)] border border-[rgba(223,91,91,0.25)] rounded-lg p-5 shadow-[var(--shadow-1)]">
                 <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={18} className="text-[var(--color-critical)]" />
                     <h3 className="text-sm font-semibold text-[var(--color-critical)]">Scan Execution Failed</h3>
@@ -176,7 +176,7 @@ export function SummaryCard({ scan, report }) {
                     <strong className="text-[var(--color-text-primary)] font-mono">{scan.target}</strong> did not complete successfully.
                 </p>
                 {scan.error && (
-                    <div className="mt-3 text-xs text-[var(--color-critical)] bg-[var(--color-surface-1)] border border-[rgba(229,72,77,0.25)] rounded p-3 font-mono break-words">
+                    <div className="mt-3 text-xs text-[var(--color-critical)] bg-[var(--color-surface-1)] border border-[rgba(223,91,91,0.25)] rounded p-3 font-mono break-words">
                         {scan.error}
                     </div>
                 )}
@@ -192,7 +192,7 @@ export function SummaryCard({ scan, report }) {
     return (
         <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
             <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
-                <FileWarning size={16} className="text-[var(--color-accent)]" />
+                <FileWarning size={16} className="text-[var(--color-text-secondary)]" />
                 Executive Summary
             </h3>
             <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed space-y-2 max-w-4xl">
@@ -240,7 +240,7 @@ const SEVERITY_STYLES = {
     high: { bar: "bg-[var(--color-high)]", text: "text-[var(--color-high)]" },
     medium: { bar: "bg-[var(--color-medium)]", text: "text-[var(--color-medium)]" },
     low: { bar: "bg-[var(--color-low)]", text: "text-[var(--color-low)]" },
-    info: { bar: "bg-[var(--color-accent)]", text: "text-[var(--color-accent)]" },
+    info: { bar: "bg-[var(--color-info)]", text: "text-[var(--color-info)]" },
 };
 
 function computeSeverityBreakdown(report) {
@@ -462,7 +462,7 @@ export function ParsedJsonViewer({ report }) {
                 aria-expanded={expanded}
             >
                 <div className="flex items-center gap-2.5">
-                    <Braces size={15} className="text-[var(--color-accent)]" />
+                    <Braces size={15} className="text-[var(--color-text-secondary)]" />
                     <span className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider">Parsed JSON Document</span>
                     <span className="px-1.5 py-0.2 rounded bg-[var(--color-surface-3)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] text-[10px] font-mono">
                         Developer Mode

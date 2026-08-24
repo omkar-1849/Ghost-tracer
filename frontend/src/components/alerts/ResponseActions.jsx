@@ -53,7 +53,7 @@ function ResponseActions({
             {/* Investigate action */}
             <button
                 type="button"
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[var(--color-accent)] text-white text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors shadow-sm"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[var(--color-accent)] text-[var(--color-accent-foreground)] text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors shadow-sm"
             >
                 <Crosshair size={14} />
                 <span>Investigate</span>
@@ -85,7 +85,7 @@ function ResponseActions({
                 disabled={resolved || resolving}
                 className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
                     resolved
-                        ? "bg-[rgba(63,163,77,0.10)] border-[rgba(63,163,77,0.25)] text-[var(--color-success)] cursor-default"
+                        ? "bg-[rgba(85,176,123,0.10)] border-[rgba(85,176,123,0.25)] text-[var(--color-success)] cursor-default"
                         : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-strong)]"
                 }`}
             >
@@ -157,7 +157,7 @@ function ResponseActions({
                             value={analystName}
                             onChange={(e) => setAnalystName(e.target.value)}
                             placeholder="Analyst Name (e.g. Omkar)"
-                            className="mt-3.5 w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                            className="mt-3.5 w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-signal)] focus:outline-none focus:ring-1 focus:ring-[var(--color-signal-strong)]"
                             autoFocus
                         />
 
@@ -177,7 +177,7 @@ function ResponseActions({
                                 type="button"
                                 onClick={confirmAssign}
                                 disabled={assigning || !analystName.trim()}
-                                className="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="rounded-md bg-[var(--color-accent)] px-3 py-1.5 text-xs font-medium text-[var(--color-accent-foreground)] transition-colors hover:bg-[var(--color-accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {assigning ? "Assigning…" : "Assign Case"}
                             </button>

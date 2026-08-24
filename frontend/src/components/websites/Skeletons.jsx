@@ -21,12 +21,12 @@ export function SummarySkeleton() {
         { bar: "w-16", label: "w-28" },
     ];
     return (
-        <div className="flex flex-wrap items-center gap-x-10 gap-y-4 mb-8" aria-hidden="true">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4" aria-hidden="true">
             {items.map((item, idx) => (
                 <div key={idx} className="flex items-center">
-                    {idx > 0 && <span className="hidden md:block w-px self-stretch min-h-7 bg-[var(--color-border-subtle)] mr-10" />}
-                    <div className="flex items-baseline gap-3">
-                        <ShimmerBar className={`h-8 ${item.bar}`} />
+                    {idx > 0 && <span className="hidden md:block w-px self-stretch min-h-7 bg-[var(--color-border-subtle)] mr-8" />}
+                    <div className="flex items-baseline gap-2.5">
+                        <ShimmerBar className={`h-7 ${item.bar}`} />
                         <ShimmerBar className={`h-3 ${item.label}`} />
                     </div>
                 </div>
@@ -37,8 +37,8 @@ export function SummarySkeleton() {
 
 export function TableSkeleton() {
     return (
-        <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md overflow-hidden" aria-hidden="true">
-            <div className="bg-[var(--color-surface-2)] border-b border-[var(--color-border-default)] px-4 py-3.5 flex items-center gap-4">
+        <div className="flex-1 min-h-0 flex flex-col border-y border-[var(--color-border-subtle)]" aria-hidden="true">
+            <div className="px-4 py-3.5 flex items-center gap-4 border-b border-[var(--color-border-subtle)]">
                 <ShimmerBar className="h-3 w-3 rounded-sm" />
                 <ShimmerBar className="h-3 w-24" />
                 <ShimmerBar className="h-3 w-28" />

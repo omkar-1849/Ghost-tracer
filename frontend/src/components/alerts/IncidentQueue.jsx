@@ -45,7 +45,7 @@ function IncidentQueue({
 
                         <div className="flex items-center gap-2">
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] tabular-nums">
-                                <ArrowDownWideNarrow size={11} className="text-[var(--color-accent)]" />
+                                <ArrowDownWideNarrow size={11} className="text-[var(--color-signal)]" />
                                 {incidents.length} TOTAL
                             </span>
 

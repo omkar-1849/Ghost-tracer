@@ -83,7 +83,7 @@ export default function WebsiteFilters({
 
             <button
                 onClick={onAdd}
-                className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold flex items-center gap-2 transition-all duration-150 border border-transparent active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                className="px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold flex items-center gap-2 transition-all duration-150 border border-transparent active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--color-signal)]"
             >
                 <Plus size={16} />
                 Add Website

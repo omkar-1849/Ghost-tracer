@@ -49,7 +49,7 @@ export default function Report() {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
                 <div className="flex flex-col items-center gap-3 text-[var(--color-text-muted)]">
-                    <Loader2 size={28} className="animate-spin text-[var(--color-accent)]" />
+                    <Loader2 size={28} className="animate-spin text-[var(--color-text-secondary)]" />
                     <p className="text-xs font-medium">Loading Assessment Data…</p>
                 </div>
             </div>
@@ -59,7 +59,7 @@ export default function Report() {
     if (error || !scan || !report) {
         return (
             <div className="p-6 max-w-[1440px]">
-                <div className="bg-[var(--color-surface-2)] border border-[rgba(229,72,77,0.25)] rounded-lg p-8 max-w-md mx-auto text-center shadow-[var(--shadow-2)]">
+                <div className="bg-[var(--color-surface-2)] border border-[rgba(223,91,91,0.25)] rounded-lg p-8 max-w-md mx-auto text-center shadow-[var(--shadow-2)]">
                     <AlertCircle size={36} className="mx-auto text-[var(--color-critical)] mb-3" />
                     <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">Assessment Not Found</h3>
                     <p className="text-xs text-[var(--color-text-muted)]">{error || "The requested assessment report could not be loaded."}</p>
@@ -96,7 +96,7 @@ export default function Report() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <RiskMetric label="Risk Score" value={scan.risk_score != null ? `${scan.risk_score}/100` : "N/A"} icon={ShieldAlert} colorClass="text-[var(--color-high)]" />
                         <RiskMetric label="Findings" value={scan.findings ?? "0"} icon={Bug} colorClass="text-[var(--color-critical)]" />
-                        <RiskMetric label="Status" value={scan.status || "N/A"} icon={Layers} colorClass="text-[var(--color-accent)]" />
+                        <RiskMetric label="Status" value={scan.status || "N/A"} icon={Layers} colorClass="text-[var(--color-signal)]" />
                         <RiskMetric label="Target" value={scan.target || "N/A"} icon={Server} colorClass="text-[var(--color-text-secondary)]" />
                     </div>
                 </section>

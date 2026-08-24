@@ -241,46 +241,49 @@ export default function WebsiteLayout() {
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar">
-                {/* Header */}
-                <div className="mb-8 mt-2 animate-fade-in-up">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-muted)] mb-1.5">
-                        <span className="flex items-center gap-1.5"><Activity size={12} className="text-[var(--color-success)]" /> Asset Inventory</span>
-                        <span className="w-1 h-1 rounded-full bg-[var(--color-surface-3)]" />
-                        <span className="flex items-center gap-1.5"><Database size={12} className="text-[var(--color-text-secondary)]" /> Websites</span>
+            {/* Header — sits directly on the canvas */}
+            <div className="shrink-0 px-8 pt-2 pb-6">
+                <div className="flex items-center gap-2 text-[11px] font-semibold text-[var(--color-text-muted)] mb-2">
+                    <span className="flex items-center gap-1.5 section-label"><Activity size={12} className="text-[var(--color-success)]" /> Asset Inventory</span>
+                    <span className="w-1 h-1 rounded-full bg-[var(--color-surface-3)]" />
+                    <span className="flex items-center gap-1.5 section-label"><Database size={12} className="text-[var(--color-text-secondary)]" /> Websites</span>
+                </div>
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div>
+                        <h1 className="page-title">Asset Management</h1>
+                        <p className="text-sm text-[var(--color-text-secondary)] mt-1.5">Target infrastructure, active environments, and telemetry health.</p>
                     </div>
-                    <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)] tracking-tight">Website Management</h1>
-                    <p className="text-[var(--color-text-secondary)] mt-1.5">Manage target infrastructure, active environments, and telemetry health.</p>
+                    {isLoading && websites.length === 0 ? <SummarySkeleton /> : <WebsiteSummary websites={websites} />}
                 </div>
+            </div>
 
-                {/* Summary strip / Skeleton */}
-                {isLoading && websites.length === 0 ? <SummarySkeleton /> : <WebsiteSummary websites={websites} />}
-
-                {/* Health segmented filter — below the strip, drives the table lens */}
-                <HealthSegments
-                    className="mb-6"
-                    value={filters.health}
-                    counts={healthCounts}
-                    onChange={(h) => setFilters(prev => ({ ...prev, health: h }))}
-                />
-
-                {/* Toolbench toolbar — dense, aligned with the table rails */}
-                <div className="mb-6 flex flex-col md:flex-row gap-3 md:items-center justify-between">
-                    <WebsiteSearch query={searchQuery} setQuery={setSearchQuery} />
-                    <WebsiteFilters
-                        filters={filters}
-                        setFilters={setFilters}
-                        onRefresh={() => fetchWebsites(searchQuery)}
-                        onAdd={handleAddClick}
-                        selectedCount={selectedIds.length}
-                        onClearSelection={handleClearSelection}
-                        onBulkDelete={handleBulkDeleteClick}
-                        onBulkEnableMonitor={() => handleBulkMonitor(true)}
-                        onBulkDisableMonitor={() => handleBulkMonitor(false)}
+            {/* Control rail — health lens, search, filters. Hairline-anchored. */}
+            <div className="shrink-0 px-8 pb-4 border-b border-[var(--color-border-subtle)]">
+                <div className="flex flex-col lg:flex-row gap-3 lg:items-center justify-between mb-4">
+                    <HealthSegments
+                        value={filters.health}
+                        counts={healthCounts}
+                        onChange={(h) => setFilters(prev => ({ ...prev, health: h }))}
                     />
+                    <div className="flex flex-col md:flex-row gap-3 md:items-center">
+                        <WebsiteSearch query={searchQuery} setQuery={setSearchQuery} />
+                        <WebsiteFilters
+                            filters={filters}
+                            setFilters={setFilters}
+                            onRefresh={() => fetchWebsites(searchQuery)}
+                            onAdd={handleAddClick}
+                            selectedCount={selectedIds.length}
+                            onClearSelection={handleClearSelection}
+                            onBulkDelete={handleBulkDeleteClick}
+                            onBulkEnableMonitor={() => handleBulkMonitor(true)}
+                            onBulkDisableMonitor={() => handleBulkMonitor(false)}
+                        />
+                    </div>
                 </div>
+            </div>
 
-                {/* Table, Skeleton or Empty State */}
+            {/* Inventory — stretches to fill the remaining viewport; rows scroll internally */}
+            <div className="flex-1 min-h-0 px-8 pt-4 pb-6 flex flex-col">
                 {isLoading && websites.length === 0 ? (
                     <TableSkeleton />
                 ) : websites.length === 0 && !searchQuery ? (

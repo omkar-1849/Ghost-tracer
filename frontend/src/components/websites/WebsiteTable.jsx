@@ -12,7 +12,7 @@ function Checkbox({ checked, indeterminate = false, onChange, label }) {
     const isChecked = checked || indeterminate;
     return (
         <label
-            className="inline-flex items-center justify-center cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--color-accent)] rounded-md p-0.5"
+            className="inline-flex items-center justify-center cursor-pointer has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--color-signal)] rounded-md p-0.5"
             onClick={(e) => e.stopPropagation()}
         >
             <input
@@ -25,13 +25,13 @@ function Checkbox({ checked, indeterminate = false, onChange, label }) {
             <span
                 className={`w-[18px] h-[18px] rounded-md border flex items-center justify-center transition-colors duration-150 active:opacity-70 ${
                     isChecked
-                        ? "bg-[var(--color-success)] border-[var(--color-success)]"
-                        : "bg-[var(--color-surface-2)] border-[var(--color-border-strong)] hover:border-[var(--color-success)]"
+                        ? "bg-[var(--color-signal)] border-[var(--color-signal)]"
+                        : "bg-[var(--color-surface-2)] border-[var(--color-border-strong)] hover:border-[var(--color-signal-strong)]"
                 }`}
             >
                 {indeterminate
-                    ? <Minus size={12} className="text-[var(--color-text-primary)]" />
-                    : checked && <Check size={12} className="text-[var(--color-text-primary)] animate-pop-in" strokeWidth={3} />}
+                    ? <Minus size={12} className="text-[var(--color-canvas)]" />
+                    : checked && <Check size={12} className="text-[var(--color-canvas)] animate-pop-in" strokeWidth={3} />}
             </span>
         </label>
     );
@@ -62,7 +62,7 @@ function HealthRead({ health }) {
 /* ---------- Ownership badge — smaller, quieter, lighter ---------- */
 function OwnershipBadge({ verified }) {
     return verified ? (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[var(--color-success)] text-[var(--color-success)]">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-[rgba(85,176,123,0.10)] border border-[rgba(85,176,123,0.25)] text-[var(--color-success)]">
             <ShieldCheck size={10} className="shrink-0" /> Verified
         </span>
     ) : (
@@ -138,7 +138,7 @@ const RowActions = memo(function RowActions({ website, copied, onCopy, onEdit, o
                 title="Actions"
                 className={`p-1.5 rounded-md transition-colors duration-150 active:opacity-70 ${
                     copied
-                        ? "text-[var(--color-success)] bg-[var(--color-success)]"
+                        ? "text-[var(--color-success)] bg-[rgba(85,176,123,0.10)]"
                         : open
                             ? "text-[var(--color-text-primary)] bg-[var(--color-surface-3)]"
                             : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-3)]"
@@ -218,13 +218,13 @@ const WebsiteRow = memo(function WebsiteRow({ website, selected, onToggleSelect,
     return (
         <tr
             onClick={() => onView(website)}
-            className={`group cursor-pointer transition-colors duration-150 border-l-2 ${
+            className={`group cursor-pointer transition-colors duration-150 border-b border-[var(--color-border-subtle)] last:border-b-0 ${
                 selected
-                    ? "bg-[var(--color-success)] border-[var(--color-success)]"
-                    : "border-transparent hover:border-[var(--color-success)] hover:bg-[var(--color-surface-2)]"
+                    ? "bg-[var(--color-signal-subtle)] shadow-[inset_2px_0_0_var(--color-signal)]"
+                    : "hover:bg-[var(--color-surface-1)] hover:shadow-[inset_2px_0_0_var(--color-border-strong)]"
             }`}
         >
-            <td className="px-4 py-3.5 w-12 text-center">
+            <td className="px-4 py-4 w-12 text-center">
                 <Checkbox
                     checked={selected}
                     onChange={() => onToggleSelect(website.id)}
@@ -232,9 +232,9 @@ const WebsiteRow = memo(function WebsiteRow({ website, selected, onToggleSelect,
                 />
             </td>
 
-            <td className="px-4 py-3.5">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center shrink-0 overflow-hidden transition-colors duration-150 group-hover:border-[var(--color-success)]">
+            <td className="px-4 py-4">
+                <div className="flex items-center gap-3.5">
+                    <div className="w-9 h-9 rounded-md bg-[var(--color-surface-2)] flex items-center justify-center shrink-0 overflow-hidden transition-colors duration-150 group-hover:bg-[var(--color-surface-3)]">
                         {website.faviconUrl ? (
                             <img src={website.faviconUrl} alt="" className="w-4 h-4 object-contain" />
                         ) : (
@@ -242,39 +242,39 @@ const WebsiteRow = memo(function WebsiteRow({ website, selected, onToggleSelect,
                         )}
                     </div>
                     <div className="min-w-0">
-                        <div className="font-medium text-[var(--color-text-primary)] text-sm truncate max-w-[220px]">{website.name}</div>
-                        <div className="text-xs text-[var(--color-text-muted)] truncate max-w-[220px] font-mono">{website.domain}</div>
+                        <div className="font-semibold text-[var(--color-text-primary)] text-sm tracking-tight truncate max-w-[240px]">{website.name}</div>
+                        <div className="mono-value text-[var(--color-text-muted)] truncate max-w-[240px] mt-0.5 group-hover:text-[var(--color-text-secondary)] transition-colors duration-150">{website.domain}</div>
                     </div>
                 </div>
             </td>
 
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-4">
                 <span className="text-xs font-medium text-[var(--color-text-primary)]">{website.environment}</span>
             </td>
 
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-4">
                 <StatusRead status={website.status} />
             </td>
 
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-4">
                 <HealthRead health={website.health} />
             </td>
 
-            <td className="px-4 py-3.5">
-                <span className={`text-base font-semibold tabular-nums ${getScoreColor(website.securityScore)}`}>
+            <td className="px-4 py-4">
+                <span className={`text-base font-bold tabular-nums ${getScoreColor(website.securityScore)}`}>
                     {website.securityScore ?? "—"}
                 </span>
             </td>
 
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-4">
                 <OwnershipBadge verified={website.verified} />
             </td>
 
-            <td className="px-4 py-3.5">
+            <td className="px-4 py-4">
                 <MonitoringRead enabled={website.monitoringEnabled} />
             </td>
 
-            <td className="px-4 py-3.5 text-right">
+            <td className="px-4 py-4 text-right">
                 <RowActions
                     website={website}
                     copied={copied}
@@ -328,11 +328,15 @@ export default function WebsiteTable({
     ].join(" · ");
 
     return (
-        <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md overflow-hidden flex flex-col">
-            <div className="overflow-auto custom-scrollbar max-h-[calc(100vh-360px)]">
+        <div className="flex-1 min-h-0 flex flex-col">
+            {/* Card wraps its rows instead of stretching — no dead space below
+                short lists, but it still fills the viewport (and scrolls
+                internally) once rows exceed the available height. */}
+            <div className="flex flex-col min-h-0 max-h-full border-y border-[var(--color-border-subtle)]">
+                <div className="overflow-auto custom-scrollbar min-h-0">
                 <table className="w-full text-left border-collapse min-w-[960px]">
                     <thead className="sticky top-0 z-10">
-                        <tr className="bg-[var(--color-surface-1)] border-b border-[var(--color-border-subtle)] text-[11px] font-semibold text-[var(--color-text-secondary)] uppercase tracking-wider">
+                        <tr className="bg-[var(--color-canvas)] text-[11px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider [box-shadow:inset_0_-1px_0_var(--color-border-subtle)]">
                             <th className="px-4 py-3 w-12 text-center">
                                 <Checkbox
                                     checked={allSelected}
@@ -351,7 +355,7 @@ export default function WebsiteTable({
                             <th className="px-4 py-3 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                    <tbody>
                         {visibleWebsites.map((website) => (
                             <WebsiteRow
                                 key={website.id}
@@ -389,8 +393,8 @@ export default function WebsiteTable({
                 </table>
             </div>
 
-            {/* Operational footer / status bar — IDE-terminal feel */}
-            <div className="border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] px-4 py-2.5 min-h-[46px] flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)] font-medium">
+            {/* Operational footer / status bar — hairline-separated from the rows */}
+            <div className="border-t border-[var(--color-border-subtle)] px-4 py-2.5 min-h-[46px] shrink-0 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-xs text-[var(--color-text-secondary)] font-medium">
                 <div className="flex items-center gap-3 min-w-0">
                     <span className="tabular-nums whitespace-nowrap">
                         Showing {totalItems === 0 ? 0 : startIndex + 1}–{Math.min(endIndex, totalItems)} of {totalItems} website{totalItems === 1 ? "" : "s"}
@@ -409,7 +413,7 @@ export default function WebsiteTable({
                         onClick={onRefresh}
                         title="Refresh data"
                         aria-label="Refresh website data"
-                        className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-success)] hover:bg-[var(--color-surface-2)] rounded-md transition-colors duration-150 active:opacity-70"
+                        className="p-1.5 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] rounded-md transition-colors duration-150 active:opacity-70"
                     >
                         <RefreshCw size={14} />
                     </button>
@@ -455,6 +459,7 @@ export default function WebsiteTable({
                         </button>
                     </div>
                 </div>
+            </div>
             </div>
         </div>
     );

@@ -39,17 +39,17 @@ export default function WebsiteSummary({ websites }) {
     ];
 
     return (
-        <div className="flex flex-wrap items-center gap-x-10 gap-y-4 mb-8" aria-label="Estate summary">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4" aria-label="Estate summary">
             {metrics.map((metric, idx) => (
                 <Fragment key={metric.label}>
                     {idx > 0 && (
                         <span aria-hidden="true" className="hidden md:block w-px self-stretch min-h-7 bg-[var(--color-border-subtle)]" />
                     )}
-                    <div className="flex items-baseline gap-3">
-                        <span className={`text-4xl font-bold tabular-nums leading-none ${metric.valueClass}`}>
+                    <div className="flex items-baseline gap-2.5">
+                        <span className={`text-3xl font-bold tabular-nums leading-none ${metric.valueClass}`}>
                             {metric.value}
                         </span>
-                        <span className="flex items-center gap-1 text-sm text-[var(--color-text-secondary)]">
+                        <span className="flex items-center gap-1 text-xs text-[var(--color-text-secondary)]">
                             {metric.label}
                             {metric.info && (
                                 <span

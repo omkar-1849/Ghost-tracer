@@ -11,7 +11,7 @@ function IncidentRow({ incident, selected, onSelect, collapsed = false }) {
             aria-pressed={selected}
             className={`relative w-full rounded-md border text-left transition-colors duration-150 overflow-hidden ${
                 selected
-                    ? "border-[var(--color-accent)] bg-[var(--color-accent-subtle)]"
+                    ? "border-[var(--color-signal-strong)] bg-[var(--color-signal-subtle)]"
                     : "border-[var(--color-border-default)] bg-[var(--color-surface-1)] hover:bg-[var(--color-surface-2)] hover:border-[var(--color-border-strong)]"
             }`}
         >
@@ -55,7 +55,7 @@ function IncidentRow({ incident, selected, onSelect, collapsed = false }) {
                             </span>
 
                             {incident.resolved && (
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[rgba(63,163,77,0.10)] border border-[rgba(63,163,77,0.25)] text-[var(--color-success)]">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[rgba(85,176,123,0.10)] border border-[rgba(85,176,123,0.25)] text-[var(--color-success)]">
                                     Resolved
                                 </span>
                             )}

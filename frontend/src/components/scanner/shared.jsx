@@ -7,13 +7,13 @@ export function StatusPill({ status }) {
 
     let style = "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
     if (normalized === "COMPLETED") {
-        style = "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]";
+        style = "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]";
     } else if (normalized === "RUNNING") {
-        style = "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]";
+        style = "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(69,165,131,0.25)]";
     } else if (normalized === "PENDING" || normalized === "QUEUED") {
-        style = "bg-[rgba(221,179,42,0.10)] text-[var(--color-medium)] border-[rgba(221,179,42,0.25)]";
+        style = "bg-[rgba(211,165,62,0.10)] text-[var(--color-medium)] border-[rgba(211,165,62,0.25)]";
     } else if (normalized === "FAILED") {
-        style = "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
+        style = "bg-[rgba(223,91,91,0.10)] text-[var(--color-critical)] border-[rgba(223,91,91,0.25)]";
     } else if (normalized === "CANCELLED") {
         style = "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border-[var(--color-border-default)]";
     }
@@ -38,7 +38,7 @@ export function EngineStatusBadge({ status }) {
         <span
             className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border uppercase tracking-wider ${
                 isReady
-                    ? "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]"
+                    ? "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]"
                     : "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border-[var(--color-border-default)]"
             }`}
         >
@@ -47,36 +47,10 @@ export function EngineStatusBadge({ status }) {
     );
 }
 
-export function StatTile({ label, value, icon: Icon, themeKey }) {
-    let iconColor = "text-[var(--color-text-muted)]";
-    if (themeKey === "purple") iconColor = "text-[var(--color-accent)]";
-    if (themeKey === "yellow") iconColor = "text-[var(--color-medium)]";
-    if (themeKey === "cyan") iconColor = "text-[var(--color-accent)]";
-    if (themeKey === "green") iconColor = "text-[var(--color-success)]";
-    if (themeKey === "red") iconColor = "text-[var(--color-critical)]";
-
-    return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-3.5 shadow-[var(--shadow-1)] flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-[var(--color-text-muted)] uppercase tracking-wider truncate">
-                    {label}
-                </span>
-                <Icon size={15} className={iconColor} />
-            </div>
-
-            <div className="mt-2">
-                <span className="text-xl font-bold tracking-tight text-[var(--color-text-primary)] tabular-nums">
-                    {value}
-                </span>
-            </div>
-        </div>
-    );
-}
-
 function riskClasses(score) {
-    if (score >= 70) return "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
-    if (score >= 40) return "bg-[rgba(237,125,28,0.10)] text-[var(--color-high)] border-[rgba(237,125,28,0.25)]";
-    if (score > 0) return "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]";
+    if (score >= 70) return "bg-[rgba(223,91,91,0.10)] text-[var(--color-critical)] border-[rgba(223,91,91,0.25)]";
+    if (score >= 40) return "bg-[rgba(224,133,68,0.10)] text-[var(--color-high)] border-[rgba(224,133,68,0.25)]";
+    if (score > 0) return "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]";
     return "bg-[var(--color-surface-3)] text-[var(--color-text-muted)] border-[var(--color-border-default)]";
 }
 
@@ -131,7 +105,7 @@ export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelet
                         type="button"
                         onClick={() => onCancel(scan.id)}
                         disabled={cancellingId === scan.id}
-                        className="px-2 py-1 rounded text-xs font-medium text-[var(--color-critical)] bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] hover:bg-[rgba(229,72,77,0.18)] transition-colors disabled:opacity-50 flex items-center gap-1"
+                        className="px-2 py-1 rounded text-xs font-medium text-[var(--color-critical)] bg-[rgba(223,91,91,0.08)] border border-[rgba(223,91,91,0.20)] hover:bg-[rgba(223,91,91,0.18)] transition-colors disabled:opacity-50 flex items-center gap-1"
                         title="Cancel scan"
                     >
                         {cancellingId === scan.id ? <Loader2 size={11} className="animate-spin" /> : <XCircle size={11} />}
@@ -142,7 +116,7 @@ export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelet
                         <button
                             type="button"
                             onClick={() => onViewReport(scan.id)}
-                            className="px-2 py-1 rounded text-xs font-medium text-[var(--color-accent)] bg-[var(--color-surface-3)] border border-[var(--color-border-default)] hover:border-[var(--color-accent)] transition-colors flex items-center gap-1"
+                            className="px-2 py-1 rounded text-xs font-medium text-[var(--color-signal-readable)] bg-[var(--color-surface-3)] border border-[var(--color-border-default)] hover:border-[var(--color-signal-strong)] transition-colors flex items-center gap-1"
                             title="View report"
                         >
                             <FileText size={11} />
@@ -152,7 +126,7 @@ export function ScanRow({ scan, now, cancellingId, deletingId, onCancel, onDelet
                             type="button"
                             onClick={() => onDelete(scan)}
                             disabled={deletingId === scan.id}
-                            className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-critical)] hover:bg-[rgba(229,72,77,0.08)] transition-colors disabled:opacity-50"
+                            className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-critical)] hover:bg-[rgba(223,91,91,0.08)] transition-colors disabled:opacity-50"
                             title="Delete scan"
                         >
                             <Trash2 size={13} />

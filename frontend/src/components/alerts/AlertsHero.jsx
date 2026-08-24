@@ -51,12 +51,12 @@ function AlertsHero({
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Left: Eyebrow + Live Indicator */}
                 <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-semibold bg-[rgba(229,72,77,0.10)] border border-[rgba(229,72,77,0.25)] text-[var(--color-critical)]">
+                    <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-semibold bg-[rgba(223,91,91,0.10)] border border-[rgba(223,91,91,0.25)] text-[var(--color-critical)]">
                         <Siren size={12} />
                         INCIDENT RESPONSE
                     </span>
 
-                    <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-semibold bg-[rgba(63,163,77,0.10)] border border-[rgba(63,163,77,0.25)] text-[var(--color-success)]">
+                    <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-semibold bg-[rgba(85,176,123,0.10)] border border-[rgba(85,176,123,0.25)] text-[var(--color-success)]">
                         <LiveDot color="var(--color-success)" size={5} />
                         LIVE
                     </span>
@@ -91,21 +91,21 @@ function AlertsHero({
             {/* Main title + subtitle */}
             <div className="mt-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <h1 className="page-title">
                         Incident Center
                     </h1>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                        Real-time threat triage, digital forensic correlation, and incident response workstation.
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                        Real-time threat triage, forensic correlation, and incident response workstation.
                     </p>
                 </div>
 
                 {/* Metadata counter & sync */}
                 <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1.5">
                         <CalendarRange size={13} className="text-[var(--color-text-muted)]" />
-                        <span className="tabular-nums">Synced {syncedAt}</span>
+                        <span className="mono-value">Synced {syncedAt}</span>
                     </span>
-                    <span>·</span>
+                    <span className="text-[var(--color-text-disabled)]">·</span>
                     <span>
                         <strong className="text-[var(--color-text-primary)] font-semibold tabular-nums">{total}</strong> incidents recorded
                     </span>
@@ -126,7 +126,7 @@ function AlertsHero({
                         value={query}
                         onChange={(e) => onQueryChange(e.target.value)}
                         placeholder="Search incidents by title, IP address, rule, or technique (Press '/' to focus)…"
-                        className="w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2 pl-9 pr-8 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)]"
+                        className="w-full rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2 pl-9 pr-8 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-1 focus:ring-[var(--color-signal-strong)]"
                     />
                     {query && (
                         <button
@@ -145,7 +145,7 @@ function AlertsHero({
                     onClick={() => onFiltersChange({ ...filters, open: !filterOpen })}
                     className={`inline-flex items-center justify-between gap-2 px-3 py-2 rounded-md border text-xs font-medium transition-colors ${
                         activeFilterCount > 0
-                            ? "bg-[var(--color-accent-subtle)] border-[var(--color-accent)] text-[var(--color-accent)]"
+                            ? "bg-[var(--color-signal-subtle)] border-[var(--color-signal-strong)] text-[var(--color-signal-readable)]"
                             : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)]"
                     }`}
                 >
@@ -153,7 +153,7 @@ function AlertsHero({
                         <SlidersHorizontal size={13} />
                         <span>Filters</span>
                         {activeFilterCount > 0 && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[var(--color-accent)] text-white">
+                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[var(--color-signal)] text-[var(--color-canvas)]">
                                 {activeFilterCount}
                             </span>
                         )}
@@ -179,7 +179,7 @@ function AlertsHero({
                                         onClick={() => onFiltersChange({ ...filters, severity: item.key })}
                                         className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                                             active
-                                                ? "bg-[var(--color-accent)] text-white"
+                                                ? "bg-[var(--color-signal-subtle)] text-[var(--color-signal-readable)] font-semibold border border-[var(--color-signal-strong)]"
                                                 : "bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                         }`}
                                     >
@@ -204,7 +204,7 @@ function AlertsHero({
                                         onClick={() => onFiltersChange({ ...filters, status: item.key })}
                                         className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
                                             active
-                                                ? "bg-[var(--color-accent)] text-white"
+                                                ? "bg-[var(--color-signal-subtle)] text-[var(--color-signal-readable)] font-semibold border border-[var(--color-signal-strong)]"
                                                 : "bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                                         }`}
                                     >

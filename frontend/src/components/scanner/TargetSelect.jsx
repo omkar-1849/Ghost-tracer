@@ -89,7 +89,7 @@ export default function TargetSelect({ value, onChange, disabled = false }) {
                 disabled={disabled}
                 className={`w-full bg-[var(--color-surface-1)] border rounded-md px-3.5 py-2.5 text-left text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none transition-colors duration-150 flex items-center gap-2.5 ${
                     open
-                        ? "border-[var(--color-accent)] ring-1 ring-[var(--color-accent)]"
+                        ? "border-[var(--color-signal)] ring-1 ring-[var(--color-signal-strong)]"
                         : "border-[var(--color-border-default)] hover:border-[var(--color-border-strong)]"
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
@@ -137,7 +137,7 @@ export default function TargetSelect({ value, onChange, disabled = false }) {
                             <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 mb-2.5">Register a website asset before running scans.</p>
                             <Link
                                 to="/websites"
-                                className="inline-flex bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] rounded px-3 py-1 text-xs font-medium transition-colors"
+                                className="inline-flex bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] rounded px-3 py-1 text-xs font-medium transition-colors"
                             >
                                 Go to Websites
                             </Link>
@@ -151,7 +151,7 @@ export default function TargetSelect({ value, onChange, disabled = false }) {
                                     placeholder="Search targets…"
                                     value={query}
                                     onChange={(e) => setQuery(e.target.value)}
-                                    className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded pl-7 pr-3 py-1 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[var(--color-accent)]"
+                                    className="w-full bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded pl-7 pr-3 py-1 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[var(--color-signal)]"
                                     autoFocus
                                 />
                             </div>
@@ -170,7 +170,7 @@ export default function TargetSelect({ value, onChange, disabled = false }) {
                                                 }}
                                                 className={`p-2.5 flex items-center justify-between cursor-pointer transition-colors ${
                                                     isSel
-                                                        ? "bg-[var(--color-accent-subtle)] text-[var(--color-text-primary)]"
+                                                        ? "bg-[var(--color-signal-subtle)] text-[var(--color-text-primary)]"
                                                         : "hover:bg-[var(--color-surface-2)] text-[var(--color-text-secondary)]"
                                                 }`}
                                             >
@@ -181,7 +181,7 @@ export default function TargetSelect({ value, onChange, disabled = false }) {
                                                         <p className="text-[11px] text-[var(--color-text-muted)] font-mono truncate">{w.url || w.domain}</p>
                                                     </div>
                                                 </div>
-                                                {isSel && <Check size={14} className="text-[var(--color-accent)] shrink-0 ml-2" />}
+                                                {isSel && <Check size={14} className="text-[var(--color-signal)] shrink-0 ml-2" />}
                                             </div>
                                         );
                                     })

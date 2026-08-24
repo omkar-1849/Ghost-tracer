@@ -22,6 +22,20 @@ function displayAction(action) {
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+/* Event-family tone for the row marker — colour carries the nature of the
+   action (auth, mutation, destructive), not decoration. */
+const ACTION_TONES = [
+    { match: /login|logout|auth|session|token|access/i, dot: "bg-[var(--color-low)]" },
+    { match: /delete|remove|revoke|destroy|drop|denied|block|fail|error/i, dot: "bg-[var(--color-critical)]" },
+    { match: /update|edit|modify|change|reset|rotate|disable/i, dot: "bg-[var(--color-medium)]" },
+    { match: /create|add|register|start|run|complete|enable|success/i, dot: "bg-[var(--color-success)]" },
+];
+
+function actionTone(action) {
+    const tone = ACTION_TONES.find((t) => t.match.test(String(action || "")));
+    return tone ? tone.dot : "bg-[var(--color-info)]";
+}
+
 function displayResource(log) {
     if (!log.resource_type) return "Platform";
     const type = log.resource_type.replaceAll("_", " ").toLowerCase()
@@ -81,11 +95,11 @@ function AuditRow({ log, isExpanded, onToggle }) {
                 onClick={onToggle}
                 aria-expanded={isExpanded}
                 aria-controls={detailsId}
-                className="group w-full px-5 py-4 text-left transition-colors duration-200 hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-accent)]"
+                className="group w-full px-5 py-4 text-left transition-colors duration-200 hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--color-signal)]"
             >
                 <div className="grid gap-3 sm:grid-cols-[minmax(0,1.5fr)_minmax(8rem,0.7fr)_auto] sm:items-center">
                     <div className="flex min-w-0 items-start gap-3">
-                        <span className="mt-1 flex h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--color-accent)]" aria-hidden="true" />
+                        <span className={`mt-1 flex h-2.5 w-2.5 shrink-0 rounded-full ${actionTone(log.action)}`} aria-hidden="true" />
                         <div className="min-w-0">
                             <div className="flex min-w-0 items-center gap-2">
                                 <span className="truncate text-sm font-semibold text-[var(--color-text-primary)]">{displayAction(log.action)}</span>
@@ -111,7 +125,7 @@ function AuditRow({ log, isExpanded, onToggle }) {
                         </time>
                         <ChevronDown
                             size={16}
-                            className={`shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 group-hover:text-[var(--color-accent)] ${isExpanded ? "rotate-180 text-[var(--color-accent)]" : ""}`}
+                            className={`shrink-0 text-[var(--color-text-muted)] transition-transform duration-200 group-hover:text-[var(--color-text-primary)] ${isExpanded ? "rotate-180 text-[var(--color-text-primary)]" : ""}`}
                             aria-hidden="true"
                         />
                     </div>
@@ -280,14 +294,14 @@ export default function AuditActivity({ onClose }) {
                 {/* Modal Header */}
                 <div className="shrink-0 flex flex-col gap-4 border-b border-[var(--color-border-default)] bg-[var(--color-surface-2)] px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
                     <div className="flex min-w-0 items-start gap-3.5">
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] text-[var(--color-accent)] mt-0.5">
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] mt-0.5">
                             <Activity size={22} />
                         </span>
                         <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2.5">
                                 <h3 id="audit-activity-title" className="text-lg font-bold text-[var(--color-text-primary)] tracking-tight">Audit Activity</h3>
                                 {!isLoading && !error && (
-                                    <span className="rounded-full border border-[var(--color-accent)] bg-[var(--color-accent-subtle)] px-2.5 py-0.5 text-xs font-semibold tabular-nums text-[var(--color-accent)]">
+                                    <span className="rounded-full border border-[var(--color-border-default)] bg-[var(--color-surface-3)] px-2.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-[var(--color-text-secondary)]">
                                         {logs.length} recent
                                     </span>
                                 )}
@@ -302,7 +316,7 @@ export default function AuditActivity({ onClose }) {
                             type="button"
                             onClick={() => loadLogs(true)}
                             disabled={isLoading || isRefreshing}
-                            className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text-primary)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-2 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] px-3.5 py-2 text-xs font-semibold text-[var(--color-text-primary)] transition-all duration-200 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             <RefreshCw size={14} className={isRefreshing ? "text-[var(--color-accent)]" : ""} />
                             Refresh
@@ -311,7 +325,7 @@ export default function AuditActivity({ onClose }) {
                             type="button"
                             onClick={onClose}
                             aria-label="Close modal"
-                            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] transition-colors duration-200 hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)]"
+                            className="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] transition-colors duration-200 hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)]"
                         >
                             <X size={18} />
                         </button>
@@ -328,7 +342,7 @@ export default function AuditActivity({ onClose }) {
                                 value={filters.search}
                                 onChange={(event) => updateFilter("search", event.target.value)}
                                 placeholder="Search events, descriptions, resources…"
-                                className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2.5 pl-10 pr-3.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] transition-all duration-200 hover:border-[var(--color-border-strong)] focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20"
+                                className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-2.5 pl-10 pr-3.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] transition-all duration-200 hover:border-[var(--color-border-strong)] focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]"
                             />
                         </label>
                         <div className="flex items-center gap-2">
@@ -360,29 +374,29 @@ export default function AuditActivity({ onClose }) {
                             <div className="grid gap-3 border-t border-[var(--color-border-default)] pt-3 sm:grid-cols-2 xl:grid-cols-5">
                                 <label className="space-y-1">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--color-text-muted)]">Event</span>
-                                    <select value={filters.action} onChange={(event) => updateFilter("action", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20">
+                                    <select value={filters.action} onChange={(event) => updateFilter("action", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]">
                                         <option value="">All events</option>
                                         {actionOptions.map((action) => <option key={action} value={action}>{displayAction(action)}</option>)}
                                     </select>
                                 </label>
                                 <label className="space-y-1">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--color-text-muted)]">Resource</span>
-                                    <select value={filters.resourceType} onChange={(event) => updateFilter("resourceType", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20">
+                                    <select value={filters.resourceType} onChange={(event) => updateFilter("resourceType", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]">
                                         <option value="">All resources</option>
                                         {resourceOptions.map((resource) => <option key={resource} value={resource}>{resource}</option>)}
                                     </select>
                                 </label>
                                 <label className="space-y-1">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--color-text-muted)]">User ID</span>
-                                    <input value={filters.userId} onChange={(event) => updateFilter("userId", event.target.value)} inputMode="numeric" placeholder="Any user" className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20" />
+                                    <input value={filters.userId} onChange={(event) => updateFilter("userId", event.target.value)} inputMode="numeric" placeholder="Any user" className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]" />
                                 </label>
                                 <label className="space-y-1">
                                     <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--color-text-muted)]"><CalendarRange size={11} /> From</span>
-                                    <input type="datetime-local" value={filters.from} onChange={(event) => updateFilter("from", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20" />
+                                    <input type="datetime-local" value={filters.from} onChange={(event) => updateFilter("from", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]" />
                                 </label>
                                 <label className="space-y-1">
                                     <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.13em] text-[var(--color-text-muted)]"><CalendarRange size={11} /> To</span>
-                                    <input type="datetime-local" value={filters.to} onChange={(event) => updateFilter("to", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/20" />
+                                    <input type="datetime-local" value={filters.to} onChange={(event) => updateFilter("to", event.target.value)} className="w-full rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-1)] px-3 py-2 text-xs text-[var(--color-text-primary)] transition-colors focus:border-[var(--color-signal)] focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)]" />
                                 </label>
                             </div>
                         </div>
@@ -396,7 +410,7 @@ export default function AuditActivity({ onClose }) {
                             <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-[var(--color-critical)]/25 bg-[var(--color-critical)]/10 text-[var(--color-critical)]"><AlertTriangle size={22} /></span>
                             <h4 className="mt-4 text-sm font-semibold text-[var(--color-text-primary)]">Audit activity is unavailable</h4>
                             <p className="mt-1 max-w-md text-xs leading-relaxed text-[var(--color-text-secondary)]">{error}</p>
-                            <button type="button" onClick={() => loadLogs()} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent-subtle)] px-4 py-2.5 text-xs font-semibold text-[var(--color-accent)] transition-colors duration-200 hover:bg-[var(--color-accent)] hover:text-white">
+                            <button type="button" onClick={() => loadLogs()} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[var(--color-accent-subtle)] px-4 py-2.5 text-xs font-semibold text-[var(--color-accent)] transition-colors duration-200 hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-foreground)]">
                                 <RefreshCw size={14} /> Retry
                             </button>
                         </div>
@@ -413,7 +427,7 @@ export default function AuditActivity({ onClose }) {
                             <span className="flex h-12 w-12 items-center justify-center rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] text-[var(--color-text-secondary)]"><Filter size={22} /></span>
                             <h4 className="mt-4 text-sm font-semibold text-[var(--color-text-primary)]">No activity matches these filters</h4>
                             <p className="mt-1 max-w-md text-xs leading-relaxed text-[var(--color-text-secondary)]">Adjust the event, resource, user, date, or search filters to broaden the result set.</p>
-                            <button type="button" onClick={resetFilters} className="mt-5 rounded-lg px-4 py-2.5 text-xs font-semibold text-[var(--color-accent)] transition-colors duration-200 hover:bg-[var(--color-accent-subtle)] hover:text-[var(--color-accent)]">Clear filters</button>
+                            <button type="button" onClick={resetFilters} className="mt-5 rounded-lg px-4 py-2.5 text-xs font-semibold text-[var(--color-text-secondary)] transition-colors duration-200 hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]">Clear filters</button>
                         </div>
                     ) : (
                         <ul className="divide-y divide-[var(--color-border-default)]" aria-live="polite">

@@ -1,75 +1,100 @@
 @import "tailwindcss";
 
 /* ============================================================
-   Sentinel Enterprise — Design System
+   SENTINEL AI — "Field Ops" Design System
    Tailwind v4 CSS-first tokens. Single source of truth for
-   surfaces, text, borders, accent, semantic severity, typography,
-   depth, and motion. Components reference these tokens instead of
-   repeating raw palette values.
+   surfaces, text, borders, accents, semantic severity,
+   typography, depth, and motion.
 
-   Principle: "Operational clarity over spectacle."
-   ------------------------------------------------------------
-   A neutral, matte, information-first interface. Hierarchy is
-   carried by typography, spacing, density and elevation — not by
-   color wash, glow, or decorative motion.
+   Identity: a security operations instrument. Deep green-black
+   graphite surfaces with a warm undertone, a patina-jade
+   operational accent (the guardian colour), and a restrained
+   brass signal reserved for the brand and key metrics. Colour
+   establishes meaning — hierarchy is carried by typography,
+   spacing, density and hairline borders, never by glow or wash.
    ============================================================ */
 @theme {
   /* ------------------------------------------------------------
-     Surfaces (neutral, matte — no blue tint)
+     Surfaces — warm graphite with a faint green undertone.
+     Deliberately NOT neutral blue-gray: the canvas reads as
+     "instrument housing", deep but never pure black.
      ------------------------------------------------------------ */
-  --color-canvas: #0a0b0d;          /* app root */
-  --color-surface-1: #101214;        /* sidebar, primary panels       */
-  --color-surface-2: #15181c;        /* cards, table headers          */
-  --color-surface-3: #1a1e23;        /* modals, drawers, dropdowns   */
-  --color-overlay: rgba(5, 6, 8, 0.62); /* modal/drawer backdrop    */
+  --color-canvas: #0b0e0d;             /* app root                  */
+  --color-surface-1: #101413;          /* sidebar, wells, inputs    */
+  --color-surface-2: #151a18;          /* cards, table headers      */
+  --color-surface-3: #1b2120;          /* modals, drawers, dropdowns*/
+  --color-surface-inset: #0d100f;      /* console wells, code, mono */
+  --color-overlay: rgba(4, 6, 5, 0.66);/* modal/drawer backdrop     */
 
   /* ------------------------------------------------------------
-     Borders
+     Borders — hairlines that get warmer as they strengthen
      ------------------------------------------------------------ */
-  --color-border-subtle: #1d2126;    /* dividers, row lines         */
-  --color-border-default: #262c33;    /* card/panel borders          */
-  --color-border-strong: #39414c;     /* hover borders, active inputs*/
+  --color-border-subtle: #232927;      /* dividers, row lines       */
+  --color-border-default: #2c3330;     /* card/panel borders        */
+  --color-border-strong: #3f4a45;      /* hover borders, inputs     */
 
   /* ------------------------------------------------------------
-     Text
+     Text — warm off-whites. Primary is never pure #fff.
      ------------------------------------------------------------ */
-  --color-text-primary: #f2f4f6;     /* headings, key values        */
-  --color-text-secondary: #b8c0ca;    /* body, labels               */
-  --color-text-muted: #7b8591;        /* captions, meta             */
-  --color-text-disabled: #4c545e;     /* disabled                   */
+  --color-text-primary: #eaede9;       /* headings, key values      */
+  --color-text-secondary: #adb6ae;     /* body, labels              */
+  --color-text-muted: #7c857e;         /* captions, metadata        */
+  --color-text-disabled: #565e58;      /* disabled, ghost text      */
 
   /* ------------------------------------------------------------
-     Primary accent (restrained signal blue — solid color only)
+     Primary accent — patina jade. Operational colour: primary
+     actions, live telemetry, and SEMANTIC success/health. It is
+     deliberately NOT the selection colour — green always means
+     "healthy / operational / succeeded", never "looked at".
      ------------------------------------------------------------ */
-  --color-accent: #3d7af0;
-  --color-accent-hover: #5b90f5;
-  --color-accent-active: #2f63c4;
-  --color-accent-subtle: rgba(61, 122, 240, 0.10);
+  --color-accent: #45a583;
+  --color-accent-hover: #56ba94;
+  --color-accent-active: #38876b;
+  --color-accent-subtle: rgba(69, 165, 131, 0.11);
+  --color-accent-foreground: #07130e;  /* text on solid accent      */
 
   /* ------------------------------------------------------------
-     Semantic severity / status (desaturated — color means meaning)
+     Signal — brushed brass. The single global SELECTION accent:
+     active navigation, selected engines/tabs/rows/incidents,
+     active filters, focused objects and keyboard focus. Brass
+     means "this is what I am currently looking at". Also carries
+     the brand mark and key-metric emphasis — one family, one
+     meaning: attention. Never blue, never violet, never green.
      ------------------------------------------------------------ */
-  --color-critical: #e5484d;
-  --color-high: #ed7d1c;
-  --color-medium: #ddb32a;
-  --color-low: #4a9de0;
-  --color-info: #6b7683;
-  --color-success: #3fa34d;
-  --color-warning: #d9a11a;
+  --color-signal: #c9a961;
+  --color-signal-hover: #d9bc79;
+  --color-signal-subtle: rgba(201, 169, 97, 0.10);
+  --color-signal-dim: #967d49;
+  --color-signal-strong: rgba(201, 169, 97, 0.38);
+  --color-signal-readable: #d9bc79;    /* brass on dark surfaces    */
 
   /* ------------------------------------------------------------
-     Typography
+     Semantic severity / status — desaturated, sophisticated.
+     Colour means meaning; nothing else on the page competes.
      ------------------------------------------------------------ */
-  --font-sans: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo,
+  --color-critical: #df5b5b;           /* dusty crimson             */
+  --color-high: #e08544;               /* burnt orange              */
+  --color-medium: #d3a53e;             /* ochre                     */
+  --color-low: #8aa6bd;                /* muted steel               */
+  --color-info: #8a948c;               /* neutral sage-gray         */
+  --color-success: #55b07b;            /* signal green              */
+  --color-warning: #c9923d;            /* amber brass               */
+
+  /* ------------------------------------------------------------
+     Typography — IBM Plex: engineered, technical, quietly
+     distinctive. Plex Mono for operational values.
+     ------------------------------------------------------------ */
+  --font-sans: "IBM Plex Sans", "Inter", -apple-system, "Segoe UI",
+    system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo,
     Consolas, monospace;
 
   /* ------------------------------------------------------------
-     Shadows — subtle neutral depth (3 levels, no glow)
+     Shadows — neutral depth, three levels, no glow
      ------------------------------------------------------------ */
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.58);
 
   /* ------------------------------------------------------------
      Motion — restrained, state-driven (not decorative)
@@ -146,7 +171,7 @@
 }
 
 /* ============================================================
-   Global base refinements
+   Global base
    ============================================================ */
 html {
   -webkit-font-smoothing: antialiased;
@@ -155,22 +180,29 @@ html {
 
 body {
   background-color: var(--color-canvas);
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   font-family: var(--font-sans);
+  font-size: 14px;
 }
 
+/* Exactly one viewport tall — the document itself must never scroll.
+   Scrolling belongs to <main> and individual panels only; any extra
+   pixel here (e.g. a body border) reintroduces a permanent universal
+   scrollbar on every page. */
 #root {
-  min-height: 100vh;
+  height: 100vh;
 }
 
 ::selection {
-  background: rgba(61, 122, 240, 0.28);
+  background: rgba(201, 169, 97, 0.28);
   color: #fff;
 }
 
-/* Consistent keyboard focus for the whole app — one treatment. */
+/* Consistent keyboard focus for the whole app — one treatment.
+   Focus is an ATTENTION state, so it speaks brass (the selection
+   accent), never jade (which is reserved for semantic success). */
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-signal);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -187,18 +219,77 @@ body {
   }
 }
 
-/* Toast auto-dismiss progress bar (referenced from Toast.jsx inline style) */
-@keyframes toast-progress {
-  from { width: 100%; }
-  to { width: 0%; }
+/* ============================================================
+   Typography utilities — the hierarchy layer.
+   Hierarchy comes from weight, size, tracking and tone —
+   these classes standardise it across every page.
+   ============================================================ */
+
+/* Page title — the single strongest text element on a page */
+.page-title {
+  font-size: 1.25rem;          /* 20px */
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  color: var(--color-text-primary);
 }
 
-/* ------------------------------------------------------------
-   Global scrollbar — single consolidated definition
-   ------------------------------------------------------------ */
+/* Eyebrow / section label — small caps instrument label */
+.section-label {
+  font-size: 0.625rem;         /* 10px */
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-disabled);
+}
+
+/* Card / panel title */
+.card-title {
+  font-size: 0.8125rem;        /* 13px */
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--color-text-primary);
+}
+
+/* Large numeric readouts (KPIs, scores) */
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+/* Operational values: IPs, ports, CVEs, hashes, scan IDs, timestamps */
+.mono-value {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;        /* 13px — technical identifiers stay glanceable */
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Primary technical objects — an IP or hostname that IS the row's subject.
+   Slightly larger and brighter than ordinary metadata, never display-size. */
+.mono-primary {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;         /* 14px */
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+
+/* Timestamps and metadata captions */
+.meta-text {
+  font-size: 0.6875rem;        /* 11px */
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   Scrollbars — warm neutral, consolidated
+   ============================================================ */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(234, 237, 233, 0.10) transparent;
 }
 
 ::-webkit-scrollbar {
@@ -213,26 +304,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(234, 237, 233, 0.12);
+  border: 1px solid rgba(234, 237, 233, 0.06);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background-color: rgba(234, 237, 233, 0.20);
 }
 
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
 
-/* ------------------------------------------------------------
-   Custom scrollbar class (used by scrollable panels across the app)
-   ------------------------------------------------------------ */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+  scrollbar-color: rgba(234, 237, 233, 0.12) transparent;
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 8px;
@@ -240,11 +327,19 @@ body {
   background-color: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(234, 237, 233, 0.12);
+  border: 1px solid rgba(234, 237, 233, 0.06);
   border-radius: 999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background-color: rgba(234, 237, 233, 0.20);
+}
+
+/* Hide scrollbars on horizontal tab strips */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }

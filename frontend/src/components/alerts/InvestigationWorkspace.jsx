@@ -73,7 +73,7 @@ function InvestigationWorkspace({
                     <span
                         className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider ${
                             incident.resolved
-                                ? "bg-[rgba(63,163,77,0.10)] border border-[rgba(63,163,77,0.25)] text-[var(--color-success)]"
+                                ? "bg-[rgba(85,176,123,0.10)] border border-[rgba(85,176,123,0.25)] text-[var(--color-success)]"
                                 : theme.statusChip
                         }`}
                     >
@@ -168,7 +168,7 @@ function InvestigationWorkspace({
                                         className="rounded border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-2.5"
                                     >
                                         <div className="flex items-center gap-1.5 mb-1">
-                                            <User size={11} className="text-[var(--color-accent)]" />
+                                            <User size={11} className="text-[var(--color-text-muted)]" />
                                             <span className="text-xs font-semibold text-[var(--color-text-primary)]">
                                                 {n.analyst}
                                             </span>
@@ -194,7 +194,7 @@ function InvestigationWorkspace({
                                 onChange={(e) => setNoteText(e.target.value)}
                                 placeholder="Add analyst case note…"
                                 rows={2}
-                                className="flex-1 resize-none rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-accent)] focus:outline-none"
+                                className="flex-1 resize-none rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:border-[var(--color-signal)] focus:outline-none"
                             />
                             <button
                                 type="button"
@@ -204,7 +204,7 @@ function InvestigationWorkspace({
                                     onAddNote?.(incident.id, "SOC Analyst", noteText.trim());
                                     setNoteText("");
                                 }}
-                                className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center self-end rounded-md bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] disabled:opacity-40 transition-colors"
+                                className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center self-end rounded-md bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] disabled:opacity-40 transition-colors"
                                 title="Add note"
                             >
                                 <Plus size={14} />
@@ -236,7 +236,7 @@ function InvestigationWorkspace({
 function SectionHeading({ index, title, caption }) {
     return (
         <div className="flex items-baseline gap-2">
-            <span className="font-mono text-[11px] font-semibold text-[var(--color-accent)]">
+            <span className="font-mono text-[11px] font-semibold text-[var(--color-text-muted)]">
                 {index}.
             </span>
             <div>

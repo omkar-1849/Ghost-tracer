@@ -49,7 +49,7 @@ export default function ScanHistoryTable({
             <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
                 <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-md bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">
-                        <History size={16} className="text-[var(--color-accent)]" />
+                        <History size={16} className="text-[var(--color-text-secondary)]" />
                     </span>
                     <div>
                         <div className="flex items-center gap-2">
@@ -70,7 +70,7 @@ export default function ScanHistoryTable({
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder="Filter scans…"
-                            className="w-48 bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded pl-8 pr-3 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[var(--color-accent)]"
+                            className="w-48 bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded pl-8 pr-3 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[var(--color-signal)]"
                         />
                     </div>
                     <button
@@ -87,7 +87,7 @@ export default function ScanHistoryTable({
 
             {historyError && scans.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 text-center bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md">
-                    <span className="w-10 h-10 rounded bg-[rgba(229,72,77,0.10)] border border-[rgba(229,72,77,0.25)] flex items-center justify-center mb-2">
+                    <span className="w-10 h-10 rounded bg-[rgba(223,91,91,0.10)] border border-[rgba(223,91,91,0.25)] flex items-center justify-center mb-2">
                         <AlertTriangle size={18} className="text-[var(--color-critical)]" />
                     </span>
                     <p className="text-xs font-semibold text-[var(--color-text-primary)]">Failed to load scan history</p>
@@ -156,7 +156,7 @@ export default function ScanHistoryTable({
                             <button
                                 type="button"
                                 onClick={() => setExpanded((v) => !v)}
-                                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-accent)] hover:underline"
+                                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-signal-readable)] hover:underline"
                             >
                                 <ChevronDown size={14} className={`transition-transform duration-150 ${expanded ? "rotate-180" : ""}`} />
                                 {expanded ? "Show Less" : `View All ${filteredScans.length} Scans`}

@@ -6,7 +6,9 @@ const variants = {
   default:
     "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]",
   accent:
-    "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]",
+    "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(69,165,131,0.25)]",
+  signal:
+    "bg-[var(--color-signal-subtle)] text-[var(--color-signal)] border-[rgba(201,169,97,0.28)]",
 };
 
 export default function Badge({

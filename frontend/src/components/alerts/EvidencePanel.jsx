@@ -95,7 +95,7 @@ function EvidencePanel({ incident }) {
                         key={`${incident.id}-${evidence.id ?? index}`}
                         className={`relative rounded-md border p-3.5 transition-colors ${
                             isTrigger
-                                ? "border-[rgba(229,72,77,0.30)] bg-[var(--color-surface-1)]"
+                                ? "border-[rgba(223,91,91,0.30)] bg-[var(--color-surface-1)]"
                                 : "border-[var(--color-border-default)] bg-[var(--color-surface-1)]"
                         }`}
                     >
@@ -120,7 +120,7 @@ function EvidencePanel({ incident }) {
                                     </span>
 
                                     {isTrigger && (
-                                        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-[rgba(229,72,77,0.10)] border border-[rgba(229,72,77,0.25)] text-[var(--color-critical)]">
+                                        <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-[rgba(223,91,91,0.10)] border border-[rgba(223,91,91,0.25)] text-[var(--color-critical)]">
                                             <Crosshair size={9} />
                                             TRIGGER PAYLOAD
                                         </span>
@@ -151,7 +151,7 @@ function EvidencePanel({ incident }) {
                                             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">
                                                 Method
                                             </p>
-                                            <p className="mt-0.5 font-mono text-xs font-semibold text-[var(--color-accent)]">
+                                            <p className="mt-0.5 font-mono text-xs font-semibold text-[var(--color-signal-readable)]">
                                                 {evidence.method}
                                             </p>
                                         </div>

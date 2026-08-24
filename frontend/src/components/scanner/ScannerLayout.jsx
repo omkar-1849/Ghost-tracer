@@ -222,15 +222,16 @@ export default function ScannerLayout() {
             {/* Page header */}
             <div className="flex items-center justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-lg font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <p className="section-label mb-1.5">Assessment Console</p>
+                    <h1 className="page-title">
                         Scanner Module
                     </h1>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                        Multi-engine security testing and vulnerability assessment console
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                        Multi-engine security testing and vulnerability assessment
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)]">
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)]">
                     <LiveDot color="var(--color-success)" size={5} />
                     SCANNER READY
                 </div>
@@ -238,7 +239,7 @@ export default function ScannerLayout() {
 
             {/* Backend offline warning banner - only when error AND no scans */}
             {historyError && recentScans.length === 0 && (
-                <div className="mb-6 flex items-center justify-between gap-3 bg-[rgba(229,72,77,0.08)] border border-[rgba(229,72,77,0.20)] rounded-md px-4 py-3 text-xs text-[var(--color-critical)]">
+                <div className="mb-6 flex items-center justify-between gap-3 bg-[rgba(223,91,91,0.08)] border border-[rgba(223,91,91,0.20)] rounded-md px-4 py-3 text-xs text-[var(--color-critical)]">
                     <p className="flex items-center gap-2 font-medium">
                         <WifiOff size={15} />
                         Backend unreachable — scan history could not be loaded.
@@ -256,7 +257,7 @@ export default function ScannerLayout() {
 
             <ScannerTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-            {renderTabContent()}
+            <div className="pt-6">{renderTabContent()}</div>
 
             {/* Delete confirmation dialog */}
             {deleteTarget && (
@@ -270,7 +271,7 @@ export default function ScannerLayout() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center gap-3 mb-3">
-                            <span className="w-8 h-8 rounded-md bg-[rgba(229,72,77,0.12)] border border-[rgba(229,72,77,0.25)] flex items-center justify-center">
+                            <span className="w-8 h-8 rounded-md bg-[rgba(223,91,91,0.12)] border border-[rgba(223,91,91,0.25)] flex items-center justify-center">
                                 <Trash2 size={16} className="text-[var(--color-critical)]" />
                             </span>
                             <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Delete Scan Record</h3>

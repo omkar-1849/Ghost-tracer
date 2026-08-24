@@ -8,10 +8,10 @@ import {
 import * as api from "../../services/websiteApi";
 
 const HEALTH_STYLES = {
-    Healthy: { text: "text-[var(--color-success)]", chip: "bg-[var(--color-success)] border-[var(--color-success)]", dot: "bg-[var(--color-success)]" },
-    Warning: { text: "text-[var(--color-warning)]", chip: "bg-[var(--color-warning)] border-[var(--color-warning)]", dot: "bg-[var(--color-warning)]" },
-    Critical: { text: "text-[var(--color-critical)]", chip: "bg-[var(--color-critical)] border-[var(--color-critical)]", dot: "bg-[var(--color-critical)]" },
-    Unknown: { text: "text-[var(--color-text-secondary)]", chip: "bg-[var(--color-text-disabled)] border-[var(--color-border-strong)]", dot: "bg-[var(--color-text-disabled)]" },
+    Healthy: { text: "text-[var(--color-success)]", chip: "bg-[rgba(85,176,123,0.10)] border-[rgba(85,176,123,0.25)]", dot: "bg-[var(--color-success)]" },
+    Warning: { text: "text-[var(--color-warning)]", chip: "bg-[rgba(201,146,61,0.10)] border-[rgba(201,146,61,0.25)]", dot: "bg-[var(--color-warning)]" },
+    Critical: { text: "text-[var(--color-critical)]", chip: "bg-[rgba(223,91,91,0.10)] border-[rgba(223,91,91,0.25)]", dot: "bg-[var(--color-critical)]" },
+    Unknown: { text: "text-[var(--color-text-secondary)]", chip: "bg-[var(--color-surface-2)] border-[var(--color-border-default)]", dot: "bg-[var(--color-text-disabled)]" },
 };
 
 const TABS = [
@@ -31,9 +31,17 @@ const METHOD_LABELS = { html: "HTML file", meta: "Meta tag", dns: "DNS TXT recor
 
 const formatDate = (value) => value ? new Date(value).toLocaleString() : null;
 
+/* Semantic score tone — green means healthy, never "selected". */
+const getScoreTone = (score) => {
+    if (score === null || score === undefined) return "text-[var(--color-text-muted)]";
+    if (score >= 90) return "text-[var(--color-success)]";
+    if (score >= 70) return "text-[var(--color-warning)]";
+    return "text-[var(--color-critical)]";
+};
+
 /* ---------- Small reusable pieces ---------- */
 
-function SectionHeading({ icon: Icon, title, subtitle, accent = "text-[var(--color-success)]" }) {
+function SectionHeading({ icon: Icon, title, subtitle, accent = "text-[var(--color-text-secondary)]" }) {
     return (
         <div className="mb-4">
             <h4 className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 ${accent}`}>
@@ -81,9 +89,9 @@ function MonoBlock({ value, fileName = null, showCopy = true, emptyLabel = "—"
 
 function SpecRow({ label, value, mono = true }) {
     return (
-        <div className="flex items-center justify-between gap-4 px-3.5 py-2.5 border-b border-[var(--color-border-subtle)] last:border-b-0">
+        <div className="flex items-center justify-between gap-4 px-0.5 py-2.5 border-b border-[var(--color-border-subtle)] last:border-b-0">
             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] shrink-0">{label}</span>
-            <span className={`text-xs text-[var(--color-text-primary)] truncate ${mono ? "font-mono" : ""}`}>{value}</span>
+            <span className={`text-[var(--color-text-primary)] truncate ${mono ? "mono-value" : "text-xs"}`}>{value}</span>
         </div>
     );
 }
@@ -91,30 +99,6 @@ function SpecRow({ label, value, mono = true }) {
 function InlineCode({ children }) {
     return <code className="px-1.5 py-0.5 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] font-mono text-[11px] text-[var(--color-info)]">{children}</code>;
 }
-
-const InfoCard = ({ icon: Icon, label, value, accent = "text-[var(--color-text-secondary)]", chipClass = "bg-[var(--color-surface-2)]" }) => (
-    <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] p-3.5 rounded-md flex items-center gap-3 transition-all duration-150 hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-1)]">
-        <div className={`p-2 rounded-lg border ${chipClass} shrink-0`}>
-            <Icon size={16} className={accent} />
-        </div>
-        <div className="min-w-0">
-            <div className="text-[10px] uppercase text-[var(--color-text-muted)] font-bold tracking-wider">{label}</div>
-            <div className="text-sm font-semibold text-[var(--color-text-primary)] truncate">{value}</div>
-        </div>
-    </div>
-);
-
-const DetailRow = ({ icon: Icon, label, value, mono = false }) => (
-    <div className="flex gap-3.5 py-2.5 transition-colors duration-150">
-        <div className="w-8 h-8 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center shrink-0">
-            <Icon size={14} className="text-[var(--color-text-secondary)]" />
-        </div>
-        <div className="min-w-0">
-            <div className="text-xs text-[var(--color-text-muted)]">{label}</div>
-            <div className={`text-sm text-[var(--color-text-primary)] ${mono ? "font-mono" : ""}`}>{value}</div>
-        </div>
-    </div>
-);
 
 /* ---------- Verification tab ---------- */
 
@@ -187,14 +171,14 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
                     Generate an API key + secret pair to authenticate the Sentinel SDK for this website.
                 </p>
                 {integrationError && (
-                    <p className="mt-3 text-xs font-semibold text-[var(--color-critical)] bg-[var(--color-critical)] border border-[var(--color-critical)] rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
+                    <p className="mt-3 text-xs font-semibold text-[var(--color-critical)] bg-[rgba(223,91,91,0.10)] border border-[rgba(223,91,91,0.25)] rounded-lg px-3 py-2 inline-flex items-center gap-1.5">
                         <XCircle size={13} /> {integrationError}
                     </p>
                 )}
                 <button
                     onClick={onConnect}
                     disabled={connecting}
-                    className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold transition-colors duration-150 border border-[var(--color-info)] active:scale-[0.98] disabled:opacity-50"
+                    className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-accent-foreground)] rounded-md text-sm font-bold transition-colors duration-150 active:scale-[0.98] disabled:opacity-50"
                 >
                     {connecting ? <Loader2 size={15} className="animate-spin" /> : <KeyRound size={15} />}
                     {connecting ? "Connecting…" : "Connect Website"}
@@ -263,7 +247,7 @@ function IntegrationTab({ integration, integrationError, keys, connecting, regen
                 <button
                     onClick={onDisconnect}
                     disabled={disconnecting}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold text-[var(--color-critical)] bg-[var(--color-critical)] hover:bg-[var(--color-critical)] border border-[var(--color-critical)] transition-colors duration-150 active:opacity-70 disabled:opacity-50"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-md text-xs font-bold text-[var(--color-critical)] bg-[rgba(223,91,91,0.10)] hover:bg-[rgba(223,91,91,0.20)] border border-[rgba(223,91,91,0.25)] transition-colors duration-150 active:opacity-70 disabled:opacity-50"
                 >
                     {disconnecting ? <Loader2 size={14} className="animate-spin" /> : <Unplug size={14} />}
                     {disconnecting ? "Disconnecting…" : "Disconnect"}
@@ -424,20 +408,20 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
 
     return (
         <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label={`Details for ${website.name}`}>
-            {/* Backdrop */}
+            {/* Backdrop — dims and blurs; the workspace stays visible behind */}
             <div
-                className="absolute inset-0 bg-[var(--color-canvas)]  animate-backdrop-in"
+                className="absolute inset-0 bg-[var(--color-overlay)] backdrop-blur-[2px] animate-backdrop-in"
                 onClick={onClose}
             />
 
             {/* Panel */}
-            <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-[var(--color-canvas)] -2xl border-l border-[var(--color-border-subtle)] shadow-[var(--shadow-3)] animate-drawer-in flex flex-col">
+            <div className="absolute inset-y-0 right-0 w-full max-w-lg bg-[var(--color-canvas)] border-l border-[var(--color-border-default)] rounded-l-xl shadow-[var(--shadow-3)] animate-drawer-in flex flex-col">
                 {/* Header */}
-                <div className="shrink-0 p-6 pb-5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]">
+                <div className="shrink-0 p-6 pb-0">
                     <div className="flex justify-between items-start gap-3">
                         <div className="flex gap-4 items-center min-w-0">
                             {/* Favicon */}
-                            <div className="w-12 h-12 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center overflow-hidden shrink-0">
+                            <div className="w-12 h-12 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-subtle)] flex items-center justify-center overflow-hidden shrink-0">
                                 {website.faviconUrl ? (
                                     <img src={website.faviconUrl} alt="" className="w-6 h-6 object-contain" />
                                 ) : (
@@ -450,7 +434,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                     href={website.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="text-sm text-[var(--color-info)] hover:text-[var(--color-info)] flex items-center gap-1 mt-0.5 font-mono transition-colors duration-150"
+                                    className="mono-value text-[var(--color-info)] hover:text-[var(--color-accent-hover)] flex items-center gap-1 mt-1 transition-colors duration-150"
                                 >
                                     <span className="truncate">{website.domain}</span>
                                     <ExternalLink size={12} className="shrink-0" />
@@ -460,7 +444,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                         <button
                             onClick={onClose}
                             aria-label="Close details"
-                            className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-3)] rounded-full border border-[var(--color-border-default)] transition-colors duration-150 active:opacity-70"
+                            className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] rounded-full transition-colors duration-150 active:opacity-70"
                         >
                             <X size={16} />
                         </button>
@@ -468,22 +452,22 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
 
                     {/* Status ribbon */}
                     <div className="flex flex-wrap items-center gap-2 mt-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isActive ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${isActive ? "bg-[rgba(85,176,123,0.10)] border-[rgba(85,176,123,0.25)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-[var(--color-success)]" : "bg-[var(--color-text-disabled)]"}`} />
                             {website.status}
                         </span>
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[var(--color-low)] border border-[var(--color-low)] text-[var(--color-low)]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[rgba(138,166,189,0.10)] border border-[rgba(138,166,189,0.25)] text-[var(--color-low)]">
                             <Server size={11} /> {website.environment}
                         </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${health.chip} ${health.text}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
                             {website.health}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${website.monitoringEnabled ? "bg-[var(--color-info)] border-[var(--color-info)] text-[var(--color-info)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${website.monitoringEnabled ? "bg-[rgba(138,148,140,0.10)] border-[rgba(138,148,140,0.25)] text-[var(--color-info)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}>
                             {website.monitoringEnabled ? <Eye size={11} /> : <EyeOff size={11} />}
                             {website.monitoringEnabled ? "Monitoring" : "Unmonitored"}
                         </span>
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${site?.verified ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border ${site?.verified ? "bg-[rgba(85,176,123,0.10)] border-[rgba(85,176,123,0.25)] text-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)] text-[var(--color-text-secondary)]"}`}>
                             {site?.verified ? <ShieldCheck size={11} /> : <ShieldAlert size={11} />}
                             {site?.verified ? "Verified" : "Unverified"}
                         </span>
@@ -491,7 +475,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                 </div>
 
                 {/* Tabs */}
-                <div role="tablist" aria-label="Website details" className="shrink-0 px-6 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] flex items-stretch gap-1 overflow-x-auto custom-scrollbar">
+                <div role="tablist" aria-label="Website details" className="shrink-0 mt-4 px-6 border-b border-[var(--color-border-subtle)] flex items-stretch gap-1 overflow-x-auto custom-scrollbar">
                     {TABS.map(tab => {
                         const active = activeTab === tab.id;
                         return (
@@ -506,9 +490,9 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                     active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                                 }`}
                             >
-                                <tab.icon size={13} className={active ? "text-[var(--color-success)]" : ""} />
+                                <tab.icon size={13} className={active ? "text-[var(--color-signal)]" : ""} />
                                 {tab.label}
-                                <span className={`absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[var(--color-accent)] transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`} />
+                                <span className={`absolute inset-x-2 bottom-0 h-0.5 rounded-full bg-[var(--color-signal)] transition-opacity duration-200 ${active ? "opacity-100" : "opacity-0"}`} />
                             </button>
                         );
                     })}
@@ -518,53 +502,60 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                 <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                     {/* ---------- Overview ---------- */}
                     {activeTab === "overview" && (
-                        <div key="overview" className="space-y-8 animate-fade-in-up">
-                            <section className="space-y-3">
-                                <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
-                                    <ActivitySquare size={13} className="text-[var(--color-success)]" /> Overview
-                                </h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <InfoCard icon={ActivitySquare} label="Status" value={website.status}
-                                        accent={isActive ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}
-                                        chipClass={isActive ? "bg-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-surface-2)] border-[var(--color-border-default)]"} />
-                                    <InfoCard icon={HeartPulse} label="Health" value={website.health}
-                                        accent={health.text} chipClass={`${health.chip} border`} />
-                                    <InfoCard icon={Server} label="Environment" value={website.environment}
-                                        accent="text-[var(--color-low)]" chipClass="bg-[var(--color-low)] border-[var(--color-low)]" />
-                                    <InfoCard icon={ShieldCheck} label="Security Score" value={website.securityScore ?? "N/A"}
-                                        accent="text-[var(--color-accent)]" chipClass="bg-[var(--color-accent)] border-[var(--color-accent)]" />
+                        <div key="overview" className="space-y-7 animate-fade-in-up">
+                            {/* Posture readout — typographic cluster, no cards */}
+                            <section>
+                                <div className="grid grid-cols-4 divide-x divide-[var(--color-border-subtle)]">
+                                    <div className="pr-3">
+                                        <p className="section-label mb-1.5">Status</p>
+                                        <p className={`text-sm font-bold leading-none ${isActive ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)]"}`}>{website.status}</p>
+                                    </div>
+                                    <div className="px-3 min-w-0">
+                                        <p className="section-label mb-1.5">Health</p>
+                                        <p className={`inline-flex items-center gap-1.5 text-sm font-bold leading-none ${health.text}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${health.dot}`} />
+                                            {website.health}
+                                        </p>
+                                    </div>
+                                    <div className="px-3 min-w-0">
+                                        <p className="section-label mb-1.5">Environment</p>
+                                        <p className="text-sm font-bold text-[var(--color-low)] leading-none truncate">{website.environment}</p>
+                                    </div>
+                                    <div className="pl-3">
+                                        <p className="section-label mb-1.5">Score</p>
+                                        <p className={`text-xl font-bold tabular-nums leading-none ${getScoreTone(website.securityScore)}`}>
+                                            {website.securityScore ?? "—"}
+                                        </p>
+                                    </div>
                                 </div>
                             </section>
 
-                            <section className="space-y-1">
-                                <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2 border-b border-[var(--color-border-subtle)] pb-2">
-                                    <Database size={13} className="text-[var(--color-text-secondary)]" /> General Information
-                                </h4>
-                                <DetailRow icon={User} label="Owner" value={website.owner || "No owner assigned"} />
-                                <DetailRow icon={Database} label="IP Address" value={website.ipAddress || "Unresolved"} mono />
-                                <DetailRow icon={Calendar} label="Last Scanned"
-                                    value={website.lastScan ? new Date(website.lastScan).toLocaleString() : "Never scanned"} />
-                                <DetailRow icon={Link2} label="Ownership"
-                                    value={site?.verified ? `Verified via ${METHOD_LABELS[site?.verificationMethod] || "unknown method"}` : "Not verified"} />
-                                {website.description && (
-                                    <div className="pt-2">
-                                        <div className="text-xs text-[var(--color-text-muted)] mb-1.5">Description</div>
-                                        <p className="text-sm text-[var(--color-text-primary)] leading-relaxed bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md p-3.5">{website.description}</p>
-                                    </div>
-                                )}
+                            {/* Technical record — hairline spec rows */}
+                            <section>
+                                <h4 className="section-label border-b border-[var(--color-border-subtle)] pb-2 mb-1">Technical Record</h4>
+                                <SpecRow label="Hostname / URL" value={website.domain} />
+                                <SpecRow label="IP Address" value={website.ipAddress || "Unresolved"} />
+                                <SpecRow label="Owner" value={website.owner || "No owner assigned"} mono={false} />
+                                <SpecRow label="Last Scanned" value={website.lastScan ? new Date(website.lastScan).toLocaleString() : "Never scanned"} mono={false} />
+                                <SpecRow label="Ownership" value={site?.verified ? `Verified via ${METHOD_LABELS[site?.verificationMethod] || "unknown method"}` : "Not verified"} mono={false} />
                             </section>
+
+                            {website.description && (
+                                <section>
+                                    <h4 className="section-label border-b border-[var(--color-border-subtle)] pb-2 mb-3">Description</h4>
+                                    <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">{website.description}</p>
+                                </section>
+                            )}
 
                             {tags.length > 0 && (
                                 <section>
-                                    <h4 className="text-[11px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2 border-b border-[var(--color-border-subtle)] pb-2 mb-3">
-                                        <Globe size={13} className="text-[var(--color-text-secondary)]" /> Tags
-                                    </h4>
+                                    <h4 className="section-label border-b border-[var(--color-border-subtle)] pb-2 mb-3">Tags</h4>
                                     <div className="flex flex-wrap gap-2">
                                         {tags.map((tag, idx) => (
                                             <span
                                                 key={idx}
                                                 style={{ animationDelay: `${idx * 40}ms` }}
-                                                className="px-2.5 py-1 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-xs font-medium text-[var(--color-text-primary)] shadow-sm transition-colors duration-150 hover:border-[var(--color-success)] hover:text-[var(--color-text-primary)] animate-fade-in-up"
+                                                className="mono-value px-2.5 py-1 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] animate-fade-in-up transition-colors duration-150 hover:text-[var(--color-text-primary)]"
                                             >
                                                 #{tag}
                                             </span>
@@ -609,8 +600,8 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                             />
 
                             {/* Status card */}
-                            <div className={`rounded-lg border p-5 flex items-start gap-4 transition-colors duration-300 ${site?.verified ? "bg-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-critical)] border-[var(--color-critical)]"}`}>
-                                <div className={`p-2.5 rounded-md shrink-0 border ${site?.verified ? "bg-[var(--color-success)] text-[var(--color-success)] border-[var(--color-success)]" : "bg-[var(--color-critical)] text-[var(--color-critical)] border-[var(--color-critical)]"}`}>
+                            <div className={`rounded-lg border p-5 flex items-start gap-4 transition-colors duration-300 ${site?.verified ? "bg-[rgba(85,176,123,0.07)] border-[rgba(85,176,123,0.25)]" : "bg-[rgba(223,91,91,0.06)] border-[rgba(223,91,91,0.25)]"}`}>
+                                <div className={`p-2.5 rounded-md shrink-0 border ${site?.verified ? "bg-[rgba(85,176,123,0.12)] text-[var(--color-success)] border-[rgba(85,176,123,0.30)]" : "bg-[rgba(223,91,91,0.12)] text-[var(--color-critical)] border-[rgba(223,91,91,0.30)]"}`}>
                                     {site?.verified ? <ShieldCheck size={20} /> : <ShieldAlert size={20} />}
                                 </div>
                                 <div className="min-w-0">
@@ -650,14 +641,14 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                                 role="radio"
                                                 aria-checked={selected}
                                                 onClick={() => setVerifyMethod(method.id)}
-                                                className={`group flex flex-col items-start gap-2 p-3.5 rounded-md border text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-success)] ${
+                                                className={`group flex flex-col items-start gap-2 p-3.5 rounded-md border text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] ${
                                                     selected
-                                                        ? "bg-[var(--color-success)] border-[var(--color-success)]"
-                                                        : "bg-[var(--color-surface-1)] border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-2)]"
+                                                        ? "bg-[var(--color-signal-subtle)] border-[var(--color-signal-strong)]"
+                                                        : "bg-transparent border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-1)]"
                                                 }`}
                                             >
-                                                <method.icon size={16} className={selected ? "text-[var(--color-success)]" : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-150"} />
-                                                <span className={`text-xs font-bold ${selected ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]"}`}>{method.title}</span>
+                                                <method.icon size={16} className={selected ? "text-[var(--color-signal-readable)]" : "text-[var(--color-text-secondary)] group-hover:text-[var(--color-text-primary)] transition-colors duration-150"} />
+                                                <span className="text-xs font-bold text-[var(--color-text-primary)]">{method.title}</span>
                                                 <span className="text-[10px] text-[var(--color-text-muted)] leading-snug">{method.description}</span>
                                             </button>
                                         );
@@ -675,7 +666,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                 <button
                                     onClick={handleVerify}
                                     disabled={verifying}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-accent-foreground)] rounded-md text-sm font-bold transition-colors duration-150 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     {verifying ? <Loader2 size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
                                     {verifying ? "Verifying ownership…" : "Verify Now"}
@@ -686,8 +677,8 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                                         role="status"
                                         className={`flex items-start gap-2.5 px-3.5 py-3 rounded-md border text-xs font-semibold leading-relaxed animate-fade-in-up ${
                                             verifyResult.success
-                                                ? "bg-[var(--color-success)] border-[var(--color-success)] text-[var(--color-success)]"
-                                                : "bg-[var(--color-critical)] border-[var(--color-critical)] text-[var(--color-critical)]"
+                                                ? "bg-[rgba(85,176,123,0.10)] border-[rgba(85,176,123,0.25)] text-[var(--color-success)]"
+                                                : "bg-[rgba(223,91,91,0.10)] border-[rgba(223,91,91,0.25)] text-[var(--color-critical)]"
                                         }`}
                                     >
                                         {verifyResult.success ? <CheckCircle2 size={15} className="shrink-0 mt-0.5" /> : <XCircle size={15} className="shrink-0 mt-0.5" />}
@@ -725,7 +716,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                     </button>
                     <button
                         onClick={() => onEdit(website)}
-                        className="flex-1 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98]"
+                        className="flex-1 px-4 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-accent-foreground)] rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-colors duration-150 active:scale-[0.98]"
                     >
                         <Pencil size={14} />
                         Edit Website

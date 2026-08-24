@@ -1,17 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-    Gauge,
-    ShieldCheck,
-    ShieldAlert,
-    ShieldX,
-} from "lucide-react";
+import { Gauge, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
 import { getSecurityScore } from "../services/api";
 
 /* ------------------------------------------------------------------ */
 /* Config                                                              */
 /* ------------------------------------------------------------------ */
 
-const SIZE = 160;
+const SIZE = 170;
 const STROKE = 10;
 const RADIUS = (SIZE - STROKE) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -55,7 +50,8 @@ function resolveStatus(score) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Component                                                           */
+/* Component — embedded posture gauge. Renders on the parent posture  */
+/* surface (no outer card): the score anchors the section.            */
 /* ------------------------------------------------------------------ */
 
 function SecurityScore({ stats = {} }) {
@@ -105,22 +101,29 @@ function SecurityScore({ stats = {} }) {
         CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE;
 
     return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 min-h-[400px] flex flex-col shadow-[var(--shadow-1)]">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-3">
-                <div>
-                    <h2 className="text-sm font-semibold tracking-tight text-[var(--color-text-primary)]">
-                        Security Score
-                    </h2>
-                    <p className="text-[var(--color-text-muted)] text-xs mt-0.5">
-                        Overall posture
-                    </p>
-                </div>
-            </div>
-
+        <div className="flex flex-col items-center justify-center min-w-0">
             {/* Radial gauge */}
-            <div className="relative mx-auto mt-6" style={{ width: SIZE, height: SIZE }}>
+            <div className="relative" style={{ width: SIZE, height: SIZE }}>
                 <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90">
+                    {/* Instrument tick marks */}
+                    {Array.from({ length: 20 }).map((_, i) => {
+                        const angle = (i / 20) * 2 * Math.PI;
+                        const inner = RADIUS - STROKE / 2 - 5;
+                        const outer = RADIUS - STROKE / 2 - 1;
+                        return (
+                            <line
+                                key={i}
+                                x1={SIZE / 2 + inner * Math.cos(angle)}
+                                y1={SIZE / 2 + inner * Math.sin(angle)}
+                                x2={SIZE / 2 + outer * Math.cos(angle)}
+                                y2={SIZE / 2 + outer * Math.sin(angle)}
+                                stroke="var(--color-border-strong)"
+                                strokeWidth={i % 5 === 0 ? 2 : 1}
+                                opacity={i % 5 === 0 ? 0.9 : 0.45}
+                            />
+                        );
+                    })}
+
                     {/* Track */}
                     <circle
                         cx={SIZE / 2}
@@ -152,19 +155,17 @@ function SecurityScore({ stats = {} }) {
                 {/* Center readout */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <span
-                        className="text-4xl font-bold tracking-tight tabular-nums"
+                        className="mono-value text-[40px] font-semibold tracking-tight leading-none"
                         style={{ color: status.color }}
                     >
                         {clamped}
                     </span>
-                    <span className="text-[10px] font-medium uppercase tracking-widest text-[var(--color-text-disabled)] mt-0.5">
-                        / 100
-                    </span>
+                    <span className="section-label mt-2">/ 100 Index</span>
                 </div>
             </div>
 
             {/* Status badge */}
-            <div className="mt-4 flex items-center justify-center">
+            <div className="mt-5 flex items-center justify-center">
                 <span
                     className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold border"
                     style={{
@@ -178,24 +179,24 @@ function SecurityScore({ stats = {} }) {
                 </span>
             </div>
 
-            <p className="text-[var(--color-text-muted)] text-xs text-center mt-2">
+            <p className="text-[var(--color-text-muted)] text-xs text-center mt-2.5 max-w-[240px] leading-relaxed">
                 {status.caption}
             </p>
 
-            {/* Supporting metrics */}
-            <div className="grid grid-cols-3 gap-2 mt-auto pt-5">
-                {metrics.map((metric) => (
+            {/* Supporting metrics — divider-separated, not boxed */}
+            <div className="grid grid-cols-3 mt-6 w-full max-w-[280px]">
+                {metrics.map((metric, i) => (
                     <div
                         key={metric.label}
-                        className="bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] rounded-md px-2 py-2.5 text-center"
+                        className={`text-center ${i > 0 ? "border-l border-[var(--color-border-subtle)]" : ""}`}
                     >
                         <p
-                            className="text-base font-bold leading-none tabular-nums"
+                            className="mono-value text-[16px] font-semibold leading-none"
                             style={{ color: metric.color }}
                         >
                             {metric.value}
                         </p>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-disabled)] mt-1">
+                        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-disabled)] mt-1.5">
                             {metric.label}
                         </p>
                     </div>

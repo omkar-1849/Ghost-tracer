@@ -56,7 +56,7 @@ function TopTargetedURLs() {
     const max = Math.max(1, ...urls.map((item) => Number(item.count) || 0));
 
     return (
-        <div className="flex flex-1 flex-col gap-2.5">
+        <div className="flex flex-1 flex-col divide-y divide-[var(--color-border-subtle)]">
             {urls.map((item, index) => {
                 const count = Number(item.count) || 0;
                 const pct = Math.round((count / max) * 100);
@@ -64,15 +64,15 @@ function TopTargetedURLs() {
                 return (
                     <div
                         key={index}
-                        className="group/row flex items-center gap-3.5 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] px-3.5 py-2.5 transition-all duration-300 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface-3)]"
+                        className="group/row flex items-center gap-4 py-2.5 transition-colors duration-150"
                     >
-                        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-3)] font-mono text-[11px] font-bold text-[var(--color-text-muted)] tabular-nums">
+                        <span className="w-6 flex-shrink-0 text-right font-mono text-[11px] font-semibold text-[var(--color-text-disabled)] tabular-nums">
                             {String(index + 1).padStart(2, "0")}
                         </span>
 
                         <div className="min-w-0 flex-1">
                             <div className="flex items-baseline justify-between gap-3">
-                                <span className="truncate font-mono text-[13px] font-medium text-[var(--color-text-secondary)]">
+                                <span className="truncate mono-value text-[12.5px] font-medium text-[var(--color-text-secondary)] group-hover/row:text-[var(--color-text-primary)] transition-colors">
                                     {item.url}
                                 </span>
                                 <span className="flex-shrink-0 text-xs font-bold tabular-nums text-[var(--color-text-primary)]">
@@ -83,9 +83,9 @@ function TopTargetedURLs() {
                                 </span>
                             </div>
 
-                            <div className="mt-2 h-1 overflow-hidden rounded-full bg-[var(--color-surface-3)]">
+                            <div className="mt-1.5 h-[3px] overflow-hidden rounded-full bg-[var(--color-surface-3)]">
                                 <div
-                                    className="h-full rounded-full bg-[var(--color-accent)] transition-all duration-700 ease-out"
+                                    className="h-full rounded-full bg-[var(--color-low)] opacity-80 transition-all duration-700 ease-out"
                                     style={{ width: `${pct}%` }}
                                 />
                             </div>

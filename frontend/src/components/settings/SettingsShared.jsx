@@ -16,7 +16,7 @@ export function StatusBadge({ status }) {
             );
         case "Beta":
             return (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[var(--color-border-default)] bg-[var(--color-accent-subtle)] text-[10px] font-semibold text-[var(--color-accent)] uppercase tracking-wider">
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-[var(--color-border-default)] bg-[var(--color-signal-subtle)] text-[10px] font-semibold text-[var(--color-signal)] uppercase tracking-wider">
                     <Code size={10} /> Beta
                 </span>
             );
@@ -48,11 +48,11 @@ export function SectionHeader({ title, description, icon: Icon }) {
         <div className="mb-10 flex items-start gap-5">
             {Icon && (
                 <div className="w-14 h-14 rounded-lg bg-[var(--color-surface-2)] border border-[var(--color-border-default)] flex items-center justify-center shrink-0 mt-1">
-                    <Icon size={26} className="text-[var(--color-accent)]" />
+                    <Icon size={26} className="text-[var(--color-text-secondary)]" />
                 </div>
             )}
             <div>
-                <h2 className="text-3xl font-extrabold text-[var(--color-text-primary)] tracking-tight mb-2">
+                <h2 className="text-lg font-bold text-[var(--color-text-primary)] tracking-tight mb-2">
                     {title}
                 </h2>
                 {description && <p className="text-sm font-medium text-[var(--color-text-secondary)] max-w-2xl leading-relaxed">{description}</p>}
@@ -100,7 +100,7 @@ export function ToggleCard({ label, description, status, value, onChange, disabl
                 <button 
                     type="button"
                     onClick={() => !disabled && onChange(!value)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30 ${
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-signal-strong)] ${
                         value ? (danger ? "bg-[var(--color-critical)]" : "bg-[var(--color-accent)]") : "bg-[var(--color-surface-3)]"
                     }`}
                 >
@@ -125,7 +125,7 @@ export function InputCard({ label, description, status, value, onChange, placeho
                         validation === "valid" ? "border-[var(--color-success)] focus:border-[var(--color-success)] focus:ring-[var(--color-success)]/20" :
                         validation === "warning" ? "border-[var(--color-warning)] focus:border-[var(--color-warning)] focus:ring-[var(--color-warning)]/20" :
                         validation === "error" ? "border-[var(--color-critical)] focus:border-[var(--color-critical)] focus:ring-[var(--color-critical)]/20" :
-                        "border-[var(--color-border-default)] focus:border-[var(--color-accent)] focus:ring-[var(--color-accent)]/20"
+                        "border-[var(--color-border-default)] focus:border-[var(--color-signal)] focus:ring-[var(--color-signal-strong)]"
                     }`}
                     disabled={disabled}
                 />
@@ -148,7 +148,7 @@ export function SelectCard({ label, description, status, value, onChange, option
                 <select
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all appearance-none"
+                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-signal)] focus:ring-2 focus:ring-[var(--color-signal-strong)] transition-all appearance-none"
                     disabled={disabled}
                 >
                     {options.map((opt) => (

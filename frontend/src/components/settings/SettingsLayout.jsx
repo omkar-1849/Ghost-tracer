@@ -166,10 +166,10 @@ const ToastNotification = ({ toast }) => {
     if (!toast) return null;
     const isError = toast.type === "error";
     return (
-        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-lg border animate-in fade-in slide-in-from-top-4 duration-300 ${
-            isError ? 'bg-[var(--color-critical)] border-[var(--color-critical)] text-white' : 'bg-[var(--color-success)] border-[var(--color-success)] text-white'
+        <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-lg border animate-in fade-in slide-in-from-top-4 duration-300 bg-[var(--color-surface-3)] shadow-[var(--shadow-3)] ${
+            isError ? 'border-[rgba(223,91,91,0.40)] text-[var(--color-critical)]' : 'border-[rgba(85,176,123,0.40)] text-[var(--color-success)]'
         }`}>
-            {isError ? <AlertCircle size={20} className="text-white" /> : <CheckCircle2 size={20} className="text-white" />}
+            {isError ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
             <span className="text-sm font-semibold">{toast.message}</span>
         </div>
     );
@@ -348,18 +348,18 @@ export default function SettingsLayout() {
             <ToastNotification toast={toast} />
 
             {/* Audit Banner */}
-            <div className="shrink-0 bg-[var(--color-surface-1)] border-b border-[var(--color-border-default)] px-8 py-4 flex items-center justify-between z-10">
-                <div className="flex items-center gap-8 text-sm font-medium">
-                    <span className="flex items-center gap-2.5 text-[var(--color-text-primary)] font-bold tracking-wide">
-                        <ShieldAlert size={18} className="text-[var(--color-accent)]" />
+            <div className="shrink-0 bg-[var(--color-surface-1)] border-b border-[var(--color-border-default)] px-8 py-3.5 flex items-center justify-between z-10">
+                <div className="flex items-center gap-6 text-[13px] font-medium">
+                    <span className="flex items-center gap-2.5 text-[var(--color-text-primary)] font-bold tracking-tight">
+                        <ShieldAlert size={16} className="text-[var(--color-signal)]" />
                         Administration Console
                     </span>
-                    <span className="text-[var(--color-text-muted)]">Last Sync: <span className="text-[var(--color-text-secondary)] font-semibold">{lastSync.toLocaleTimeString()}</span></span>
-                    <span className="text-[var(--color-text-muted)]">Saved by: <span className="text-[var(--color-text-secondary)] font-semibold">System Administrator</span></span>
-                    <span className="text-[var(--color-text-muted)]">Version: <span className="text-[var(--color-text-secondary)] font-semibold">v2.4.0</span></span>
+                    <span className="hidden md:inline text-xs text-[var(--color-text-muted)]">Last Sync: <span className="mono-value text-[11px] text-[var(--color-text-secondary)]">{lastSync.toLocaleTimeString()}</span></span>
+                    <span className="hidden lg:inline text-xs text-[var(--color-text-muted)]">Saved by: <span className="text-[var(--color-text-secondary)] font-semibold">System Administrator</span></span>
+                    <span className="hidden xl:inline text-xs text-[var(--color-text-muted)]">Version: <span className="mono-value text-[11px] text-[var(--color-text-secondary)]">v2.4.0</span></span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 rounded-md bg-[var(--color-accent-subtle)] border border-[var(--color-accent)] text-xs text-[var(--color-accent)] uppercase tracking-wider font-extrabold">
+                    <span className="px-3 py-1 rounded-md bg-[var(--color-signal-subtle)] border border-[rgba(201,169,97,0.28)] text-[10px] text-[var(--color-signal)] uppercase tracking-[0.1em] font-bold">
                         Production Profile
                     </span>
                 </div>
@@ -383,7 +383,7 @@ export default function SettingsLayout() {
                     </div>
                     <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg p-3 flex flex-col justify-center">
                         <span className="text-[10px] uppercase text-[var(--color-text-muted)] font-bold mb-1 tracking-wider flex items-center gap-1.5"><ShieldCheck size={12} className="text-[var(--color-text-secondary)]"/> Environment</span>
-                        <span className="text-sm font-bold text-[var(--color-accent)]">Production</span>
+                        <span className="text-sm font-bold text-[var(--color-signal)]">Production</span>
                     </div>
                     <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg p-3 flex flex-col justify-center">
                         <span className="text-[10px] uppercase text-[var(--color-text-muted)] font-bold mb-1 tracking-wider flex items-center gap-1.5"><Clock size={12} className="text-[var(--color-text-secondary)]"/> Last Save</span>
@@ -426,11 +426,11 @@ export default function SettingsLayout() {
                                 }}
                                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                                     activeSection === section.id
-                                        ? "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border border-[var(--color-accent)]"
+                                        ? "bg-[var(--color-signal-subtle)] text-[var(--color-signal-readable)] border border-[var(--color-signal-strong)]"
                                         : "text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-1)] hover:text-[var(--color-text-primary)] border border-transparent"
                                 }`}
                             >
-                                <section.icon size={18} className={activeSection === section.id ? "text-[var(--color-accent)]" : "text-[var(--color-text-muted)]"} />
+                                <section.icon size={18} className={activeSection === section.id ? "text-[var(--color-signal)]" : "text-[var(--color-text-muted)]"} />
                                 {section.label}
                             </button>
                         ))}
@@ -448,7 +448,7 @@ export default function SettingsLayout() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Search settings... (Ctrl+F)"
-                            className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-11 pr-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-accent)] focus:ring-2 focus:ring-[var(--color-accent)]/20 transition-all"
+                            className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-11 pr-4 py-2.5 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-signal)] focus:ring-2 focus:ring-[var(--color-signal-strong)] transition-all"
                         />
                     </div>
                     
@@ -491,7 +491,7 @@ export default function SettingsLayout() {
                         <div key={activeContext.title} className="animate-in fade-in slide-in-from-right-4 duration-500 fill-mode-both">
                             <div className="mb-6">
                                 <div className="w-10 h-10 rounded-lg bg-[var(--color-surface-2)] flex items-center justify-center border border-[var(--color-border-default)] mb-4">
-                                    <HelpCircle size={20} className="text-[var(--color-accent)]" />
+                                    <HelpCircle size={20} className="text-[var(--color-text-secondary)]" />
                                 </div>
                                 <h3 className="text-lg font-bold text-[var(--color-text-primary)] mb-2">{activeContext.title}</h3>
                                 <p className="text-sm text-[var(--color-text-secondary)] leading-relaxed">
@@ -525,7 +525,7 @@ export default function SettingsLayout() {
                                 </p>
                             </div>
     
-                            <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-[var(--color-accent-subtle)] hover:bg-[var(--color-accent)] border border-[var(--color-accent)] text-[var(--color-accent)] hover:text-white transition-colors text-sm font-semibold">
+                            <button className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-[var(--color-accent-subtle)] hover:bg-[var(--color-accent)] border border-[var(--color-accent)] text-[var(--color-accent)] hover:text-[var(--color-accent-foreground)] transition-colors text-sm font-semibold">
                                 <span className="flex items-center gap-2">
                                     <FileText size={16} />
                                     {activeContext.docs}
@@ -553,14 +553,14 @@ export default function SettingsLayout() {
                         <button 
                             onClick={handleDiscard}
                             disabled={isSaving}
-                            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-[var(--color-text-primary)] hover:text-white bg-[var(--color-surface-3)] hover:bg-[var(--color-border-strong)] transition-colors border border-[var(--color-border-default)] disabled:opacity-50"
+                            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-[var(--color-text-primary)] bg-[var(--color-surface-3)] hover:bg-[var(--color-border-strong)] transition-colors border border-[var(--color-border-default)] disabled:opacity-50"
                         >
                             Discard
                         </button>
                         <button 
                             onClick={handleSave}
                             disabled={isSaving}
-                            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-all disabled:opacity-50 flex items-center gap-2 border border-transparent"
+                            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-[var(--color-accent-foreground)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-all disabled:opacity-50 flex items-center gap-2 border border-transparent"
                         >
                             {isSaving && <Loader2 size={16} className="animate-spin" />}
                             {isSaving ? "Saving..." : "Save Changes"}

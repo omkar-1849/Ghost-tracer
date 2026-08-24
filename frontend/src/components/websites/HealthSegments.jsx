@@ -46,10 +46,10 @@ export default function HealthSegments({ value, counts, onChange, className = ""
             aria-label="Filter by security health"
             className={`relative inline-flex items-stretch rounded-md border border-[var(--color-border-default)] bg-[var(--color-surface-2)] p-1 ${className}`}
         >
-            {/* Shared selection surface */}
+            {/* Shared selection surface — brass, the global selection accent */}
             <span
                 aria-hidden="true"
-                className="absolute top-1 bottom-1 rounded-sm bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] transition-all duration-200 ease-out"
+                className="absolute top-1 bottom-1 rounded-sm bg-[var(--color-signal-subtle)] border border-[var(--color-signal-strong)] transition-all duration-200 ease-out"
                 style={{ left: indicator.left, width: indicator.width }}
             />
 
@@ -64,7 +64,7 @@ export default function HealthSegments({ value, counts, onChange, className = ""
                         aria-selected={active}
                         aria-label={`${seg.label} websites (${count})`}
                         onClick={() => onChange(seg.id)}
-                        className={`relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-sm text-[13px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] ${
+                        className={`relative z-10 inline-flex items-center gap-2 px-4 py-2 rounded-sm text-[13px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] ${
                             active ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
                         }`}
                     >

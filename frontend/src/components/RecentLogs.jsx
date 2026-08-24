@@ -72,34 +72,36 @@ function RecentLogs() {
     const visibleLogs = expanded ? logs : logs.slice(0, PREVIEW_LIMIT);
 
     return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] min-h-[420px] flex flex-col">
-            <div className="flex items-start justify-between gap-3 mb-5">
+        <div className="flex flex-col min-w-0 min-h-[420px]">
+            <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                    <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
-                        Recent Security Logs
+                    <h2 className="card-title">
+                        Security Logs
                     </h2>
-                    <p className="text-[var(--color-text-muted)] text-sm mt-1">
+                    <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
                         Latest detections captured by the engine
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={() => setExpanded((value) => !value)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
-                >
-                    {expanded ? (
-                        <>
-                            <ChevronUp size={13} />
-                            Collapse
-                        </>
-                    ) : (
-                        <>
-                            <ChevronDown size={13} />
-                            View All
-                        </>
-                    )}
-                </button>
+                {logs.length > PREVIEW_LIMIT && (
+                    <button
+                        type="button"
+                        onClick={() => setExpanded((value) => !value)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-signal-strong)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
+                    >
+                        {expanded ? (
+                            <>
+                                <ChevronUp size={13} />
+                                Collapse
+                            </>
+                        ) : (
+                            <>
+                                <ChevronDown size={13} />
+                                View All
+                            </>
+                        )}
+                    </button>
+                )}
             </div>
 
             {logs.length === 0 ? (
@@ -201,8 +203,8 @@ function RecentLogs() {
             )}
 
             {logs.length > 0 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border-default)]">
-                    <p className="text-xs text-[var(--color-text-muted)]">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                    <p className="text-[11px] text-[var(--color-text-muted)]">
                         Showing{" "}
                         <span className="text-[var(--color-text-primary)] font-semibold tabular-nums">
                             {visibleLogs.length}
@@ -218,7 +220,7 @@ function RecentLogs() {
                         <button
                             type="button"
                             onClick={() => setExpanded((value) => !value)}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-signal-readable)] hover:text-[var(--color-signal-hover)] transition-colors"
                         >
                             {expanded ? "Collapse" : "View All"}
                             {expanded ? (

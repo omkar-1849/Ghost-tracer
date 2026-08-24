@@ -126,8 +126,8 @@ function ChartSkeleton() {
 function EmptyState() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center min-h-64 gap-3 rounded-md border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)]">
-      <span className="w-10 h-10 rounded-lg bg-[var(--color-accent-subtle)] border border-[rgba(61,122,240,0.25)] flex items-center justify-center">
-        <ShieldAlert size={20} className="text-[var(--color-accent)]" />
+      <span className="w-10 h-10 rounded-lg bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">
+        <ShieldAlert size={20} className="text-[var(--color-text-secondary)]" />
       </span>
       <p className="text-[var(--color-text-secondary)] text-sm font-medium">No threat activity yet</p>
       <p className="text-[var(--color-text-muted)] text-xs text-center max-w-xs">
@@ -139,8 +139,8 @@ function EmptyState() {
 
 function ErrorState({ onRetry }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center min-h-64 gap-3 rounded-md border border-dashed border-[rgba(229,72,77,0.20)] bg-[var(--color-surface-1)]">
-      <span className="w-10 h-10 rounded-lg bg-[rgba(229,72,77,0.10)] border border-[rgba(229,72,77,0.25)] flex items-center justify-center">
+    <div className="flex-1 flex flex-col items-center justify-center min-h-64 gap-3 rounded-md border border-dashed border-[rgba(223,91,91,0.20)] bg-[var(--color-surface-1)]">
+      <span className="w-10 h-10 rounded-lg bg-[rgba(223,91,91,0.10)] border border-[rgba(223,91,91,0.25)] flex items-center justify-center">
         <TriangleAlert size={20} className="text-[var(--color-critical)]" />
       </span>
       <p className="text-[var(--color-text-secondary)] text-sm font-medium">Unable to load threat activity</p>
@@ -148,7 +148,7 @@ function ErrorState({ onRetry }) {
       <button
         type="button"
         onClick={onRetry}
-        className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-accent)] text-white text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
+        className="mt-1 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[var(--color-accent)] text-[var(--color-accent-foreground)] text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
       >
         <RotateCw size={13} />
         Retry
@@ -291,7 +291,7 @@ function ThreatChart() {
                 aria-pressed={isActive}
                 className={`rounded px-3 py-1 text-xs font-medium transition-colors duration-150 ${
                   isActive
-                    ? "bg-[var(--color-accent)] text-white"
+                    ? "bg-[var(--color-signal-subtle)] text-[var(--color-signal-readable)] font-semibold"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                 }`}
               >
@@ -320,7 +320,7 @@ function ThreatChart() {
             </span>
             <span>
               Peak{" "}
-              <span className="text-[var(--color-accent)] font-semibold tabular-nums">
+              <span className="text-[var(--color-text-primary)] font-semibold tabular-nums">
                 {fmtNumber(peak)}
               </span>
             </span>
@@ -341,8 +341,8 @@ function ThreatChart() {
               >
                 <defs>
                   <linearGradient id="threatFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3d7af0" stopOpacity={0.20} />
-                    <stop offset="100%" stopColor="#3d7af0" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#45a583" stopOpacity={0.20} />
+                    <stop offset="100%" stopColor="#45a583" stopOpacity={0} />
                   </linearGradient>
                 </defs>
 

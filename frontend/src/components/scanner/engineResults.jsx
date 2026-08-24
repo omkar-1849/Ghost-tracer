@@ -13,11 +13,11 @@ import {
 
 function severityClasses(severity) {
     switch ((severity || "").toLowerCase()) {
-        case "critical": return "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
-        case "high": return "bg-[rgba(237,125,28,0.10)] text-[var(--color-high)] border-[rgba(237,125,28,0.25)]";
-        case "medium": return "bg-[rgba(221,179,42,0.10)] text-[var(--color-medium)] border-[rgba(221,179,42,0.25)]";
-        case "low": return "bg-[rgba(74,157,224,0.10)] text-[var(--color-low)] border-[rgba(74,157,224,0.25)]";
-        case "info": return "bg-[rgba(61,122,240,0.10)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]";
+        case "critical": return "bg-[rgba(223,91,91,0.10)] text-[var(--color-critical)] border-[rgba(223,91,91,0.25)]";
+        case "high": return "bg-[rgba(224,133,68,0.10)] text-[var(--color-high)] border-[rgba(224,133,68,0.25)]";
+        case "medium": return "bg-[rgba(211,165,62,0.10)] text-[var(--color-medium)] border-[rgba(211,165,62,0.25)]";
+        case "low": return "bg-[rgba(138,166,189,0.10)] text-[var(--color-low)] border-[rgba(138,166,189,0.25)]";
+        case "info": return "bg-[rgba(138,148,140,0.10)] text-[var(--color-info)] border-[rgba(138,148,140,0.25)]";
         default: return "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
     }
 }
@@ -53,8 +53,8 @@ export function DetailGrid({ children, className = "" }) {
 }
 
 const metricTones = {
-    purple: { text: "text-[var(--color-accent)]" },
-    cyan: { text: "text-[var(--color-accent)]" },
+    purple: { text: "text-[var(--color-text-primary)]" },
+    cyan: { text: "text-[var(--color-text-primary)]" },
     green: { text: "text-[var(--color-success)]" },
     amber: { text: "text-[var(--color-high)]" },
     yellow: { text: "text-[var(--color-medium)]" },
@@ -75,9 +75,9 @@ export function MetricChip({ label, value, tone = "purple" }) {
 export function StringList({ title, items, tone = "amber" }) {
     if (!items || items.length === 0) return null;
     const tones = {
-        red: "bg-[rgba(229,72,77,0.08)] text-[var(--color-critical)] border-[rgba(229,72,77,0.20)]",
-        amber: "bg-[rgba(237,125,28,0.08)] text-[var(--color-high)] border-[rgba(237,125,28,0.20)]",
-        cyan: "bg-[rgba(61,122,240,0.08)] text-[var(--color-accent)] border-[rgba(61,122,240,0.20)]",
+        red: "bg-[rgba(223,91,91,0.08)] text-[var(--color-critical)] border-[rgba(223,91,91,0.20)]",
+        amber: "bg-[rgba(224,133,68,0.08)] text-[var(--color-high)] border-[rgba(224,133,68,0.20)]",
+        cyan: "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]",
     };
     return (
         <div>
@@ -137,7 +137,7 @@ export function FindingsList({ findings }) {
                             <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed break-words">{description}</p>
                         )}
                         {finding.solution && (
-                            <p className="mt-2.5 flex items-start gap-1.5 text-xs text-[var(--color-success)] bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)] rounded p-2">
+                            <p className="mt-2.5 flex items-start gap-1.5 text-xs text-[var(--color-success)] bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)] rounded p-2">
                                 <CheckCircle2 size={13} className="shrink-0 mt-0.5" />
                                 <span>{finding.solution}</span>
                             </p>
@@ -163,7 +163,7 @@ export function RecommendationsList({ recommendations }) {
     return (
         <div className="space-y-2">
             {recommendations.map((rec, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 bg-[rgba(63,163,77,0.08)] border border-[rgba(63,163,77,0.20)] rounded-md p-3">
+                <div key={idx} className="flex items-start gap-2.5 bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)] rounded-md p-3">
                     <CheckCircle2 size={14} className="text-[var(--color-success)] mt-0.5 shrink-0" />
                     <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">{rec}</p>
                 </div>
@@ -226,7 +226,7 @@ function SQLMapResults({ report }) {
 function TimelineList({ timeline }) {
     if (!timeline || timeline.length === 0) return null;
     const levelColors = {
-        INFO: "text-[var(--color-accent)]",
+        INFO: "text-[var(--color-info)]",
         WARNING: "text-[var(--color-high)]",
         CRITICAL: "text-[var(--color-critical)]",
         ERROR: "text-[var(--color-critical)]",
@@ -289,7 +289,7 @@ function NmapResults({ report }) {
                                     return ports.map((port, pi) => (
                                         <tr key={`${hi}-${pi}`} className="border-b border-[var(--color-border-subtle)] last:border-0">
                                             <td className="py-2 px-3 text-[var(--color-text-secondary)] capitalize">{hi === 0 ? host.status || "up" : ""}</td>
-                                            <td className="py-2 px-3 font-mono text-[var(--color-accent)]">{port.port}{port.protocol ? `/${port.protocol}` : ""}</td>
+                                            <td className="py-2 px-3 font-mono text-[var(--color-text-secondary)]">{port.port}{port.protocol ? `/${port.protocol}` : ""}</td>
                                             <td className="py-2 px-3 text-[var(--color-text-primary)]">{port.service || "—"}</td>
                                             <td className="py-2 px-3 text-[var(--color-text-secondary)]">{[port.product, port.version].filter(Boolean).join(" ") || "—"}</td>
                                             <td className="py-2 px-3 text-[var(--color-text-muted)] text-[11px]">
@@ -409,7 +409,7 @@ function SSLResults({ report }) {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
                     <div className="flex items-center gap-2 mb-2.5">
-                        <Lock size={13} className="text-[var(--color-accent)]" />
+                        <Lock size={13} className="text-[var(--color-text-secondary)]" />
                         <SectionTitle className="mb-0">Certificate</SectionTitle>
                     </div>
                     <DetailGrid>
@@ -425,7 +425,7 @@ function SSLResults({ report }) {
 
                 <div className="bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-md p-3.5">
                     <div className="flex items-center gap-2 mb-2.5">
-                        <Server size={13} className="text-[var(--color-accent)]" />
+                        <Server size={13} className="text-[var(--color-text-secondary)]" />
                         <SectionTitle className="mb-0">Cipher Suite</SectionTitle>
                     </div>
                     <DetailGrid>
@@ -438,7 +438,7 @@ function SSLResults({ report }) {
                     {cert.sans && cert.sans.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                             {cert.sans.map((san, i) => (
-                                <span key={i} className="px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[10px] font-mono text-[var(--color-accent)]">
+                                <span key={i} className="px-1.5 py-0.5 rounded bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[10px] font-mono text-[var(--color-text-secondary)]">
                                     {san}
                                 </span>
                             ))}

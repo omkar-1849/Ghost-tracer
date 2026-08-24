@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BellRing, Globe, ShieldAlert } from "lucide-react";
+import { ArrowRight, BellRing, Globe } from "lucide-react";
 import { getRecentAlerts } from "../services/api";
 
 function badgeTheme(level) {
@@ -69,20 +69,20 @@ function RecentAlerts() {
     ).length;
 
     return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] min-h-[420px] flex flex-col">
-            <div className="flex items-start justify-between gap-3 mb-5">
+        <div className="flex flex-col min-w-0 min-h-[420px]">
+            <div className="flex items-start justify-between gap-3 mb-3">
                 <div>
-                    <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <h2 className="card-title">
                         Recent Alerts
                     </h2>
-                    <p className="text-[var(--color-text-muted)] text-sm mt-1">
+                    <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
                         Latest detections requiring attention
                     </p>
                 </div>
 
                 <Link
                     to="/alerts"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-signal-strong)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
                 >
                     View All
                     <ArrowRight size={13} />
@@ -103,29 +103,23 @@ function RecentAlerts() {
                     </p>
                 </div>
             ) : (
-                <div className="flex-1 space-y-2.5 overflow-y-auto max-h-[320px] pr-1">
+                <div className="flex-1 overflow-y-auto max-h-[340px] pr-1 custom-scrollbar">
                     {alerts.map((alert) => {
                         const theme = badgeTheme(alert.threat_level);
 
                         return (
                             <div
                                 key={alert.id}
-                                className="group relative flex items-start gap-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] px-4 py-3.5 hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-3)] transition-all duration-200"
+                                className="group relative flex items-start gap-3 pl-3.5 py-3"
                             >
                                 <span
-                                    className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-full ${theme.bar}`}
+                                    className={`absolute left-0 top-3 bottom-3 w-[3px] rounded-full ${theme.bar} opacity-60 group-hover:opacity-100 transition-opacity`}
                                 />
 
-                                <span
-                                    className={`mt-0.5 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${theme.badge}`}
-                                >
-                                    <ShieldAlert size={15} />
-                                </span>
-
-                                <div className="min-w-0 flex-1">
+                                <div className="min-w-0 flex-1 border-b border-[var(--color-border-subtle)] pb-3 group-last:border-b-0 group-last:pb-0">
                                     <div className="flex items-center gap-2">
                                         <span
-                                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-widest ${theme.badge}`}
+                                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${theme.badge}`}
                                         >
                                             <span
                                                 className={`w-1 h-1 rounded-full ${theme.dot}`}
@@ -138,13 +132,13 @@ function RecentAlerts() {
                                         </span>
                                     </div>
 
-                                    <p className="mt-2 text-sm text-[var(--color-text-primary)] font-medium leading-snug">
+                                    <p className="mt-1.5 text-[13px] text-[var(--color-text-primary)] font-medium leading-snug">
                                         {alert.message}
                                     </p>
 
-                                    <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-                                        <Globe size={12} className="shrink-0" />
-                                        <span className="font-mono">
+                                    <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                        <Globe size={11} className="shrink-0" />
+                                        <span className="mono-value">
                                             {alert.ip_address}
                                         </span>
                                     </p>
@@ -156,13 +150,13 @@ function RecentAlerts() {
             )}
 
             {alerts.length > 0 && (
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[var(--color-border-default)]">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--color-border-subtle)]">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
                         <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-critical)]" />
                         {criticalCount} critical
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-text-muted)]" />
+                    <span className="text-[var(--color-text-disabled)]">·</span>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[var(--color-text-secondary)] tabular-nums">
                         {alerts.length} total
                     </span>
                 </div>

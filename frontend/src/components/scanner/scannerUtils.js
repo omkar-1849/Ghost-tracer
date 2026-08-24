@@ -31,14 +31,14 @@ export function isValidTargetUrl(value) {
 export function statusColor(status) {
     switch ((status || "").toUpperCase()) {
         case "COMPLETED":
-            return "bg-[rgba(63,163,77,0.10)] text-[var(--color-success)] border-[rgba(63,163,77,0.25)]";
+            return "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]";
         case "RUNNING":
-            return "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(61,122,240,0.25)]";
+            return "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(69,165,131,0.25)]";
         case "PENDING":
         case "QUEUED":
-            return "bg-[rgba(217,161,26,0.10)] text-[var(--color-warning)] border-[rgba(217,161,26,0.25)]";
+            return "bg-[rgba(201,146,61,0.10)] text-[var(--color-warning)] border-[rgba(201,146,61,0.25)]";
         case "FAILED":
-            return "bg-[rgba(229,72,77,0.10)] text-[var(--color-critical)] border-[rgba(229,72,77,0.25)]";
+            return "bg-[rgba(223,91,91,0.10)] text-[var(--color-critical)] border-[rgba(223,91,91,0.25)]";
         case "CANCELLED":
             return "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]";
         default:

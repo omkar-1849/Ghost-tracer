@@ -288,11 +288,11 @@ export function AboutSection() {
             
             <div className="p-6 rounded-lg border border-[var(--color-border-default)] bg-[var(--color-surface-2)] space-y-6">
                 <div className="flex items-center gap-4 border-b border-[var(--color-border-default)] pb-6">
-                    <div className="w-16 h-16 rounded-lg bg-[var(--color-accent)] flex items-center justify-center">
-                        <ShieldCheck size={32} className="text-white" />
+                    <div className="w-16 h-16 rounded-lg bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">
+                        <ShieldCheck size={32} className="text-[var(--color-accent)]" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">Sentinel AI</h2>
+                        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Sentinel AI</h2>
                         <p className="text-[var(--color-text-secondary)] text-sm">Enterprise Security Platform</p>
                     </div>
                 </div>

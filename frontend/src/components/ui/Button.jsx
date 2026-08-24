@@ -8,13 +8,13 @@ import { Loader2 } from "lucide-react";
 
 const variants = {
   primary:
-    "bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]",
+    "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-semibold shadow-[var(--shadow-1)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]",
   secondary:
     "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]",
   ghost:
     "bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]",
   danger:
-    "bg-[rgba(229,72,77,0.12)] text-[var(--color-critical)] border border-[rgba(229,72,77,0.25)] hover:bg-[rgba(229,72,77,0.20)]",
+    "bg-[rgba(223,91,91,0.12)] text-[var(--color-critical)] border border-[rgba(223,91,91,0.25)] hover:bg-[rgba(223,91,91,0.20)]",
 };
 
 const sizes = {
@@ -41,7 +41,7 @@ export default function Button({
       className={`
         inline-flex items-center justify-center font-medium rounded-md
         transition-colors duration-150
-        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-signal)]
         ${variants[variant] || variants.primary}
         ${sizes[size] || sizes.md}
         ${isDisabled ? "opacity-50 pointer-events-none" : "cursor-pointer"}

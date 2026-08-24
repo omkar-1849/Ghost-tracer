@@ -65,21 +65,21 @@ function LiveAttackFeed() {
     const visibleFeed = expanded ? feed : feed.slice(0, PREVIEW_LIMIT);
 
     return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)] flex flex-col">
-            <div className="flex items-start justify-between gap-3 mb-5">
+        <div className="flex flex-col">
+            <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                    <h2 className="text-xl font-semibold tracking-tight text-[var(--color-text-primary)]">
+                    <h2 className="card-title">
                         Live Attack Feed
                     </h2>
-                    <p className="text-[var(--color-text-muted)] text-sm mt-1">
+                    <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
                         Active detections streaming from the engine
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25 text-[10px] font-bold tracking-widest text-[var(--color-critical)]">
+                    <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold tracking-widest text-[var(--color-critical)] bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25">
                         <span className="relative flex w-1.5 h-1.5">
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-critical)]" />
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-critical)] animate-[pulse-soft_2.4s_ease-in-out_infinite]" />
                         </span>
                         LIVE
                     </span>
@@ -87,7 +87,7 @@ function LiveAttackFeed() {
                     <button
                         type="button"
                         onClick={() => setExpanded((value) => !value)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-accent)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-signal-strong)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
                     >
                         {expanded ? (
                             <>
@@ -144,7 +144,7 @@ function LiveAttackFeed() {
                                     <div className="min-w-0 flex-1">
                                         <div className="flex items-center gap-2">
                                             <span
-                                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-widest ${theme.badge}`}
+                                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${theme.badge}`}
                                             >
                                                 <span
                                                     className={`w-1 h-1 rounded-full ${theme.dot}`}
@@ -157,13 +157,13 @@ function LiveAttackFeed() {
                                             </span>
                                         </div>
 
-                                        <p className="mt-2 text-sm text-[var(--color-text-primary)] font-medium leading-snug line-clamp-2">
+                                        <p className="mt-1.5 text-[13px] text-[var(--color-text-primary)] font-medium leading-snug line-clamp-2">
                                             {item.reason}
                                         </p>
 
-                                        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[var(--color-info)]">
-                                            <Radio size={12} className="shrink-0" />
-                                            <span className="font-mono">
+                                        <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
+                                            <Radio size={11} className="shrink-0" />
+                                            <span className="mono-value text-[var(--color-text-secondary)]">
                                                 {item.ip_address}
                                             </span>
                                         </p>
@@ -190,7 +190,7 @@ function LiveAttackFeed() {
                             <button
                                 type="button"
                                 onClick={() => setExpanded((value) => !value)}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] transition-colors"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-signal-readable)] hover:text-[var(--color-signal-hover)] transition-colors"
                             >
                                 {expanded ? "Collapse" : "View All"}
                                 {expanded ? (
