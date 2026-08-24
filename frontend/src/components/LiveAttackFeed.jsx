@@ -1,208 +1,178 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp, Crosshair, Radar, Radio } from "lucide-react";
-import { getLiveFeed } from "../services/api";
+import { Link } from "react-router-dom";
+import { ShieldAlert, ExternalLink, Ban, ArrowUpRight } from "lucide-react";
+import { getLiveFeed, getRecentLogs } from "../services/api";
 
-const PREVIEW_LIMIT = 4;
-
-function feedTheme(level) {
-    switch (level) {
-        case "CRITICAL":
-            return {
-                badge: "bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25 text-[var(--color-critical)]",
-                icon: "text-[var(--color-critical)]",
-                dot: "bg-[var(--color-critical)]",
-            };
-        case "HIGH":
-            return {
-                badge: "bg-[var(--color-high)]/10 border border-[var(--color-high)]/25 text-[var(--color-high)]",
-                icon: "text-[var(--color-high)]",
-                dot: "bg-[var(--color-high)]",
-            };
-        case "MEDIUM":
-            return {
-                badge: "bg-[var(--color-medium)]/10 border border-[var(--color-medium)]/25 text-[var(--color-medium)]",
-                icon: "text-[var(--color-medium)]",
-                dot: "bg-[var(--color-medium)]",
-            };
-        default:
-            return {
-                badge: "bg-[var(--color-success)]/10 border border-[var(--color-success)]/25 text-[var(--color-success)]",
-                icon: "text-[var(--color-success)]",
-                dot: "bg-[var(--color-success)]",
-            };
+function formatTimestamp(ts) {
+    if (!ts) return "—";
+    try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return String(ts);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const time = d.toTimeString().split(" ")[0];
+        return `${y}/${m}.${day} ${time}`;
+    } catch {
+        return String(ts);
     }
 }
 
-function timeAgo(value) {
-    if (!value) return "—";
-    const diff = Math.max(0, Date.now() - new Date(value).getTime());
-    const mins = Math.floor(diff / 60000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.floor(hrs / 24)}d ago`;
+function resolveThreatType(reason, threatLevel) {
+    if (!reason) {
+        return threatLevel === "CRITICAL" ? "Brute Force Attack" : "Suspicious Request";
+    }
+    const r = reason.toLowerCase();
+    if (r.includes("sql")) return "SQL Injection";
+    if (r.includes("xss")) return "Cross-Site Scripting";
+    if (r.includes("brute") || r.includes("auth")) return "Brute Force SSH";
+    if (r.includes("path") || r.includes("traversal")) return "Path Traversal";
+    if (r.includes("ssrf")) return "SSRF Vector";
+    if (r.includes("admin")) return "Privilege Escalation";
+    if (r.includes("port") || r.includes("scan")) return "Malicious Port Scan";
+    return reason.length > 25 ? `${reason.slice(0, 25)}…` : reason;
+}
+
+function StatusCapsule({ status, threatLevel }) {
+    if (status === "BLOCKED" || threatLevel === "CRITICAL") {
+        return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium bg-[rgba(230,57,70,0.12)] border border-[rgba(230,57,70,0.3)] text-[var(--color-critical)]">
+                BLOCKED
+            </span>
+        );
+    }
+    if (status === "INVESTIGATING" || threatLevel === "HIGH") {
+        return (
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.3)] text-[var(--color-high)]">
+                INVESTIGATING
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-medium bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.18)] text-white">
+            CLEARED
+        </span>
+    );
 }
 
 function LiveAttackFeed() {
-    const [feed, setFeed] = useState([]);
-    const [expanded, setExpanded] = useState(false);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        async function loadFeed() {
+        let isMounted = true;
+        async function fetchThreats() {
             try {
-                const data = await getLiveFeed();
-                setFeed(Array.isArray(data) ? data : []);
-            } catch (error) {
-                console.error(error);
+                // Try live feed first, fallback to recent logs
+                const feedData = await getLiveFeed().catch(() => []);
+                if (isMounted && Array.isArray(feedData) && feedData.length > 0) {
+                    setEvents(feedData);
+                    return;
+                }
+                const logs = await getRecentLogs().catch(() => []);
+                if (isMounted && Array.isArray(logs)) {
+                    setEvents(logs.slice(0, 8));
+                }
+            } catch (err) {
+                console.error("Failed to load live threat stream", err);
+            } finally {
+                if (isMounted) setLoading(false);
             }
         }
-        loadFeed();
-        const interval = setInterval(loadFeed, 5000);
-        return () => clearInterval(interval);
+
+        fetchThreats();
+        const interval = setInterval(fetchThreats, 5000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
-    const visibleFeed = expanded ? feed : feed.slice(0, PREVIEW_LIMIT);
-
     return (
-        <div className="flex flex-col">
-            <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="frosted-card p-5 select-none overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h2 className="card-title">
-                        Live Attack Feed
-                    </h2>
-                    <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
-                        Active detections streaming from the engine
-                    </p>
+                    <h3 className="text-white text-[15px] font-bold tracking-tight">Live Threat Activity</h3>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Real-time threat interception log</p>
                 </div>
-
-                <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-bold tracking-widest text-[var(--color-critical)] bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25">
-                        <span className="relative flex w-1.5 h-1.5">
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--color-critical)] animate-[pulse-soft_2.4s_ease-in-out_infinite]" />
-                        </span>
-                        LIVE
-                    </span>
-
-                    <button
-                        type="button"
-                        onClick={() => setExpanded((value) => !value)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--color-surface-3)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:border-[var(--color-signal-strong)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-1)] transition-colors"
-                    >
-                        {expanded ? (
-                            <>
-                                <ChevronUp size={13} />
-                                Collapse
-                            </>
-                        ) : (
-                            <>
-                                <ChevronDown size={13} />
-                                View All
-                            </>
-                        )}
-                    </button>
-                </div>
+                <Link
+                    to="/activity"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors"
+                >
+                    <span>View all activity</span>
+                    <ArrowUpRight size={14} />
+                </Link>
             </div>
 
-            {feed.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-1)] py-14">
-                    <span className="w-12 h-12 rounded-lg bg-[var(--color-critical)]/10 border border-[var(--color-critical)]/25 flex items-center justify-center">
-                        <Radar size={22} className="text-[var(--color-critical)]" />
-                    </span>
-                    <p className="text-[var(--color-text-primary)] font-medium">
-                        No attacks detected
-                    </p>
-                    <p className="text-[var(--color-text-muted)] text-sm text-center max-w-xs">
-                        The feed is quiet — live detections will stream in here
-                        as they occur.
-                    </p>
-                </div>
-            ) : (
-                <>
-                    <div
-                        className={`grid gap-3 sm:grid-cols-2 ${
-                            expanded ? "max-h-[340px] overflow-y-auto pr-1" : ""
-                        }`}
-                    >
-                        {visibleFeed.map((item, index) => {
-                            const theme = feedTheme(item.threat_level);
+            {/* Table */}
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-[13.5px]">
+                    <thead>
+                        <tr className="border-b border-[var(--color-border-default)] text-[11px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
+                            <th className="pb-3 font-medium">Timestamp</th>
+                            <th className="pb-3 font-medium">Threat Type</th>
+                            <th className="pb-3 font-medium">Origin IP / Host</th>
+                            <th className="pb-3 font-medium">Status</th>
+                            <th className="pb-3 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                        {loading ? (
+                            <tr>
+                                <td colSpan="5" className="py-6 text-center text-xs text-[var(--color-text-muted)]">
+                                    Loading live security stream…
+                                </td>
+                            </tr>
+                        ) : events.length === 0 ? (
+                            <tr>
+                                <td colSpan="5" className="py-6 text-center text-xs text-[var(--color-text-muted)]">
+                                    No live attacks intercepted in this monitoring window.
+                                </td>
+                            </tr>
+                        ) : (
+                            events.map((item, idx) => {
+                                const threatLevel = item.threat_level || (item.threatLevel ?? "LOW");
+                                const ip = item.ip_address || item.ipAddress || item.source_ip || "127.0.0.1";
+                                const threatName = resolveThreatType(item.reason || item.detection_reason || item.message, threatLevel);
+                                const ts = item.timestamp || item.created_at || Date.now() - idx * 120000;
+                                const status = threatLevel === "CRITICAL" ? "BLOCKED" : threatLevel === "HIGH" ? "INVESTIGATING" : "CLEARED";
 
-                            return (
-                                <div
-                                    key={`${item.timestamp}-${index}`}
-                                    className="group relative flex items-start gap-3 rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] px-4 py-3.5 hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-3)] transition-all duration-200"
-                                >
-                                    <span
-                                        className={`mt-0.5 shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border border-[var(--color-border-default)] bg-[var(--color-surface-2)]`}
+                                return (
+                                    <tr
+                                        key={idx}
+                                        className="group hover:bg-[rgba(255,255,255,0.03)] transition-colors duration-100"
                                     >
-                                        <Crosshair
-                                            size={15}
-                                            className={theme.icon}
-                                        />
-                                    </span>
-
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest ${theme.badge}`}
-                                            >
-                                                <span
-                                                    className={`w-1 h-1 rounded-full ${theme.dot}`}
-                                                />
-                                                {item.threat_level}
-                                            </span>
-
-                                            <span className="text-[11px] text-[var(--color-text-muted)] whitespace-nowrap ml-auto tabular-nums">
-                                                {timeAgo(item.timestamp)}
-                                            </span>
-                                        </div>
-
-                                        <p className="mt-1.5 text-[13px] text-[var(--color-text-primary)] font-medium leading-snug line-clamp-2">
-                                            {item.reason}
-                                        </p>
-
-                                        <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--color-text-muted)]">
-                                            <Radio size={11} className="shrink-0" />
-                                            <span className="mono-value text-[var(--color-text-secondary)]">
-                                                {item.ip_address}
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--color-border-default)]">
-                        <p className="text-xs text-[var(--color-text-muted)]">
-                            Showing{" "}
-                            <span className="text-[var(--color-text-primary)] font-semibold tabular-nums">
-                                {visibleFeed.length}
-                            </span>{" "}
-                            of{" "}
-                            <span className="text-[var(--color-text-primary)] font-semibold tabular-nums">
-                                {feed.length}
-                            </span>{" "}
-                            detections
-                        </p>
-
-                        {feed.length > PREVIEW_LIMIT && (
-                            <button
-                                type="button"
-                                onClick={() => setExpanded((value) => !value)}
-                                className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--color-signal-readable)] hover:text-[var(--color-signal-hover)] transition-colors"
-                            >
-                                {expanded ? "Collapse" : "View All"}
-                                {expanded ? (
-                                    <ChevronUp size={13} />
-                                ) : (
-                                    <ChevronDown size={13} />
-                                )}
-                            </button>
+                                        <td className="py-2.5 font-mono text-[11.5px] text-[var(--color-text-secondary)] whitespace-nowrap">
+                                            {formatTimestamp(ts)}
+                                        </td>
+                                        <td className="py-2.5 font-medium text-white whitespace-nowrap">
+                                            {threatName}
+                                        </td>
+                                        <td className="py-2.5 font-mono text-[12px] text-[var(--color-text-secondary)] whitespace-nowrap">
+                                            {ip}
+                                        </td>
+                                        <td className="py-2.5 whitespace-nowrap">
+                                            <StatusCapsule status={status} threatLevel={threatLevel} />
+                                        </td>
+                                        <td className="py-2.5 text-right whitespace-nowrap">
+                                            <div className="inline-flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <Link
+                                                    to={`/activity?ip=${encodeURIComponent(ip)}`}
+                                                    className="p-1 rounded hover:bg-[rgba(255,255,255,0.1)] text-[var(--color-text-secondary)] hover:text-white"
+                                                    title="Inspect Event"
+                                                >
+                                                    <ExternalLink size={13} />
+                                                </Link>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
-                    </div>
-                </>
-            )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 }

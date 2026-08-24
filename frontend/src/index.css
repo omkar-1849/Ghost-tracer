@@ -1,345 +1,226 @@
 @import "tailwindcss";
 
 /* ============================================================
-   SENTINEL AI — "Field Ops" Design System
-   Tailwind v4 CSS-first tokens. Single source of truth for
-   surfaces, text, borders, accents, semantic severity,
-   typography, depth, and motion.
-
-   Identity: a security operations instrument. Deep green-black
-   graphite surfaces with a warm undertone, a patina-jade
-   operational accent (the guardian colour), and a restrained
-   brass signal reserved for the brand and key metrics. Colour
-   establishes meaning — hierarchy is carried by typography,
-   spacing, density and hairline borders, never by glow or wash.
+   SENTINEL AI — Pure Obsidian & Stark Ice Silver Design System
+   Matches the attached reference UI:
+   - Deep obsidian and charcoal background (#08080A / #0E0F14 / #12141A)
+   - Razor-sharp 1px borders with frosted white glow on hover
+   - Stark pure white typography with slate silver secondary text
+   - Restrained severity indicators (Crimson for CRITICAL only)
+   - Monochromatic dual-wave telemetry curves
    ============================================================ */
 @theme {
-  /* ------------------------------------------------------------
-     Surfaces — warm graphite with a faint green undertone.
-     Deliberately NOT neutral blue-gray: the canvas reads as
-     "instrument housing", deep but never pure black.
-     ------------------------------------------------------------ */
-  --color-canvas: #0b0e0d;             /* app root                  */
-  --color-surface-1: #101413;          /* sidebar, wells, inputs    */
-  --color-surface-2: #151a18;          /* cards, table headers      */
-  --color-surface-3: #1b2120;          /* modals, drawers, dropdowns*/
-  --color-surface-inset: #0d100f;      /* console wells, code, mono */
-  --color-overlay: rgba(4, 6, 5, 0.66);/* modal/drawer backdrop     */
+  /* Surfaces */
+  --color-canvas: #08080a;             /* Root app canvas */
+  --color-surface-1: #0e0f14;          /* Sidebar, search bar, header */
+  --color-surface-2: #12141a;          /* Dashboard cards, table headers */
+  --color-surface-3: #181a22;          /* Modals, drawers, popovers */
+  --color-surface-inset: #0a0b0f;      /* Code wells, mono chips */
+  --color-overlay: rgba(4, 5, 8, 0.75);/* Backdrop overlay */
 
-  /* ------------------------------------------------------------
-     Borders — hairlines that get warmer as they strengthen
-     ------------------------------------------------------------ */
-  --color-border-subtle: #232927;      /* dividers, row lines       */
-  --color-border-default: #2c3330;     /* card/panel borders        */
-  --color-border-strong: #3f4a45;      /* hover borders, inputs     */
+  /* Borders & Dividers */
+  --color-border-subtle: #1a1c24;      /* Hairline row dividers */
+  --color-border-default: #222530;     /* Card & panel borders */
+  --color-border-strong: #323746;      /* Hover borders, inputs */
+  --color-border-active: rgba(255, 255, 255, 0.35); /* Active / hover glow border */
 
-  /* ------------------------------------------------------------
-     Text — warm off-whites. Primary is never pure #fff.
-     ------------------------------------------------------------ */
-  --color-text-primary: #eaede9;       /* headings, key values      */
-  --color-text-secondary: #adb6ae;     /* body, labels              */
-  --color-text-muted: #7c857e;         /* captions, metadata        */
-  --color-text-disabled: #565e58;      /* disabled, ghost text      */
+  /* Typography */
+  --color-text-primary: #ffffff;       /* Pure stark white */
+  --color-text-secondary: #9da3ae;     /* Slate silver */
+  --color-text-muted: #666d7a;         /* Captions, timestamps */
+  --color-text-disabled: #434854;      /* Disabled text */
 
-  /* ------------------------------------------------------------
-     Primary accent — patina jade. Operational colour: primary
-     actions, live telemetry, and SEMANTIC success/health. It is
-     deliberately NOT the selection colour — green always means
-     "healthy / operational / succeeded", never "looked at".
-     ------------------------------------------------------------ */
-  --color-accent: #45a583;
-  --color-accent-hover: #56ba94;
-  --color-accent-active: #38876b;
-  --color-accent-subtle: rgba(69, 165, 131, 0.11);
-  --color-accent-foreground: #07130e;  /* text on solid accent      */
+  /* Primary Brand & Selection Accents */
+  --color-accent: #ffffff;
+  --color-accent-subtle: rgba(255, 255, 255, 0.08);
+  --color-accent-glow: rgba(255, 255, 255, 0.15);
 
-  /* ------------------------------------------------------------
-     Signal — brushed brass. The single global SELECTION accent:
-     active navigation, selected engines/tabs/rows/incidents,
-     active filters, focused objects and keyboard focus. Brass
-     means "this is what I am currently looking at". Also carries
-     the brand mark and key-metric emphasis — one family, one
-     meaning: attention. Never blue, never violet, never green.
-     ------------------------------------------------------------ */
-  --color-signal: #c9a961;
-  --color-signal-hover: #d9bc79;
-  --color-signal-subtle: rgba(201, 169, 97, 0.10);
-  --color-signal-dim: #967d49;
-  --color-signal-strong: rgba(201, 169, 97, 0.38);
-  --color-signal-readable: #d9bc79;    /* brass on dark surfaces    */
+  /* Semantic Severity */
+  --color-critical: #e63946;           /* Tactical crimson (threats/breaches) */
+  --color-critical-subtle: rgba(230, 57, 70, 0.15);
+  --color-high: #f59e0b;               /* Amber / High */
+  --color-high-subtle: rgba(245, 158, 11, 0.15);
+  --color-medium: #eab308;             /* Yellow / Medium */
+  --color-medium-subtle: rgba(234, 179, 8, 0.12);
+  --color-low: #64748b;                /* Slate / Low */
+  --color-low-subtle: rgba(100, 116, 139, 0.15);
+  --color-success: #10b981;            /* Emerald / Nominal / Cleared */
+  --color-success-subtle: rgba(16, 185, 129, 0.12);
+  --color-info: #94a3b8;               /* Info silver */
 
-  /* ------------------------------------------------------------
-     Semantic severity / status — desaturated, sophisticated.
-     Colour means meaning; nothing else on the page competes.
-     ------------------------------------------------------------ */
-  --color-critical: #df5b5b;           /* dusty crimson             */
-  --color-high: #e08544;               /* burnt orange              */
-  --color-medium: #d3a53e;             /* ochre                     */
-  --color-low: #8aa6bd;                /* muted steel               */
-  --color-info: #8a948c;               /* neutral sage-gray         */
-  --color-success: #55b07b;            /* signal green              */
-  --color-warning: #c9923d;            /* amber brass               */
+  /* Fonts */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, Menlo, monospace;
 
-  /* ------------------------------------------------------------
-     Typography — IBM Plex: engineered, technical, quietly
-     distinctive. Plex Mono for operational values.
-     ------------------------------------------------------------ */
-  --font-sans: "IBM Plex Sans", "Inter", -apple-system, "Segoe UI",
-    system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo,
-    Consolas, monospace;
-
-  /* ------------------------------------------------------------
-     Shadows — neutral depth, three levels, no glow
-     ------------------------------------------------------------ */
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.45);
-  --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.58);
-
-  /* ------------------------------------------------------------
-     Motion — restrained, state-driven (not decorative)
-     ------------------------------------------------------------ */
-
-  /* Entrance (150–200ms, subtle translate/opacity only) */
-  --animate-fade-in: fade-in 0.15s ease-out both;
-  --animate-fade-in-up: fade-in-up 0.18s ease-out both;
-  --animate-fade-in-down: fade-in-down 0.16s ease-out both;
-  --animate-scale-in: scale-in 0.15s ease-out both;
-  --animate-pop-in: pop-in 0.15s ease-out both;
-  --animate-backdrop-in: backdrop-in 0.15s ease-out both;
-  --animate-drawer-in: drawer-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-  --animate-modal-in: modal-in 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
-
-  /* Loading / feedback */
-  --animate-shimmer: shimmer 1.6s linear infinite;
-  --animate-toast-in: toast-in 0.18s ease-out both;
-  --animate-shake: shake 0.35s ease-in-out both;
-
-  /* Live state — subtle opacity breathe (no expanding ring) */
-  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
-
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fade-in-down {
-    from { opacity: 0; transform: translateY(-4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.99); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  @keyframes pop-in {
-    from { opacity: 0; transform: scale(0.98); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  @keyframes backdrop-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes drawer-in {
-    from { opacity: 0; transform: translateX(12px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes modal-in {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes shimmer {
-    100% { transform: translateX(100%); }
-  }
-  @keyframes toast-in {
-    from { opacity: 0; transform: translateX(6px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-6px); }
-    40% { transform: translateX(6px); }
-    60% { transform: translateX(-4px); }
-    80% { transform: translateX(4px); }
-  }
-  @keyframes pulse-soft {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
-  }
+  /* Depth */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.08);
+  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* ============================================================
-   Global base
-   ============================================================ */
+/* Base Styles */
 html {
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  background-color: #08080a;
+  color: #9da3ae;
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
   background-color: var(--color-canvas);
   color: var(--color-text-secondary);
-  font-family: var(--font-sans);
   font-size: 14px;
+  overflow: hidden;
 }
 
-/* Exactly one viewport tall — the document itself must never scroll.
-   Scrolling belongs to <main> and individual panels only; any extra
-   pixel here (e.g. a body border) reintroduces a permanent universal
-   scrollbar on every page. */
 #root {
   height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 ::selection {
-  background: rgba(201, 169, 97, 0.28);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
 }
 
-/* Consistent keyboard focus for the whole app — one treatment.
-   Focus is an ATTENTION state, so it speaks brass (the selection
-   accent), never jade (which is reserved for semantic success). */
 :focus-visible {
-  outline: 2px solid var(--color-signal);
-  outline-offset: 2px;
-  border-radius: 4px;
+  outline: 1.5px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 1px;
 }
 
-/* Respect users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Glass & Card Micro-Interactions */
+.frosted-card {
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ============================================================
-   Typography utilities — the hierarchy layer.
-   Hierarchy comes from weight, size, tracking and tone —
-   these classes standardise it across every page.
-   ============================================================ */
+.frosted-card:hover {
+  border-color: var(--color-border-active);
+  box-shadow: var(--shadow-hover);
+}
 
-/* Page title — the single strongest text element on a page */
+.frosted-card-active {
+  background-color: var(--color-surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.08), var(--shadow-card);
+}
+
+/* Typography Utility Classes */
 .page-title {
-  font-size: 1.25rem;          /* 20px */
-  font-weight: 650;
-  letter-spacing: -0.015em;
-  line-height: 1.2;
-  color: var(--color-text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
 }
 
-/* Eyebrow / section label — small caps instrument label */
 .section-label {
-  font-size: 0.625rem;         /* 10px */
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-disabled);
-}
-
-/* Card / panel title */
-.card-title {
-  font-size: 0.8125rem;        /* 13px */
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  color: var(--color-text-primary);
-}
-
-/* Large numeric readouts (KPIs, scores) */
-.metric-value {
-  font-variant-numeric: tabular-nums;
-  font-weight: 650;
-  letter-spacing: -0.01em;
-  color: var(--color-text-primary);
-}
-
-/* Operational values: IPs, ports, CVEs, hashes, scan IDs, timestamps */
-.mono-value {
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;        /* 13px — technical identifiers stay glanceable */
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-
-/* Primary technical objects — an IP or hostname that IS the row's subject.
-   Slightly larger and brighter than ordinary metadata, never display-size. */
-.mono-primary {
-  font-family: var(--font-mono);
-  font-size: 0.875rem;         /* 14px */
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  color: var(--color-text-primary);
-}
-
-/* Timestamps and metadata captions */
-.meta-text {
-  font-size: 0.6875rem;        /* 11px */
   color: var(--color-text-muted);
 }
 
-/* ============================================================
-   Scrollbars — warm neutral, consolidated
-   ============================================================ */
+.card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.metric-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #ffffff;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.mono-primary {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+.meta-text {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+/* Custom Minimalist Scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(234, 237, 233, 0.10) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background-color: transparent;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(234, 237, 233, 0.12);
-  border: 1px solid rgba(234, 237, 233, 0.06);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(234, 237, 233, 0.20);
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(234, 237, 233, 0.12) transparent;
-}
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  background-color: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(234, 237, 233, 0.12);
-  border: 1px solid rgba(234, 237, 233, 0.06);
-  border-radius: 999px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(234, 237, 233, 0.20);
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
 
-/* Hide scrollbars on horizontal tab strips */
 .scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-slow {
+  animation: pulseGlow 2.5s ease-in-out infinite;
 }

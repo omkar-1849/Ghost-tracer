@@ -2,48 +2,56 @@ import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
 import Spinner from "./components/ui/Spinner";
 import { isAuthenticated } from "./services/authClient";
 
-// Route-level code splitting — heavy charting pages load on demand
+// Route-level code splitting
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Scanner = lazy(() => import("./pages/Scanner"));
-const Analytics = lazy(() => import("./pages/Analytics"));
+const Activity = lazy(() => import("./pages/Activity"));
 const Alerts = lazy(() => import("./pages/Alerts"));
-const Settings = lazy(() => import("./pages/Settings"));
+const Incidents = lazy(() => import("./pages/Incidents"));
+const ResponseActions = lazy(() => import("./pages/ResponseActions"));
+const Scanner = lazy(() => import("./pages/Scanner"));
 const Report = lazy(() => import("./pages/Report"));
 const Websites = lazy(() => import("./pages/Websites"));
+const AuditLogs = lazy(() => import("./pages/AuditLogs"));
+const Settings = lazy(() => import("./pages/Settings"));
 const Login = lazy(() => import("./pages/Login"));
 
 function PageLoader() {
     return (
-        <div className="h-full flex flex-col items-center justify-center gap-3 text-[var(--color-text-muted)]">
+        <div className="h-full min-h-[50vh] flex flex-col items-center justify-center gap-3 text-[var(--color-text-muted)]">
             <Spinner size={24} />
-            <p className="text-xs font-medium">Loading module…</p>
+            <p className="text-xs font-mono">Loading module…</p>
         </div>
     );
 }
 
 /**
- * Layout wrapper for the main application shell (sidebar + content area).
- * Login is rendered OUTSIDE this layout so it has a clean full-screen view.
+ * Main application shell:
+ * - Sidebar on the left
+ * - Top Navbar with search, live system status, notifications, and profile
+ * - Scrollable main content area
  */
 function AppLayout() {
     return (
         <div className="flex bg-[var(--color-canvas)] text-[var(--color-text-primary)] h-screen overflow-hidden">
             <Sidebar />
-            <main className="flex-1 overflow-y-auto scroll-smooth">
-                <Suspense fallback={<PageLoader />}>
-                    <Outlet />
-                </Suspense>
-            </main>
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <Navbar />
+                <main className="flex-1 overflow-y-auto scroll-smooth">
+                    <Suspense fallback={<PageLoader />}>
+                        <Outlet />
+                    </Suspense>
+                </main>
+            </div>
         </div>
     );
 }
 
 /**
- * Route guard — redirects to /login if the user is not authenticated.
- * Only wraps routes whose backend endpoints require a JWT.
+ * Route guard for protected settings & audit routes
  */
 function RequireAuth({ children }) {
     const location = useLocation();
@@ -63,7 +71,7 @@ function RequireAuth({ children }) {
 function App() {
     return (
         <Routes>
-            {/* Login — full-screen, outside the main shell */}
+            {/* Login — full-screen outside main shell */}
             <Route
                 path="/login"
                 element={
@@ -76,10 +84,14 @@ function App() {
             {/* Main application shell */}
             <Route element={<AppLayout />}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/activity" element={<Activity />} />
+                <Route path="/alerts" element={<Alerts />} />
+                <Route path="/incidents" element={<Incidents />} />
+                <Route path="/response-actions" element={<ResponseActions />} />
+                <Route path="/websites" element={<Websites />} />
                 <Route path="/scanner" element={<Scanner />} />
                 <Route path="/scanner/report/:id" element={<Report />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/alerts" element={<Alerts />} />
+                <Route path="/audit-logs" element={<AuditLogs />} />
                 <Route
                     path="/settings"
                     element={
@@ -88,7 +100,8 @@ function App() {
                         </RequireAuth>
                     }
                 />
-                <Route path="/websites" element={<Websites />} />
+                {/* Fallback to dashboard */}
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
         </Routes>
     );

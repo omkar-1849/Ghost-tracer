@@ -1,206 +1,116 @@
 import { useEffect, useState } from "react";
-import { Gauge, ShieldCheck, ShieldAlert, ShieldX } from "lucide-react";
 import { getSecurityScore } from "../services/api";
 
-/* ------------------------------------------------------------------ */
-/* Config                                                              */
-/* ------------------------------------------------------------------ */
-
-const SIZE = 170;
-const STROKE = 10;
-const RADIUS = (SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-const STATUS = [
-    {
-        min: 90,
-        label: "Excellent",
-        color: "var(--color-success)",
-        caption: "Threat surface is minimal and posture is strong.",
-    },
-    {
-        min: 75,
-        label: "Good",
-        color: "var(--color-accent)",
-        caption: "Solid posture with minor exposure worth monitoring.",
-    },
-    {
-        min: 50,
-        label: "Fair",
-        color: "var(--color-warning)",
-        caption: "Notable risk detected — review active threats soon.",
-    },
-    {
-        min: 0,
-        label: "Critical",
-        color: "var(--color-critical)",
-        caption: "Elevated risk — investigate critical alerts immediately.",
-    },
-];
-
-const STATUS_ICONS = {
-    Excellent: ShieldCheck,
-    Good: ShieldCheck,
-    Fair: Gauge,
-    Critical: ShieldX,
-};
-
-function resolveStatus(score) {
-    return STATUS.find((s) => score >= s.min) ?? STATUS[STATUS.length - 1];
-}
-
-/* ------------------------------------------------------------------ */
-/* Component — embedded posture gauge. Renders on the parent posture  */
-/* surface (no outer card): the score anchors the section.            */
-/* ------------------------------------------------------------------ */
-
 function SecurityScore({ stats = {} }) {
-    const [score, setScore] = useState(0);
+    const [score, setScore] = useState(96);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
         async function loadScore() {
             try {
                 const data = await getSecurityScore();
-                setScore(Number(data?.score) || 0);
+                if (isMounted && data && typeof data.score === "number") {
+                    setScore(data.score);
+                }
             } catch (err) {
-                console.error(err);
+                console.error("Failed to load security score", err);
+            } finally {
+                if (isMounted) setLoading(false);
             }
         }
 
         loadScore();
-
-        const interval = setInterval(loadScore, 5000);
-
-        return () => clearInterval(interval);
+        const interval = setInterval(loadScore, 10000);
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
     }, []);
 
     const clamped = Math.max(0, Math.min(100, Math.round(score)));
-    const status = resolveStatus(clamped);
-    const StatusIcon = STATUS_ICONS[status.label] ?? ShieldAlert;
 
-    /* Small supporting metrics derived from the same dashboard stats. */
-    const metrics = [
-        {
-            label: "Critical",
-            value: stats.critical_alerts ?? "—",
-            color: "var(--color-critical)",
-        },
-        {
-            label: "High",
-            value: stats.high_alerts ?? "—",
-            color: "var(--color-high)",
-        },
-        {
-            label: "Alerts",
-            value: stats.total_alerts ?? "—",
-            color: "var(--color-warning)",
-        },
-    ];
+    // Status evaluation
+    let statusLabel = "SECURE";
+    let statusColor = "#FFFFFF";
+    if (clamped < 60) {
+        statusLabel = "ELEVATED RISK";
+        statusColor = "var(--color-critical)";
+    } else if (clamped < 85) {
+        statusLabel = "GUARDED";
+        statusColor = "var(--color-high)";
+    }
 
-    const dashOffset =
-        CIRCUMFERENCE - (clamped / 100) * CIRCUMFERENCE;
+    // Semi-circle SVG parameters
+    const size = 170;
+    const strokeWidth = 8;
+    const radius = 70;
+    const circumference = Math.PI * radius; // Half circle arc length
+    const strokeDashoffset = circumference - (clamped / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center justify-center min-w-0">
-            {/* Radial gauge */}
-            <div className="relative" style={{ width: SIZE, height: SIZE }}>
-                <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="-rotate-90">
-                    {/* Instrument tick marks */}
-                    {Array.from({ length: 20 }).map((_, i) => {
-                        const angle = (i / 20) * 2 * Math.PI;
-                        const inner = RADIUS - STROKE / 2 - 5;
-                        const outer = RADIUS - STROKE / 2 - 1;
-                        return (
-                            <line
-                                key={i}
-                                x1={SIZE / 2 + inner * Math.cos(angle)}
-                                y1={SIZE / 2 + inner * Math.sin(angle)}
-                                x2={SIZE / 2 + outer * Math.cos(angle)}
-                                y2={SIZE / 2 + outer * Math.sin(angle)}
-                                stroke="var(--color-border-strong)"
-                                strokeWidth={i % 5 === 0 ? 2 : 1}
-                                opacity={i % 5 === 0 ? 0.9 : 0.45}
-                            />
-                        );
-                    })}
+        <div className="frosted-card p-5 flex flex-col justify-between h-full select-none relative overflow-hidden group">
+            <div className="flex items-center justify-between">
+                <span className="text-xs font-mono font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Security Posture</span>
+                <span className="text-[11px] font-mono text-[var(--color-text-muted)]">Live</span>
+            </div>
 
-                    {/* Track */}
-                    <circle
-                        cx={SIZE / 2}
-                        cy={SIZE / 2}
-                        r={RADIUS}
+            {/* Gauge Area */}
+            <div className="relative flex flex-col items-center justify-center my-1">
+                <svg
+                    width={size}
+                    height={size / 1.75}
+                    viewBox={`0 0 ${size} ${size / 1.75}`}
+                    className="overflow-visible"
+                >
+                    {/* Background Track Arc */}
+                    <path
+                        d={`M 15 ${size / 2} A ${radius} ${radius} 0 0 1 ${size - 15} ${size / 2}`}
                         fill="none"
-                        stroke="var(--color-border-default)"
-                        strokeWidth={STROKE}
+                        stroke="#1E222B"
+                        strokeWidth={strokeWidth}
+                        strokeLinecap="round"
                     />
 
-                    {/* Progress */}
-                    <circle
-                        cx={SIZE / 2}
-                        cy={SIZE / 2}
-                        r={RADIUS}
+                    {/* Active Progress Arc */}
+                    <path
+                        d={`M 15 ${size / 2} A ${radius} ${radius} 0 0 1 ${size - 15} ${size / 2}`}
                         fill="none"
-                        stroke={status.color}
-                        strokeWidth={STROKE}
+                        stroke={statusColor}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
-                        strokeDasharray={CIRCUMFERENCE}
-                        strokeDashoffset={dashOffset}
                         style={{
-                            transition:
-                                "stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)",
+                            transition: "stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease",
+                            filter: "drop-shadow(0 0 6px rgba(255,255,255,0.25))"
                         }}
                     />
                 </svg>
 
-                {/* Center readout */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span
-                        className="mono-value text-[40px] font-semibold tracking-tight leading-none"
-                        style={{ color: status.color }}
+                {/* Centered Numbers */}
+                <div className="text-center mt-[-32px]">
+                    <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-3xl font-bold tracking-tight text-white font-mono">
+                            {loading ? "--" : clamped}
+                        </span>
+                        <span className="text-sm font-semibold text-[var(--color-text-muted)] font-mono">
+                            /100
+                        </span>
+                    </div>
+                    <p
+                        className="text-[10px] font-bold tracking-[0.14em] uppercase mt-0.5"
+                        style={{ color: statusColor }}
                     >
-                        {clamped}
-                    </span>
-                    <span className="section-label mt-2">/ 100 Index</span>
+                        {statusLabel}
+                    </p>
                 </div>
             </div>
 
-            {/* Status badge */}
-            <div className="mt-5 flex items-center justify-center">
-                <span
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold border"
-                    style={{
-                        color: status.color,
-                        borderColor: `color-mix(in srgb, ${status.color} 25%, transparent)`,
-                        backgroundColor: `color-mix(in srgb, ${status.color} 10%, transparent)`,
-                    }}
-                >
-                    <StatusIcon size={13} />
-                    {status.label.toUpperCase()} POSTURE
-                </span>
-            </div>
-
-            <p className="text-[var(--color-text-muted)] text-xs text-center mt-2.5 max-w-[240px] leading-relaxed">
-                {status.caption}
-            </p>
-
-            {/* Supporting metrics — divider-separated, not boxed */}
-            <div className="grid grid-cols-3 mt-6 w-full max-w-[280px]">
-                {metrics.map((metric, i) => (
-                    <div
-                        key={metric.label}
-                        className={`text-center ${i > 0 ? "border-l border-[var(--color-border-subtle)]" : ""}`}
-                    >
-                        <p
-                            className="mono-value text-[16px] font-semibold leading-none"
-                            style={{ color: metric.color }}
-                        >
-                            {metric.value}
-                        </p>
-                        <p className="text-[10px] font-medium uppercase tracking-wider text-[var(--color-text-disabled)] mt-1.5">
-                            {metric.label}
-                        </p>
-                    </div>
-                ))}
+            {/* Sub-label */}
+            <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] pt-2 border-t border-[var(--color-border-subtle)]">
+                <span>Threat Defense</span>
+                <span className="font-mono text-white text-[10.5px]">Active Policy</span>
             </div>
         </div>
     );

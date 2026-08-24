@@ -86,7 +86,7 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 <ul
                     role="listbox"
                     aria-labelledby={id}
-                    className="absolute right-0 top-[calc(100%+6px)] z-30 min-w-[180px] py-1.5 rounded-md bg-[var(--color-surface-1)] border border-[var(--color-border-default)] shadow-[var(--shadow-2)] animate-scale-in origin-top-right"
+                    className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[180px] py-1.5 rounded-lg bg-[var(--color-surface-3)] border border-[var(--color-border-default)] shadow-[var(--shadow-modal)] origin-top-right animate-fade-in"
                 >
                     {options.map((opt, idx) => {
                         const selected = opt.value === value;
@@ -97,14 +97,14 @@ export default function CustomSelect({ value, onChange, options, id, className =
                                     type="button"
                                     onMouseEnter={() => setHighlighted(idx)}
                                     onClick={() => selectOption(opt.value)}
-                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-sm text-left transition-all duration-100 ${
-                                        isHighlighted
-                                            ? "bg-[var(--color-surface-2)] text-[var(--color-text-primary)]"
-                                            : selected ? "text-[var(--color-signal-readable)]" : "text-[var(--color-text-secondary)]"
+                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-xs text-left transition-colors duration-100 ${
+                                        isHighlighted || selected
+                                            ? "bg-[rgba(255,255,255,0.08)] text-white font-medium"
+                                            : "text-[var(--color-text-secondary)] hover:text-white"
                                     }`}
                                 >
-                                    <span className="font-medium">{opt.label}</span>
-                                    {selected && <Check size={14} className="text-[var(--color-signal)] shrink-0 animate-fade-in" />}
+                                    <span>{opt.label}</span>
+                                    {selected && <Check size={13} className="text-white shrink-0" />}
                                 </button>
                             </li>
                         );

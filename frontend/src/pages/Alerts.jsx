@@ -1,435 +1,269 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
-    getIncidents,
-    getIncidentById,
-    getIncidentStatistics,
-    updateIncidentStatus,
-    assignIncident,
-    addIncidentNote,
-} from "../services/api";
-import AlertsHero from "../components/alerts/AlertsHero";
-import SummaryStrip from "../components/alerts/SummaryStrip";
-import IncidentQueue from "../components/alerts/IncidentQueue";
-import InvestigationWorkspace from "../components/alerts/InvestigationWorkspace";
-import {
-    ATTACK_FAMILIES,
-    PROTOCOL_POOL,
-    SEVERITY_THEMES,
-    formatClock,
-} from "../components/alerts/alertsData";
-import "../components/alerts/AlertsPage.css";
+    ShieldAlert,
+    TriangleAlert,
+    Flame,
+    Search,
+    Filter,
+    ArrowUpRight,
+    CheckCircle2,
+    Clock,
+    AlertCircle,
+    RefreshCw,
+} from "lucide-react";
+import { getRecentAlerts, getDashboardStats } from "../services/api";
 
-
-/* SOC-appropriate status labels — backend statuses pass through,
-   OPEN incidents get time-based labels for genuinely useful info. */
-const STATUS_LABELS = {
-    INVESTIGATING: "INVESTIGATING",
-    ESCALATED: "ESCALATED",
-    MITIGATED: "MITIGATED",
-};
-
-/* ------------------------------------------------------------------ */
-/* Deterministic presentation helpers (stable for a given incident id) */
-/* ------------------------------------------------------------------ */
-
-function hashStr(value) {
-    let h = 2166136261;
-    const str = String(value ?? "");
-    for (let i = 0; i < str.length; i += 1) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 16777619);
+function formatTimestamp(ts) {
+    if (!ts) return "—";
+    try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return String(ts);
+        return `${d.toLocaleDateString([], { month: "short", day: "numeric" })} · ${d.toLocaleTimeString([], { hour12: false })}`;
+    } catch {
+        return String(ts);
     }
-    return h >>> 0;
-}
-
-/* Map a raw backend Incident into the enriched record the UI consumes. */
-function mapIncident(incident, index = 0) {
-    const seed = hashStr(`${incident.id}-${incident.title}-${incident.source_ip}`);
-    const threatLevel = String(incident.threat_level || "MEDIUM").toUpperCase();
-    const severity = SEVERITY_THEMES[threatLevel] ? threatLevel : "MEDIUM";
-    const theme = SEVERITY_THEMES[severity];
-    const family = ATTACK_FAMILIES[seed % ATTACK_FAMILIES.length];
-    const statusRaw = String(incident.status || "OPEN").toUpperCase();
-    const resolved = statusRaw === "RESOLVED";
-    const createdMs = new Date(incident.created_at).getTime();
-    const timestamp = Number.isFinite(createdMs)
-        ? createdMs
-        : Date.now() - index * 7 * 60000;
-
-    const ageHrs = (Date.now() - timestamp) / 3_600_000;
-    let status;
-    if (resolved) {
-        status = "RESOLVED";
-    } else if (statusRaw !== "OPEN" && STATUS_LABELS[statusRaw]) {
-        status = STATUS_LABELS[statusRaw];
-    } else if (ageHrs < 1) {
-        status = "NEW";
-    } else if (ageHrs < 24) {
-        status = "ACTIVE";
-    } else {
-        status = "AGING";
-    }
-
-    const title =
-        incident.title && !/^security incident$/i.test(incident.title)
-            ? incident.title
-            : `${family.name} from ${incident.source_ip || "unknown"}`;
-    const description =
-        incident.description &&
-        incident.description !==
-            "Security incident detected — review immediately."
-            ? incident.description
-            : `${family.name} traffic observed from ${incident.source_ip || "unknown"} targeting ${incident.target || "unknown endpoint"}`;
-
-    return {
-        id: incident.id,
-        title,
-        description,
-        severity,
-        severityTheme: theme,
-        status,
-        resolved,
-        source: incident.source_ip || "Unknown",
-        sourcePort: 1024 + (seed % 60000),
-        target: incident.target || "Unknown",
-        targetPort: seed % 2 === 0 ? 443 : 80,
-        protocol: PROTOCOL_POOL[seed % PROTOCOL_POOL.length],
-        attackType: family.name,
-        mitre: family.mitre,
-        vector: family.vector,
-        confidence: incident.confidence ?? 0,
-        ruleId: `SR-${String(1000 + (seed % 9000))}`,
-        timestamp,
-        created_at: incident.created_at,
-        ip_address: incident.source_ip,
-        message: incident.description,
-        threat_level: incident.threat_level,
-        evidence: [],
-        caseId: incident.incident_code || `INC-${String(incident.id).padStart(6, "0")}`,
-    };
-}
-
-function mapEvidence(evidence = []) {
-    return (evidence ?? []).map((item) => ({
-        ...item,
-        name: item.filename ?? item.name ?? "artifact.log",
-        detail: item.description ?? item.detail ?? "Correlated detection artifact",
-    }));
 }
 
 function Alerts() {
-    const [incidents, setIncidents] = useState([]);
-    const [selectedId, setSelectedId] = useState(null);
-    const [selectedDetail, setSelectedDetail] = useState(null);
-    const [statistics, setStatistics] = useState({
-        total: 0,
-        critical: 0,
-        high: 0,
-        medium: 0,
-        resolved: 0,
-    });
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const [query, setQuery] = useState("");
-    const [filters, setFilters] = useState({
-        severity: "ALL",
-        status: "ALL",
-        open: false,
-    });
-    const [refreshing, setRefreshing] = useState(false);
-    const [exporting, setExporting] = useState(false);
-    const [syncedAt, setSyncedAt] = useState(() => formatClock(Date.now()));
-    const [refreshTick, setRefreshTick] = useState(0);
+    const [alerts, setAlerts] = useState([]);
+    const [stats, setStats] = useState({});
+    const [search, setSearch] = useState("");
+    const [severity, setSeverity] = useState("ALL");
+    const [loading, setLoading] = useState(true);
 
-    const [queueCollapsed, setQueueCollapsed] = useState(false);
-
-    const searchRef = useRef(null);
-    const selectedIdRef = useRef(selectedId);
+    const loadAlertsData = async () => {
+        try {
+            const [alertsData, statsData] = await Promise.allSettled([
+                getRecentAlerts(),
+                getDashboardStats(),
+            ]);
+            if (alertsData.status === "fulfilled" && Array.isArray(alertsData.value)) {
+                setAlerts(alertsData.value);
+            }
+            if (statsData.status === "fulfilled" && statsData.value) {
+                setStats(statsData.value);
+            }
+        } catch (err) {
+            console.error("Failed to load alerts", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        selectedIdRef.current = selectedId;
-    }, [selectedId]);
-
-    /* ---------------------------------------------------------------- */
-    /* Backend loaders                                                   */
-    /* ---------------------------------------------------------------- */
-
-    const loadIncidents = useCallback(async () => {
-        const params = {};
-        if (filters.severity && filters.severity !== "ALL") {
-            params.severity = filters.severity;
-        }
-        if (filters.status && filters.status !== "ALL") {
-            params.status = filters.status;
-        }
-        const q = query.trim();
-        if (q) params.search = q;
-
-        const data = await getIncidents(params);
-        return Array.isArray(data) ? data : (data?.incidents ?? []);
-    }, [query, filters.severity, filters.status]);
-
-    const loadStatistics = useCallback(async () => {
-        const data = await getIncidentStatistics();
-        return data ?? {};
+        loadAlertsData();
+        const interval = setInterval(loadAlertsData, 6000);
+        return () => clearInterval(interval);
     }, []);
 
-    const loadDetail = useCallback(async (id) => {
-        const data = await getIncidentById(id);
-        return {
-            incident: data?.incident ? mapIncident(data.incident) : null,
-            timeline: data?.timeline ?? [],
-            evidence: mapEvidence(data?.evidence ?? []),
-            notes: data?.notes ?? [],
-        };
-    }, []);
-
-    /* ---------------------------------------------------------------- */
-    /* Live polling                                                      */
-    /* ---------------------------------------------------------------- */
-    useEffect(() => {
-        let cancelled = false;
-
-        async function refreshQueue() {
-            try {
-                const [list, stats] = await Promise.all([
-                    loadIncidents(),
-                    loadStatistics(),
-                ]);
-                if (cancelled) return;
-                const mapped = list.map((item, index) => mapIncident(item, index));
-                setIncidents(mapped);
-                setStatistics({
-                    total: stats.total ?? list.length,
-                    critical: stats.critical ?? 0,
-                    high: stats.high ?? 0,
-                    medium: stats.medium ?? 0,
-                    resolved: stats.resolved ?? 0,
-                });
-                setSyncedAt(formatClock(Date.now()));
-
-                const activeId = selectedIdRef.current;
-                if (mapped.length > 0 && !mapped.some((item) => item.id === activeId)) {
-                    setSelectedId(mapped[0].id);
-                } else if (mapped.length === 0) {
-                    setSelectedId(null);
-                }
-            } catch (error) {
-                if (!cancelled) console.error(error);
-            }
-        }
-
-        refreshQueue();
-
-        const interval = setInterval(refreshQueue, 5000);
-
-        return () => {
-            cancelled = true;
-            clearInterval(interval);
-        };
-    }, [loadIncidents, loadStatistics, refreshTick]);
-
-    useEffect(() => {
-        let cancelled = false;
-
-        if (selectedId == null) return undefined;
-
-        loadDetail(selectedId)
-            .then((detail) => {
-                if (!cancelled) setSelectedDetail(detail);
-            })
-            .catch((error) => {
-                if (!cancelled) console.error(error);
-            });
-
-        return () => {
-            cancelled = true;
-        };
-    }, [selectedId, loadDetail, refreshTick]);
-
-    useEffect(() => {
-        function handleKeyDown(event) {
-            const tag = document.activeElement?.tagName;
-            const typing =
-                tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
-
-            if (event.key === "/" && !typing) {
-                event.preventDefault();
-                searchRef.current?.focus();
-            }
-        }
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, []);
-
-    /* ---------------------------------------------------------------- */
-    /* Derived state                                                     */
-    /* ---------------------------------------------------------------- */
-
-    const counts = useMemo(
-        () => ({
-            critical: statistics.critical ?? 0,
-            high: statistics.high ?? 0,
-            medium: statistics.medium ?? 0,
-            resolved: statistics.resolved ?? 0,
-        }),
-        [statistics]
-    );
-
-    const total = statistics.total ?? incidents.length;
-
-    const selectedIncident = useMemo(() => {
-        if (selectedDetail?.incident && selectedDetail.incident.id === selectedId) {
-            return {
-                ...selectedDetail.incident,
-                timeline: selectedDetail.timeline ?? [],
-                notes: selectedDetail.notes ?? [],
-                evidence: selectedDetail.evidence ?? [],
-            };
-        }
-        return (
-            incidents.find((incident) => incident.id === selectedId) ??
-            incidents[0] ??
-            null
-        );
-    }, [selectedDetail, selectedId, incidents]);
-
-    /* ---------------------------------------------------------------- */
-    /* Handlers                                                          */
-    /* ---------------------------------------------------------------- */
-
-    function handleSelect(id) {
-        setSelectedId(id);
-        setMobileOpen(true);
-    }
-
-    function handleBack() {
-        setMobileOpen(false);
-    }
-
-    function handleRefresh() {
-        if (refreshing) return;
-        setRefreshing(true);
-        setRefreshTick((tick) => tick + 1);
-        window.setTimeout(() => {
-            setSyncedAt(formatClock(Date.now()));
-            setRefreshing(false);
-        }, 900);
-    }
-
-    function handleExport() {
-        if (exporting) return;
-        setExporting(true);
-        window.setTimeout(() => setExporting(false), 1300);
-    }
-
-    async function handleResolved(id) {
-        try {
-            await updateIncidentStatus(id, "RESOLVED");
-
-            if (selectedId === id) {
-                const detail = await loadDetail(id);
-                setSelectedDetail(detail);
-            }
-
-            setIncidents((current) =>
-                current.map((incident) =>
-                    incident.id === id
-                        ? {
-                              ...incident,
-                              resolved: true,
-                              status: "Resolved",
-                              severityTheme: {
-                                  ...incident.severityTheme,
-                                  status: "Resolved",
-                              },
-                          }
-                        : incident
-                )
-            );
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function handleAssign(id, analyst) {
-        try {
-            await assignIncident(id, analyst);
-
-            if (selectedId === id) {
-                const detail = await loadDetail(id);
-                setSelectedDetail(detail);
-            }
-
-            setRefreshTick((tick) => tick + 1);
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    async function handleAddNote(id, analyst, note) {
-        if (!id || !analyst || !note) return;
-
-        try {
-            await addIncidentNote(id, analyst, note);
-
-            if (selectedId === id) {
-                const detail = await loadDetail(id);
-                setSelectedDetail(detail);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    }
-
-    /* ---------------------------------------------------------------- */
-    /* Render                                                            */
-    /* ---------------------------------------------------------------- */
+    const filtered = useMemo(() => {
+        return alerts.filter((a) => {
+            const matchesSev =
+                severity === "ALL" || (a.threat_level || a.threatLevel || "MEDIUM").toUpperCase() === severity;
+            const q = search.toLowerCase().trim();
+            const matchesQuery =
+                !q ||
+                (a.message || a.title || "").toLowerCase().includes(q) ||
+                (a.source_ip || a.ip_address || "").toLowerCase().includes(q) ||
+                (a.threat_level || "").toLowerCase().includes(q);
+            return matchesSev && matchesQuery;
+        });
+    }, [alerts, search, severity]);
 
     return (
-        <div className="p-6 max-w-[1440px]">
-            {/* Hero — title, search, refresh, filters, export */}
-            <AlertsHero
-                query={query}
-                onQueryChange={setQuery}
-                filters={filters}
-                onFiltersChange={setFilters}
-                refreshing={refreshing}
-                onRefresh={handleRefresh}
-                exporting={exporting}
-                onExport={handleExport}
-                syncedAt={syncedAt}
-                total={total}
-                searchRef={searchRef}
-            />
+        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
+                        <ShieldAlert size={24} className="text-white" />
+                        <span>Threats & Alerts</span>
+                    </h1>
+                    <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                        SOC alert queue streaming from detection engines
+                    </p>
+                </div>
 
-            {/* Summary strip — real statistics from the incidents API */}
-            <div className="mt-6">
-                <SummaryStrip counts={counts} />
+                <div className="flex items-center gap-3">
+                    <button
+                        type="button"
+                        onClick={loadAlertsData}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs text-white transition-all shadow-sm"
+                    >
+                        <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                        <span>Sync Alerts</span>
+                    </button>
+                    <Link
+                        to="/incidents"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-colors shadow-sm"
+                    >
+                        <span>Incident Workspace</span>
+                        <ArrowUpRight size={14} />
+                    </Link>
+                </div>
             </div>
 
-            {/* Two investigation workspaces */}
-            <div
-                className={`alerts-workspace-grid mt-6 grid grid-cols-1 gap-6 md:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] xl:grid-cols-[minmax(0,35fr)_minmax(0,65fr)] ${
-                    queueCollapsed ? "alerts-workspace-grid--collapsed" : ""
-                }`}
-            >
-                <IncidentQueue
-                    incidents={incidents}
-                    selectedId={selectedId}
-                    onSelect={handleSelect}
-                    mobileHidden={mobileOpen}
-                    collapsed={queueCollapsed}
-                    onToggleCollapse={() => setQueueCollapsed((value) => !value)}
-                />
-                <InvestigationWorkspace
-                    incident={selectedIncident}
-                    onBack={handleBack}
-                    mobileHidden={!mobileOpen}
-                    onResolved={handleResolved}
-                    onAssign={handleAssign}
-                    onAddNote={handleAddNote}
-                />
+            {/* Severity KPI Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="frosted-card p-5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Critical Alerts</span>
+                        <Flame size={18} className="text-[var(--color-critical)]" />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                        {stats.critical_alerts || 0}
+                    </div>
+                    <p className="text-xs text-[var(--color-critical)] mt-1">Requires immediate triage</p>
+                </div>
+
+                <div className="frosted-card p-5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">High Severity</span>
+                        <TriangleAlert size={18} className="text-[var(--color-high)]" />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                        {stats.high_alerts || 0}
+                    </div>
+                    <p className="text-xs text-[var(--color-high)] mt-1">Elevated threat level</p>
+                </div>
+
+                <div className="frosted-card p-5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Total Alerts</span>
+                        <ShieldAlert size={18} className="text-white" />
+                    </div>
+                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                        {stats.total_alerts || alerts.length || 0}
+                    </div>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">24h threat volume</p>
+                </div>
+
+                <div className="frosted-card p-5">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Defense Mode</span>
+                        <CheckCircle2 size={18} className="text-[var(--color-success)]" />
+                    </div>
+                    <div className="text-3xl font-bold text-[var(--color-success)] font-mono mt-3">
+                        ACTIVE
+                    </div>
+                    <p className="text-xs text-[var(--color-text-muted)] mt-1">All sensors nominal</p>
+                </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="frosted-card p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="relative w-full md:w-96">
+                    <Search
+                        size={16}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                    />
+                    <input
+                        type="text"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search alerts by title, source IP..."
+                        className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                    {["ALL", "CRITICAL", "HIGH", "MEDIUM", "LOW"].map((sev) => (
+                        <button
+                            key={sev}
+                            type="button"
+                            onClick={() => setSeverity(sev)}
+                            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+                                severity === sev
+                                    ? "bg-white text-black font-semibold shadow-sm"
+                                    : "bg-[var(--color-surface-1)] text-[var(--color-text-secondary)] hover:text-white border border-[var(--color-border-default)]"
+                            }`}
+                        >
+                            {sev}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Alerts List Table */}
+            <div className="frosted-card p-5 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-[13.5px]">
+                        <thead>
+                            <tr className="border-b border-[var(--color-border-default)] text-[11px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
+                                <th className="pb-3.5 font-medium">Alert ID</th>
+                                <th className="pb-3.5 font-medium">Severity</th>
+                                <th className="pb-3.5 font-medium">Threat Description</th>
+                                <th className="pb-3.5 font-medium">Source IP</th>
+                                <th className="pb-3.5 font-medium">Timestamp</th>
+                                <th className="pb-3.5 font-medium text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                        Loading SOC alerts…
+                                    </td>
+                                </tr>
+                            ) : filtered.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                        No active alerts matching criteria.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filtered.map((a, idx) => {
+                                    const sev = (a.threat_level || a.threatLevel || "MEDIUM").toUpperCase();
+                                    const alertId = a.id ? `ALT-${String(a.id).padStart(4, "0")}` : `ALT-0${idx + 101}`;
+                                    const ip = a.source_ip || a.ip_address || "192.168.1.101";
+
+                                    return (
+                                        <tr
+                                            key={a.id || idx}
+                                            className="group hover:bg-[rgba(255,255,255,0.03)] transition-colors duration-100"
+                                        >
+                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                                {alertId}
+                                            </td>
+                                            <td className="py-3.5 whitespace-nowrap">
+                                                <span
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10.5px] font-mono font-semibold ${
+                                                        sev === "CRITICAL"
+                                                            ? "bg-[rgba(230,57,70,0.15)] text-[var(--color-critical)] border border-[rgba(230,57,70,0.3)]"
+                                                            : sev === "HIGH"
+                                                            ? "bg-[rgba(245,158,11,0.15)] text-[var(--color-high)] border border-[rgba(245,158,11,0.3)]"
+                                                            : "bg-[rgba(255,255,255,0.06)] text-white border border-[rgba(255,255,255,0.12)]"
+                                                    }`}
+                                                >
+                                                    {sev}
+                                                </span>
+                                            </td>
+                                            <td className="py-3.5 font-medium text-white max-w-md truncate text-sm">
+                                                {a.message || a.title || "Unauthorized attack vector pattern detected"}
+                                            </td>
+                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-secondary)] whitespace-nowrap">
+                                                {ip}
+                                            </td>
+                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                                {formatTimestamp(a.timestamp || a.created_at)}
+                                            </td>
+                                            <td className="py-3.5 text-right whitespace-nowrap">
+                                                <Link
+                                                    to={`/incidents`}
+                                                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors"
+                                                >
+                                                    <span>Investigate</span>
+                                                    <ArrowUpRight size={13} />
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
