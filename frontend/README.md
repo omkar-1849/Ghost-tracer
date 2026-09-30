@@ -1,18 +1,60 @@
-# React + Vite
+# Sentinel AI frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite 8 SPA for the Sentinel security operations console.
 
-Currently, two official plugins are available:
+## Configuration
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The API base URL comes from `VITE_API_BASE_URL` (falls back to `http://127.0.0.1:8000`
+in development only). Production builds must supply an HTTPS origin. Credentials are
+never attached to requests outside the configured API origin; report/website links are
+restricted to credential-free `http(s)` URLs.
 
-## React Compiler
+## Authentication and tenancy
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+- `src/services/authClient.js` is the only module allowed to attach the bearer token.
+  It also validates and attaches `X-Organization-ID` after server-side membership
+  validation (`GET /organization/list`, then `GET /organization` with the selected ID).
+- Every application page except `/login`, `/forgot-password`, and `/reset-password` is
+  wrapped in `RequireAuth`, which bootstraps memberships, validates the selected
+  organization, supports multi-organization selection, and offers organization
+  onboarding (`POST /organization`) when the account has none.
+- Logout calls `POST /sessions/logout` and clears the local token only on server
+  success (local expiry clears immediately). 401 responses clear the session and route
+  to login.
+- Password recovery uses `POST /auth/forgot-password` / `POST /auth/reset-password`
+  and never displays a reset token; delivery happens via the backend's configured
+  (development) SMTP.
 
-Note: This will impact Vite dev & build performances.
+## Honest evidence rules
 
-## Expanding the ESLint configuration
+`src/services/evidence.js` contains pure helpers plus `src/services/evidence.test.js`
+(regression tests; run with `node --test`):
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Scan completeness distinguishes `Completed`, `Failed`, `Partial`, `Cancelled`, and
+  `truncated`; incomplete scans never render as successful clean assessments.
+- Severity totals match the SQLMap headline (injectable + critical + warnings +
+  databases) so summary and distribution counts stay consistent.
+- Incident/response-action lists are paged to exhaustion (`collectPages`), including
+  exact page-size multiples; failures surface as errors rather than silent partial
+  lists.
+- Dashboard labels match their data: total alerts (not "blocked 24h"), critical alerts
+  (not "vulnerabilities"), completed scans only counted when `status === "Completed"`.
+  Charts and scores show explicit empty/unavailable states; no synthetic traffic or
+  default security score.
+- Response actions are labeled `SIMULATED`; no EXECUTED enforcement claims until the
+  backend performs real enforcement.
+- Settings shows the redacted `api_key_configured` flag (no fake masked secrets) and
+  read-only views for non-admin roles; About values avoid unverified version/build/TLS
+  claims.
+
+## Commands
+
+```
+npm run dev
+npm run build
+npm run lint
+node --test src/services/evidence.test.js
+```
+
+On Windows, if the npm shim cannot resolve Node, invoke the installed binary
+directly, e.g. `"/c/Program Files/nodejs/node.exe" node_modules/vite/bin/vite.js build`.

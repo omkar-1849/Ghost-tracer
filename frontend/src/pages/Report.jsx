@@ -1,3 +1,4 @@
+import { scanCompleteness } from "../services/evidence.js";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { AlertCircle, Bug, Layers, Server, ShieldAlert, Loader2 } from "lucide-react";
@@ -26,6 +27,7 @@ export default function Report() {
         async function fetchReport() {
             try {
                 setLoading(true);
+                setError(null);
                 const [scanData, reportData] = await Promise.all([
                     getScanById(id),
                     getScanReport(id),
@@ -72,7 +74,7 @@ export default function Report() {
     const engineId = engineTabId(scan.engine);
     const recommendations = parsed.recommendations || [];
     const rawOutput = scan.raw_output || parsed.raw_output || "";
-    const isFailed = (scan.status || "").toUpperCase() === "FAILED";
+    const completeness = scanCompleteness(scan);
 
     return (
         <div className="p-6 max-w-[1440px]">
@@ -95,7 +97,7 @@ export default function Report() {
                     </h3>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                         <RiskMetric label="Risk Score" value={scan.risk_score != null ? `${scan.risk_score}/100` : "N/A"} icon={ShieldAlert} colorClass="text-[var(--color-high)]" />
-                        <RiskMetric label="Findings" value={scan.findings ?? "0"} icon={Bug} colorClass="text-[var(--color-critical)]" />
+                        <RiskMetric label="Findings" value={scan.findings ?? "N/A"} icon={Bug} colorClass="text-[var(--color-critical)]" />
                         <RiskMetric label="Status" value={scan.status || "N/A"} icon={Layers} colorClass="text-[var(--color-signal)]" />
                         <RiskMetric label="Target" value={scan.target || "N/A"} icon={Server} colorClass="text-[var(--color-text-secondary)]" />
                     </div>
@@ -111,15 +113,9 @@ export default function Report() {
                     <h3 id="engine-results-title" className="text-xs font-semibold text-[var(--color-text-primary)] uppercase tracking-wider mb-3">
                         {scan.scanner} Discovered Findings
                     </h3>
-                    {isFailed ? (
-                        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-6 text-center">
-                            <AlertCircle size={28} className="mx-auto text-[var(--color-text-disabled)] mb-2" />
-                            <h4 className="text-xs font-semibold text-[var(--color-text-secondary)] mb-1">No Results — Scan Failed</h4>
-                            <p className="text-[11px] text-[var(--color-text-muted)]">The scanner did not produce structured output for this execution.</p>
-                        </div>
-                    ) : (
-                        <EngineResults report={parsed} engineId={engineId} />
-                    )}
+                    {!completeness.complete && <p role="status" className="mb-3 text-sm">{completeness.label}. Available output is incomplete; absence of findings is not evidence of safety.</p>}
+                    {Object.keys(parsed).length > 0 ? <EngineResults report={parsed} engineId={engineId} /> : <p>No structured output is available.</p>}
+
                 </section>
 
                 {/* Recommendations */}

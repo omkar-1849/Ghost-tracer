@@ -6,7 +6,7 @@ from app.schemas.profile_schema import (
     ChangePasswordRequest,
     ProfileUpdateRequest,
 )
-from app.services.session_service import revoke_all_sessions
+from app.services.auth_service import invalidate_user_credentials
 from app.utils.security import hash_password, verify_password
 
 
@@ -27,7 +27,7 @@ def update_profile(
     for key, value in update_data.items():
         setattr(user, key, value)
 
-    db.commit()
+    db.flush()
     db.refresh(user)
 
     return user
@@ -38,6 +38,11 @@ def change_password(
     user: User,
     data: ChangePasswordRequest,
 ) -> None:
+
+    user = (db.query(User).filter(User.id == user.id)
+            .populate_existing().with_for_update().first())
+    if not user or not user.is_active:
+        raise HTTPException(401, "Authentication required.")
 
     if not verify_password(
         data.current_password,
@@ -61,10 +66,10 @@ def change_password(
         data.new_password
     )
 
-    db.commit()
-
     # Password change invalidates all existing sessions.
-    revoke_all_sessions(
+    invalidate_user_credentials(
         db,
         user.id,
     )
+
+    db.flush()

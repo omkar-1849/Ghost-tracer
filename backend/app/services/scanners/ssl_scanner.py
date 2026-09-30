@@ -8,6 +8,8 @@ from app.database.database import SessionLocal
 from app.models.scan import Scan
 from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 from app.services.scanners.base_scanner import BaseScanner
+from app.services.scanners.scanner_mixin import ScannerJobMixin
+from app.utils.destination import validate_destination, connect_pinned
 from app.utils.scanner_utils import (
     extract_host_port,
     clean_output,
@@ -16,7 +18,7 @@ from app.utils.scanner_utils import (
     ist_now,
 )
 
-class SSLScanner(BaseScanner):
+class SSLScanner(BaseScanner, ScannerJobMixin):
     name = "SSL"
 
     def _parse_cert_date(self, date_str: str) -> datetime:
@@ -46,141 +48,38 @@ class SSLScanner(BaseScanner):
                     return v
         return ""
 
-    def start_scan(self, scan_id: int) -> None:
-        db = SessionLocal()
+    def start_scan(self, scan_id: int, worker_id=None) -> None:
+        db, scan = self.begin_job(scan_id, worker_id)
+        if db is None:
+            return
         try:
-            scan = db.query(Scan).filter(Scan.id == scan_id).first()
-            if not scan or scan.status == "Cancelled":
+            destination = validate_destination(scan.target)
+            if destination.scheme != "https":
+                self.fail_job(db, scan, "TLS inspection requires an HTTPS destination.")
                 return
-            scan.status = "Running"
-            scan.command = "Internal SSL/socket connect"
-            db.commit()
-
-            hostname, port = extract_host_port(scan.target)
-            if not port:
-                port = 443
-
-            cert = {}
-            cipher_info = None
-            tls_version = None
-
-            # Attempt 1: verified connection (gets full cert details)
+            self.set_command(db, scan, "Verified TLS inspection")
+            if self.is_cancelled(db, scan):
+                return
             try:
-                ctx_verified = ssl.create_default_context()
-                with socket.create_connection((hostname, port), timeout=15) as sock:
-                    with ctx_verified.wrap_socket(sock, server_hostname=hostname) as ssock:
-                        cert = ssock.getpeercert() or {}
-                        cipher_info = ssock.cipher()
-                        tls_version = ssock.version()
+                with connect_pinned(destination, timeout=10) as sock:
+                    with ssl.create_default_context().wrap_socket(sock, server_hostname=destination.hostname) as tls:
+                        data = {"cert": tls.getpeercert(), "cipher_info": tls.cipher(),
+                                "tls_version": tls.version(), "hostname": destination.hostname,
+                                "port": destination.port}
             except ssl.SSLCertVerificationError:
-                # Attempt 2: unverified connection (self-signed / invalid certs)
-                try:
-                    ctx_unverified = ssl.create_default_context()
-                    ctx_unverified.check_hostname = False
-                    ctx_unverified.verify_mode = ssl.CERT_NONE
-                    with socket.create_connection((hostname, port), timeout=15) as sock:
-                        with ctx_unverified.wrap_socket(sock, server_hostname=hostname) as ssock:
-                            cert = ssock.getpeercert() or {}
-                            cipher_info = ssock.cipher()
-                            tls_version = ssock.version()
-                except (socket.timeout, socket.gaierror, ssl.SSLError, ConnectionRefusedError, OSError) as e:
-                    scan.status = "Failed"
-                    scan.error = f"Connection failed: {str(e)}"
-                    scan.completed_at = ist_now()
-                    db.commit()
-
-                    org_id = resolve_audit_organization_id(db)
-                    create_audit_log(
-                        db=db,
-                        organization_id=org_id if org_id is not None else 1,
-                        user_id=None,
-                        action="SCAN_FAILED",
-                        resource_type="SCAN",
-                        resource_id=str(scan.id),
-                        description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                    )
-                    return
-            except (socket.timeout, socket.gaierror, ssl.SSLError, ConnectionRefusedError, OSError) as e:
-                scan.status = "Failed"
-                scan.error = f"Connection failed: {str(e)}"
-                scan.completed_at = ist_now()
-                db.commit()
-
-                org_id = resolve_audit_organization_id(db)
-                create_audit_log(
-                    db=db,
-                    organization_id=org_id if org_id is not None else 1,
-                    user_id=None,
-                    action="SCAN_FAILED",
-                    resource_type="SCAN",
-                    resource_id=str(scan.id),
-                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                )
+                self.fail_job(db, scan, "TLS certificate verification failed; no insecure retry was performed.",
+                    parsed_output={"scanner": "SSL", "validity_status": "Invalid",
+                        "findings": [{"title": "TLS Certificate Verification Failed", "severity": "high",
+                        "description": "Certificate trust, identity, or validity verification failed."}]})
                 return
-
-            raw_data = {
-                "cert": cert,
-                "cipher_info": cipher_info,
-                "tls_version": tls_version,
-                "hostname": hostname,
-                "port": port
-            }
-            raw_output_str = json.dumps(raw_data, default=str)
-
-            parsed = self.parse_output(raw_output_str)
-            report = self.generate_report(parsed)
-            findings_list = parsed.get("findings", [])
-
-            # Generate human-readable raw output
-            hr_output = []
-            hr_output.append(f"Host: {hostname}:{port}")
-            hr_output.append(f"TLS Version: {tls_version}")
-            if cipher_info:
-                hr_output.append(f"Cipher: {cipher_info[0]} ({cipher_info[2]} bits)")
-            if cert:
-                hr_output.append(f"Subject: {self._parse_name_tuples(cert.get('subject', ()))}")
-                hr_output.append(f"Issuer: {self._parse_name_tuples(cert.get('issuer', ()))}")
-                hr_output.append(f"Not Before: {cert.get('notBefore')}")
-                hr_output.append(f"Not After: {cert.get('notAfter')}")
-            
-            scan.status = "Completed"
-            scan.findings = len(findings_list)
-            scan.risk_score = calculate_risk_score(findings_list)
-            scan.raw_output = clean_output("\n".join(hr_output))
-            scan.parsed_output = report
-            scan.completed_at = ist_now()
-            db.commit()
-
-            org_id = resolve_audit_organization_id(db)
-            create_audit_log(
-                db=db,
-                organization_id=org_id if org_id is not None else 1,
-                user_id=None,
-                action="SCAN_COMPLETED",
-                resource_type="SCAN",
-                resource_id=str(scan.id),
-                description=f"Scan ({scan.engine}) on {scan.target} completed with {scan.findings} findings.",
-            )
-
-        except Exception as e:
-            try:
-                scan.status = "Failed"
-                scan.error = str(e)[:4000]
-                scan.completed_at = ist_now()
-                db.commit()
-
-                org_id = resolve_audit_organization_id(db)
-                create_audit_log(
-                    db=db,
-                    organization_id=org_id if org_id is not None else 1,
-                    user_id=None,
-                    action="SCAN_FAILED",
-                    resource_type="SCAN",
-                    resource_id=str(scan.id),
-                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                )
-            except Exception:
-                pass
+            if self.is_cancelled(db, scan):
+                return
+            parsed = self.parse_output(json.dumps(data))
+            self.complete_job(db, scan, findings=len(parsed["findings"]),
+                risk_score=calculate_risk_score(parsed["findings"]),
+                raw_output=json.dumps(data), parsed_output=self.generate_report(parsed))
+        except Exception:
+            self.fail_job(db, scan, "TLS inspection failed securely.")
         finally:
             db.close()
 
@@ -188,9 +87,11 @@ class SSLScanner(BaseScanner):
         try:
             data = json.loads(raw_output)
         except json.JSONDecodeError:
-            return {"findings": [], "cert_details": {}, "cipher_details": {}}
+            raise ValueError("TLS output is not valid JSON.") from None
 
         cert = data.get("cert", {})
+        if not cert:
+            raise ValueError("Verified certificate details are missing.")
         cipher_info = data.get("cipher_info")
         tls_version = data.get("tls_version", "")
         hostname = data.get("hostname", "")

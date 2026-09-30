@@ -62,7 +62,7 @@ export default function DeleteWebsiteDialog({ isOpen, onClose, onConfirm, count 
                     <button
                         onClick={onConfirm}
                         disabled={deleting}
-                        className="px-5 py-2.5 rounded-md text-sm font-bold text-[var(--color-text-primary)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-colors duration-150 border border-[var(--color-critical)] active:scale-[0.98] flex items-center gap-2 disabled:opacity-50"
+                        className="px-5 py-2.5 rounded-md text-sm font-bold text-white bg-[var(--color-critical)] hover:bg-red-600 transition-colors duration-150 border border-transparent active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 shadow-sm"
                     >
                         {deleting && <Loader2 size={16} className="animate-spin" />}
                         <Trash2 size={16} />

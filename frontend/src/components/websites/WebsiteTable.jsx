@@ -1,3 +1,4 @@
+import { safeHttpUrl } from "../../services/evidence.js";
 import { memo, useEffect, useRef, useState } from "react";
 import {
     Globe, ExternalLink, Copy, ScanLine, Edit2, Trash2, MoreHorizontal,
@@ -155,7 +156,8 @@ const RowActions = memo(function RowActions({ website, copied, onCopy, onEdit, o
                 >
                     <button
                         role="menuitem"
-                        onClick={run(() => window.open(website.url, '_blank', 'noopener'))}
+                        disabled={!safeHttpUrl(website.url)}
+                        onClick={run(() => window.open(safeHttpUrl(website.url), '_blank', 'noopener,noreferrer'))}
                         className="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm text-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-2)] transition-colors duration-100 text-left"
                     >
                         <ExternalLink size={14} className="text-[var(--color-text-muted)]" /> Open URL

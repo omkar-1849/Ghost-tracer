@@ -5,19 +5,15 @@ import {
     Terminal,
     ShieldCheck,
     Bell,
-    HardDrive,
     Users,
     Key,
     Info,
     Save,
-    RotateCcw,
     CheckCircle2,
     AlertCircle,
-    User,
-    LogOut,
 } from "lucide-react";
 import { getSettings, updateSettings, resetSettings } from "../services/settingsApi";
-import { authFetch, isAuthenticated } from "../services/authClient";
+import { authFetch, isAuthenticated, BASE_URL, getOrganization } from "../services/authClient";
 
 const SECTIONS = [
     { id: "platform", label: "General & Platform", icon: Server },
@@ -30,22 +26,10 @@ const SECTIONS = [
 ];
 
 export default function Settings() {
-    const [activeSection, setActiveSection] = useState("platform");
-    const [settings, setSettings] = useState({
-        orgName: "Sentinel Security Ops",
-        platformName: "Sentinel AI",
-        timezone: "UTC",
-        region: "us-east-1",
-        defaultScanner: "sqlmap",
-        concurrentScans: 5,
-        scanTimeout: 120,
-        randomAgent: true,
-        followRedirects: true,
-        sessionTimeout: 30,
-        auditLogging: true,
-        emailAlerts: true,
-        desktopAlerts: false,
-    });
+    const [activeSection, setActiveSection] = useState(["owner", "admin"].includes(getOrganization()?.current_user_role?.toLowerCase()) ? "platform" : "sessions");
+    const [settings, setSettings] = useState({});
+    const canAdmin = ["owner", "admin"].includes(getOrganization()?.current_user_role?.toLowerCase());
+    const [loadError, setLoadError] = useState("");
 
     const [members, setMembers] = useState([]);
     const [sessions, setSessions] = useState([]);
@@ -59,7 +43,7 @@ export default function Settings() {
         let isMounted = true;
         async function fetchAll() {
             try {
-                const data = await getSettings();
+                const data = canAdmin ? await getSettings() : null;
                 if (isMounted && data) {
                     setSettings(data);
                 }
@@ -67,10 +51,11 @@ export default function Settings() {
                 if (isAuthed) {
                     // Fetch organization members & sessions
                     const [memRes, sessRes] = await Promise.allSettled([
-                        authFetch("http://127.0.0.1:8000/organization/members").then((r) => r.json()),
-                        authFetch("http://127.0.0.1:8000/sessions").then((r) => r.json()),
+                        authFetch(`${BASE_URL}/organization/members`).then((r) => r.json()),
+                        authFetch(`${BASE_URL}/sessions`).then((r) => r.json()),
                     ]);
                     if (isMounted) {
+                        if (memRes.status === "rejected" || sessRes.status === "rejected") setLoadError("Some account data could not be loaded.");
                         if (memRes.status === "fulfilled" && Array.isArray(memRes.value)) {
                             setMembers(memRes.value);
                         }
@@ -79,8 +64,8 @@ export default function Settings() {
                         }
                     }
                 }
-            } catch (err) {
-                console.error("Settings load error", err);
+            } catch {
+                if (isMounted) setLoadError("Settings load failed.");
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -88,7 +73,7 @@ export default function Settings() {
 
         fetchAll();
         return () => { isMounted = false; };
-    }, [isAuthed]);
+    }, [isAuthed, canAdmin]);
 
     const showToast = (msg, type = "success") => {
         setToastMessage({ text: msg, type });
@@ -97,6 +82,7 @@ export default function Settings() {
 
     const handleSave = async (e) => {
         if (e) e.preventDefault();
+        if (!canAdmin || loading || loadError) return;
         setSaving(true);
         try {
             const updated = await updateSettings(settings);
@@ -110,13 +96,14 @@ export default function Settings() {
     };
 
     const handleReset = async () => {
+        if (!canAdmin || loading || loadError) return;
         if (!confirm("Are you sure you want to reset settings to default?")) return;
         setSaving(true);
         try {
             const res = await resetSettings();
             setSettings(res);
             showToast("Settings reset to defaults.");
-        } catch (err) {
+        } catch {
             showToast("Failed to reset settings.", "error");
         } finally {
             setSaving(false);
@@ -125,16 +112,19 @@ export default function Settings() {
 
     const handleRevokeSession = async (sessionId) => {
         try {
-            await authFetch(`http://127.0.0.1:8000/sessions/${sessionId}`, { method: "DELETE" });
+            const response = await authFetch(`${BASE_URL}/sessions/${sessionId}`, { method: "DELETE" });
+            if (!response.ok) throw new Error("Session revocation failed");
             setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
             showToast("Session revoked.");
-        } catch (err) {
-            showToast("Failed to revoke session.", "error");
+        } catch {
+            showToast("Session revocation failed. Verify server state.", "error");
         }
     };
 
     return (
         <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+            {loadError && <p role="alert">{loadError}</p>}
+            {!canAdmin && <p>Organization settings require an owner or admin role. Account sessions remain available.</p>}
             {/* Toast feedback */}
             {toastMessage && (
                 <div
@@ -164,6 +154,7 @@ export default function Settings() {
                 <div className="flex items-center gap-3">
                     <button
                         type="button"
+                        disabled={!canAdmin || loading || saving || !!loadError}
                         onClick={handleReset}
                         className="px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs text-[var(--color-text-secondary)] hover:text-white transition-all"
                     >
@@ -172,7 +163,7 @@ export default function Settings() {
                     <button
                         type="button"
                         onClick={handleSave}
-                        disabled={saving}
+                        disabled={!canAdmin || loading || saving || !!loadError}
                         className="flex items-center gap-2 px-5 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-50"
                     >
                         <Save size={14} />
@@ -185,7 +176,7 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
                 {/* Navigation Tabs */}
                 <div className="frosted-card p-2 space-y-1 md:col-span-1">
-                    {SECTIONS.map((sec) => {
+                    {SECTIONS.filter((sec) => canAdmin || ["organization", "sessions", "about"].includes(sec.id)).map((sec) => {
                         const isActive = activeSection === sec.id;
                         return (
                             <button
@@ -207,6 +198,7 @@ export default function Settings() {
 
                 {/* Configuration Forms */}
                 <div className="md:col-span-3 frosted-card p-6 space-y-6">
+                    {canAdmin && <p className="text-xs">AI provider key: {settings.aiKeyConfigured ? "Configured (redacted)" : "Not configured"}. Stored configuration does not prove an engine or notification channel is active.</p>}
                     {/* 1. General & Platform */}
                     {activeSection === "platform" && (
                         <div className="space-y-5">
@@ -377,7 +369,7 @@ export default function Settings() {
                                         className="w-4 h-4 rounded bg-[var(--color-surface-1)] border-[var(--color-border-default)]"
                                     />
                                     <label htmlFor="auditLogging" className="text-sm text-white font-medium cursor-pointer">
-                                        Enable immutable audit logging for all mutations
+                                        Audit logging preference (server policy applies)
                                     </label>
                                 </div>
                             </div>
@@ -447,13 +439,13 @@ export default function Settings() {
                                         {members.length === 0 ? (
                                             <tr>
                                                 <td colSpan="3" className="py-4 text-[var(--color-text-muted)]">
-                                                    Admin Analyst (Owner) · Active
+                                                    No member records loaded.
                                                 </td>
                                             </tr>
                                         ) : (
                                             members.map((m) => (
                                                 <tr key={m.id}>
-                                                    <td className="py-2.5 text-white font-medium">{m.user?.email || `User #${m.user_id}`}</td>
+                                                    <td className="py-2.5 text-white font-medium">{m.email || m.user?.email || `User #${m.user_id}`}</td>
                                                     <td className="py-2.5 font-mono text-[var(--color-text-secondary)]">{m.role}</td>
                                                     <td className="py-2.5 font-mono text-[var(--color-text-muted)]">{new Date(m.created_at).toLocaleDateString()}</td>
                                                 </tr>
@@ -478,7 +470,7 @@ export default function Settings() {
                             <div className="space-y-2.5">
                                 {sessions.length === 0 ? (
                                     <div className="p-4 text-xs font-mono text-[var(--color-text-muted)]">
-                                        Current Session (Active) · 127.0.0.1
+                                        No session records loaded.
                                     </div>
                                 ) : (
                                     sessions.map((s) => (
@@ -491,7 +483,7 @@ export default function Settings() {
                                                     Session: {s.session_id.slice(0, 16)}…
                                                 </p>
                                                 <p className="text-[11px] font-mono text-[var(--color-text-muted)] mt-0.5">
-                                                    IP: {s.ip_address || "127.0.0.1"} · Created: {new Date(s.created_at).toLocaleString()}
+                                                    IP: {s.ip_address || "Unknown"} · Created: {new Date(s.created_at).toLocaleString()}
                                                 </p>
                                             </div>
                                             <button
@@ -521,19 +513,19 @@ export default function Settings() {
                             <div className="grid grid-cols-2 gap-4 text-xs font-mono">
                                 <div className="p-3 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
                                     <span className="text-[var(--color-text-muted)] block">Version</span>
-                                    <span className="text-white font-bold text-sm">v2.5.0 Enterprise</span>
+                                    <span className="text-white font-bold text-sm">Not reported</span>
                                 </div>
                                 <div className="p-3 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
                                     <span className="text-[var(--color-text-muted)] block">Build Hash</span>
-                                    <span className="text-white font-bold text-sm">#94e02fb</span>
+                                    <span className="text-white font-bold text-sm">Not reported</span>
                                 </div>
                                 <div className="p-3 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
                                     <span className="text-[var(--color-text-muted)] block">FastAPI Backend</span>
-                                    <span className="text-[var(--color-success)] font-bold text-sm">Connected (Port 8000)</span>
+                                    <span className="text-[var(--color-success)] font-bold text-sm">Status not measured</span>
                                 </div>
                                 <div className="p-3 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
                                     <span className="text-[var(--color-text-muted)] block">Vulnerability Engines</span>
-                                    <span className="text-white font-bold text-sm">6 Engines Ready</span>
+                                    <span className="text-white font-bold text-sm">Readiness not measured</span>
                                 </div>
                             </div>
                         </div>

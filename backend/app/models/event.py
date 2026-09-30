@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import (
     Column,
@@ -11,10 +11,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class Event(Base):
+class Event(TenantOwned, Base):
     __tablename__ = "events"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -45,9 +45,18 @@ class Event(Base):
 
     event_metadata = Column(JSON, nullable=True)
 
+    # Normalized / dedup / analysis fields (UTC semantics; legacy rows may be NULL)
+    fingerprint = Column(String(64), nullable=True, index=True)
+    risk_score = Column(Integer, nullable=True)
+    threat_level = Column(String(20), nullable=True)
+    detection_result = Column(JSON, nullable=True)
+    analyst_result = Column(JSON, nullable=True)
+    normalization_version = Column(Integer, nullable=True)
+    processed_at = Column(DateTime, nullable=True)
+
     created_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
+        default=datetime.utcnow,
         nullable=False,
         index=True,
     )

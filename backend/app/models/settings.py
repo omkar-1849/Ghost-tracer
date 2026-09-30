@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class Settings(Base):
+class Settings(TenantOwned, Base):
     __tablename__ = "settings"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -32,7 +32,10 @@ class Settings(Base):
     ai_enabled = Column(Boolean, default=True)
     ai_provider = Column(String(50), default="openai")
     ai_model = Column(String(50), default="gpt-4o")
-    api_key = Column(String(255), default="sk-••••••••••••••••••••••••")
+    # Secret material is intentionally blank by default. Real values are
+    # supplied via environment reference / secret manager by the settings
+    # layer; never seed a placeholder key or return plaintext secrets.
+    api_key = Column(String(255), default="")
     temperature = Column(Float, default=0.2)
     context_length = Column(Integer, default=128000)
     confidence_threshold = Column(Float, default=0.7)
@@ -50,10 +53,10 @@ class Settings(Base):
     # Metadata
     created_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30)
+        default=datetime.utcnow,
     )
     updated_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
-        onupdate=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30)
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
     )

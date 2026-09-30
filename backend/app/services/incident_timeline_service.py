@@ -16,7 +16,7 @@ def create_timeline_event(
     )
 
     db.add(timeline)
-    db.commit()
+    db.flush()
     db.refresh(timeline)
 
     return timeline

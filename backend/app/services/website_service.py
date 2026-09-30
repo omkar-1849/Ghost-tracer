@@ -2,11 +2,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from fastapi import HTTPException
 import urllib.parse
-import socket
 import secrets
 
-import requests
 import dns.resolver
+from app.utils.destination import validate_destination, safe_fetch, DestinationError
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
@@ -30,27 +29,26 @@ def extract_domain(url: str) -> str:
         return ""
 
 
-def resolve_ip(domain: str) -> str:
+def create_website(db: Session, data: WebsiteCreate, user_id: int | None = None, organization_id: int | None = None) -> Website:
     try:
-        return socket.gethostbyname(domain)
-    except Exception:
-        return None
+        destination = validate_destination(data.url)
+    except DestinationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
 
-
-def create_website(db: Session, data: WebsiteCreate, user_id: int | None = None) -> Website:
-    existing = db.query(Website).filter(Website.url == data.url).first()
+    existing = db.query(Website).filter(Website.url == destination.url).first()
     if existing:
         raise HTTPException(
             status_code=400,
             detail="Website with this URL already exists."
         )
 
-    domain = extract_domain(data.url)
-    ip_address = resolve_ip(domain) if domain else None
+    domain = destination.hostname
+    ip_address = destination.addresses[0]
 
     website = Website(
+        organization_id=organization_id,
         name=data.name,
-        url=data.url,
+        url=destination.url,
         description=data.description,
         environment=data.environment,
         status=data.status,
@@ -71,12 +69,12 @@ def create_website(db: Session, data: WebsiteCreate, user_id: int | None = None)
     )
 
     db.add(website)
-    db.commit()
+    db.flush()
     db.refresh(website)
 
     create_audit_log(
         db=db,
-        organization_id=resolve_audit_organization_id(db, user_id),
+        organization_id=organization_id or resolve_audit_organization_id(db, user_id),
         user_id=user_id,
         action="CREATE_WEBSITE",
         resource_type="WEBSITE",
@@ -94,9 +92,12 @@ def get_website(db: Session, website_id: int) -> Website:
     return website
 
 
-def get_all_websites(db: Session, skip: int = 0, limit: int = 100):
+def get_all_websites(db: Session, organization_id: int | None = None, skip: int = 0, limit: int = 100):
+    query = db.query(Website)
+    if organization_id is not None:
+        query = query.filter(Website.organization_id == organization_id)
     return (
-        db.query(Website)
+        query
         .order_by(Website.created_at.desc())
         .offset(skip)
         .limit(limit)
@@ -120,16 +121,24 @@ def update_website(db: Session, website_id: int, data: WebsiteUpdate, user_id: i
                 detail="URL already associated with another website."
             )
 
-        new_domain = extract_domain(update_data["url"])
-        update_data["domain"] = new_domain
-        update_data["ip_address"] = (
-            resolve_ip(new_domain) if new_domain else None
-        )
+        try:
+            destination = validate_destination(update_data["url"])
+        except DestinationError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+        update_data["url"] = destination.url
+        update_data["domain"] = destination.hostname
+        update_data["ip_address"] = destination.addresses[0]
+        website.verified = False
+        website.verification_method = None
+        website.verified_at = None
+        website.verified_target = None
+        website.verified_addresses = None
+        website.verification_token = generate_verification_token()
 
     for key, value in update_data.items():
         setattr(website, key, value)
 
-    db.commit()
+    db.flush()
     db.refresh(website)
 
     create_audit_log(
@@ -152,7 +161,7 @@ def delete_website(db: Session, website_id: int, user_id: int | None = None):
     site_name = website.name
 
     db.delete(website)
-    db.commit()
+    db.flush()
 
     create_audit_log(
         db=db,
@@ -167,10 +176,10 @@ def delete_website(db: Session, website_id: int, user_id: int | None = None):
     return {"message": "Website successfully deleted."}
 
 
-def search_websites(db: Session, query: str):
+def search_websites(db: Session, query: str, organization_id: int | None = None):
     search = f"%{query}%"
 
-    return (
+    q = (
         db.query(Website)
         .filter(
             or_(
@@ -181,73 +190,58 @@ def search_websites(db: Session, query: str):
                 Website.tags.ilike(search),
             )
         )
-        .order_by(Website.created_at.desc())
-        .all()
     )
+    if organization_id is not None:
+        q = q.filter(Website.organization_id == organization_id)
+
+    return q.order_by(Website.created_at.desc()).all()
 
 
 def verify_website(db: Session, website_id: int, method: str):
     website = get_website(db, website_id)
-
     method = method.lower()
+    if method not in {"dns", "html", "meta"}:
+        raise HTTPException(status_code=400, detail="Invalid verification method.")
 
-    if method not in ["dns", "html", "meta"]:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid verification method."
-        )
-
+    # Failure also clears prior authority; return normally so the transaction
+    # persists the invalidation instead of rolling it back as an HTTP error.
+    website.verified = False
+    website.verification_method = None
+    website.verified_at = None
+    website.verified_target = None
+    website.verified_addresses = None
     token = website.verification_token
     verified = False
-
     try:
+        destination = validate_destination(website.url)
+        if not token:
+            raise DestinationError("Ownership token is missing.")
         if method == "dns":
-            answers = dns.resolver.resolve(website.domain, "TXT")
-
+            answers = dns.resolver.resolve(destination.hostname, "TXT", lifetime=5)
             for record in answers:
-                if token in "".join(record.strings.decode() if isinstance(record.strings, bytes) else str(record)):
+                text = b"".join(record.strings).decode("utf-8", errors="replace")
+                if text == token:
                     verified = True
                     break
-
-        elif method == "html":
-            response = requests.get(
-                website.url.rstrip("/") + "/sentinel_verify.html",
-                timeout=10
-            )
-
-            if response.status_code == 200 and token in response.text:
-                verified = True
-
-        elif method == "meta":
-            response = requests.get(website.url, timeout=10)
-
-            soup = BeautifulSoup(response.text, "html.parser")
-
-            tag = soup.find(
-                "meta",
-                attrs={"name": "sentinel-verification"}
-            )
-
-            if tag and tag.get("content") == token:
-                verified = True
-
-    except Exception:
+        else:
+            url = website.url if method == "meta" else urllib.parse.urljoin(website.url, "/sentinel_verify.html")
+            response = safe_fetch(url)
+            # Pin the verified scope to the addresses actually fetched.
+            destination = response.destination
+            if response.status_code == 200:
+                if method == "html":
+                    verified = token in response.text
+                else:
+                    soup = BeautifulSoup(response.text, "html.parser")
+                    tag = soup.find("meta", attrs={"name": "sentinel-verification"})
+                    verified = bool(tag and tag.get("content") == token)
+        if verified:
+            website.verified = True
+            website.verification_method = method
+            website.verified_at = datetime.utcnow()
+            website.verified_target = website.url
+            website.verified_addresses = list(destination.addresses)
+    except (DestinationError, dns.exception.DNSException, ValueError, OSError):
         verified = False
-
-    if verified:
-        website.verified = True
-        website.verification_method = method
-        website.verified_at = datetime.utcnow() + timedelta(hours=5, minutes=30)
-
-        db.commit()
-        db.refresh(website)
-
-        return {
-            "success": True,
-            "message": "Website ownership verified successfully."
-        }
-
-    return {
-        "success": False,
-        "message": "Verification failed."
-    }
+    db.flush()
+    return {"success": verified, "message": "Website ownership verified successfully." if verified else "Verification failed."}

@@ -1,70 +1,61 @@
 import { useEffect, useState } from "react";
-import {
-    ShieldAlert,
-    Globe,
-    Ban,
-    ShieldCheck,
-    AlertTriangle,
-    Flame,
-    ArrowUpRight,
-} from "lucide-react";
 import SecurityScore from "../components/SecurityScore";
 import ThreatChart from "../components/ThreatChart";
 import LiveAttackFeed from "../components/LiveAttackFeed";
 import { getDashboardStats } from "../services/api";
 import { getWebsites } from "../services/websiteApi";
 import { getAllScans } from "../services/scannerApi";
+import "./Dashboard.css";
 
-/* Mini Stat Card with subtle hover frosted glow matching reference image */
-function StatCard({ title, value, subtitle, icon: Icon, alert = false, active = false }) {
+function PageClock() {
+    const [date, setDate] = useState(new Date());
+
+    useEffect(() => {
+        // Calculate milliseconds until next minute
+        const now = new Date();
+        const msUntilNextMinute = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+
+        let timeout;
+        let interval;
+
+        timeout = setTimeout(() => {
+            setDate(new Date());
+            interval = setInterval(() => {
+                setDate(new Date());
+            }, 60000);
+        }, msUntilNextMinute);
+
+        return () => {
+            clearTimeout(timeout);
+            clearInterval(interval);
+        };
+    }, []);
+
+    const dateFormatter = new Intl.DateTimeFormat(navigator.language, {
+        weekday: 'long',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+
+    const timeFormatter = new Intl.DateTimeFormat(navigator.language, {
+        hour: 'numeric',
+        minute: '2-digit'
+    });
+
     return (
-        <div
-            className={`frosted-card p-5 flex flex-col justify-between select-none relative overflow-hidden group transition-all duration-200 ${
-                active ? "frosted-card-active" : ""
-            }`}
-        >
-            <div className="flex items-start justify-between">
-                <span className="text-xs font-mono font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
-                    {title}
-                </span>
-                <div className="w-8 h-8 rounded-lg bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] flex items-center justify-center text-[var(--color-text-secondary)] group-hover:text-white group-hover:border-[rgba(255,255,255,0.2)] transition-colors">
-                    <Icon size={16} />
-                </div>
-            </div>
-
-            <div className="my-3">
-                <div className="text-3xl font-bold tracking-tight text-white font-mono">
-                    {value}
-                </div>
-                {subtitle && (
-                    <p className="text-xs text-[var(--color-text-muted)] font-mono mt-1">
-                        {subtitle}
-                    </p>
-                )}
-            </div>
-
-            {/* Micro sparkline indicator bar */}
-            <div className="w-full bg-[rgba(255,255,255,0.06)] h-1.5 rounded-full overflow-hidden">
-                <div
-                    className={`h-full rounded-full ${
-                        alert ? "bg-[var(--color-critical)]" : "bg-white"
-                    }`}
-                    style={{ width: "70%" }}
-                />
-            </div>
+        <div className="page-clock">
+            <span className="date">{dateFormatter.format(date)}</span>
+            <span className="time">{timeFormatter.format(date)}</span>
         </div>
     );
 }
 
 function Dashboard() {
-    const [stats, setStats] = useState({
-        total_logs: 0,
-        total_alerts: 0,
-        critical_alerts: 0,
-        high_alerts: 0,
-    });
-    const [websiteCount, setWebsiteCount] = useState(0);
-    const [scanCount, setScanCount] = useState(0);
+    const [stats, setStats] = useState(null);
+    const [websiteCount, setWebsiteCount] = useState(null);
+    const [scanCount, setScanCount] = useState(null);
+    const [loadError, setLoadError] = useState("");
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -78,15 +69,10 @@ function Dashboard() {
                 ]);
 
                 if (isMounted) {
-                    if (statsData.status === "fulfilled" && statsData.value) {
-                        setStats(statsData.value);
-                    }
-                    if (websites.status === "fulfilled" && Array.isArray(websites.value)) {
-                        setWebsiteCount(websites.value.length);
-                    }
-                    if (scans.status === "fulfilled" && Array.isArray(scans.value)) {
-                        setScanCount(scans.value.length);
-                    }
+                    setStats(statsData.status === "fulfilled" ? statsData.value : null);
+                    setWebsiteCount(websites.status === "fulfilled" && Array.isArray(websites.value) ? websites.value.length : null);
+                    setScanCount(scans.status === "fulfilled" && Array.isArray(scans.value) ? scans.value.filter((scan) => String(scan.status).toUpperCase() === "COMPLETED").length : null);
+                    setLoadError([statsData, websites, scans].some((result) => result.status === "rejected") ? "Some dashboard data is unavailable. Counts shown as — are unknown." : "");
                 }
             } catch (err) {
                 console.error("Dashboard data load error", err);
@@ -103,68 +89,68 @@ function Dashboard() {
         };
     }, []);
 
-    const activeAlerts = (stats.critical_alerts || 0) + (stats.high_alerts || 0);
+    const formatMetric = (val) => {
+        if (loading) return "--";
+        if (val === null || val === undefined) return "—";
+        return val;
+    };
 
     return (
-        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
-            {/* Top Title */}
-            <div>
-                <h1 className="text-2xl font-bold tracking-tight text-white">Dashboard</h1>
-                <p className="text-sm text-[var(--color-text-muted)] mt-1">
-                    Real-time Security Operations & Autonomous Threat Defense
-                </p>
-            </div>
+        <div className="dashboard-viewport">
+            <div className="dashboard-page">
+                {/* Band 1: Command/Header */}
+                <header className="dashboard-header">
+                    <div className="header-left">
+                        <h1>Dashboard</h1>
+                        <p className="subtitle">Recorded activity from the configured organization.</p>
+                    </div>
+                    <div className="header-right">
+                        <PageClock />
+                    </div>
+                </header>
 
-            {/* Row 1: Posture Gauge + 4 Metric Stat Cards matching reference image */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-stretch">
-                {/* 1. Security Posture Dial */}
-                <div className="sm:col-span-2 lg:col-span-1">
-                    <SecurityScore stats={stats} />
-                </div>
+                {loadError && (
+                    <div className="aggregate-error" role="alert">
+                        {loadError}
+                    </div>
+                )}
 
-                {/* 2. Active Alerts Card (Hover glow active state) */}
-                <StatCard
-                    title="Active Alerts"
-                    value={loading ? "--" : String(activeAlerts).padStart(2, "0")}
-                    subtitle={`${stats.critical_alerts || 0} Critical · ${stats.high_alerts || 0} High`}
-                    icon={AlertTriangle}
-                    alert={activeAlerts > 0}
-                    active={activeAlerts > 0}
-                />
+                {/* Band 2: Posture and Metrics - One Single Continuous Glass Surface */}
+                <section className="posture-band sentinel-glass">
+                    <div className="posture-score-cell">
+                        <SecurityScore />
+                    </div>
+                    <div className="metric-cell">
+                        <span className="metric-label">Total Websites</span>
+                        <span className="metric-value">{formatMetric(websiteCount)}</span>
+                        <span className="metric-description">Registered Domains</span>
+                    </div>
+                    <div className="metric-cell">
+                        <span className="metric-label">Total Alerts</span>
+                        <span className="metric-value">{formatMetric(stats?.total_alerts)}</span>
+                        <span className="metric-description">Recorded Detections</span>
+                    </div>
+                    <div className="metric-cell">
+                        <span className="metric-label">Completed Scans</span>
+                        <span className="metric-value">{formatMetric(scanCount)}</span>
+                        <span className="metric-description">Completed status records</span>
+                    </div>
+                    <div className="metric-cell">
+                        <span className="metric-label">Critical Alerts</span>
+                        <span className="metric-value critical">{formatMetric(stats?.critical_alerts)}</span>
+                        <span className="metric-description">Recorded Critical Detections</span>
+                    </div>
+                </section>
 
-                {/* 3. Assets Monitored */}
-                <StatCard
-                    title="Assets Monitored"
-                    value={loading ? "--" : String(websiteCount || 1).padStart(2, "0")}
-                    subtitle="Protected Domains"
-                    icon={Globe}
-                />
-
-                {/* 4. Threats Blocked 24h */}
-                <StatCard
-                    title="Threats Blocked 24h"
-                    value={loading ? "--" : String(stats.total_alerts || 0)}
-                    subtitle="Auto Intercepted"
-                    icon={Ban}
-                />
-
-                {/* 5. Vulnerabilities / Scans */}
-                <StatCard
-                    title="Vulnerabilities"
-                    value={loading ? "--" : String(stats.critical_alerts || 0)}
-                    subtitle={`${scanCount} Completed Scans`}
-                    icon={ShieldCheck}
-                />
-            </div>
-
-            {/* Row 2: Telemetry Wave Area Chart */}
-            <div className="w-full">
-                <ThreatChart />
-            </div>
-
-            {/* Row 3: Live Threat Activity Table */}
-            <div className="w-full">
-                <LiveAttackFeed />
+                {/* Band 3: Monitoring */}
+                <section className="monitoring-band">
+                    <div className="monitoring-section sentinel-glass threat-chart-container">
+                        <ThreatChart />
+                    </div>
+                    <div className="monitoring-section sentinel-glass live-feed-container">
+                        <LiveAttackFeed />
+                    </div>
+                </section>
             </div>
         </div>
     );

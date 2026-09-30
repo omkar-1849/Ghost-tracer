@@ -1,18 +1,16 @@
-import { authFetch } from "./authClient";
-
-const BASE_URL = "http://127.0.0.1:8000";
+import { authFetch, BASE_URL } from "./authClient";
 
 export async function getResponseActions(incidentId) {
-    const url = incidentId 
+    const url = incidentId
         ? `${BASE_URL}/response-actions/incident/${incidentId}`
         : `${BASE_URL}/response-actions/`;
-    const response = await fetch(url);
+    const response = await authFetch(url);
     if (!response.ok) throw new Error("Failed to fetch response actions");
     return response.json();
 }
 
 export async function createResponseAction(incidentId, actionData) {
-    const response = await fetch(`${BASE_URL}/response-actions/?incident_id=${incidentId}`, {
+    const response = await authFetch(`${BASE_URL}/response-actions/?incident_id=${incidentId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(actionData),
@@ -22,7 +20,7 @@ export async function createResponseAction(incidentId, actionData) {
 }
 
 export async function executeResponseAction(actionId) {
-    const response = await fetch(`${BASE_URL}/response-actions/${actionId}/execute`, {
+    const response = await authFetch(`${BASE_URL}/response-actions/${actionId}/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
     });

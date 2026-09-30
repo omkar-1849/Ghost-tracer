@@ -1,6 +1,6 @@
-import { authFetch } from "./authClient";
+import { authFetch, BASE_URL } from "./authClient";
 
-const API_URL = "http://127.0.0.1:8000/settings";
+const API_URL = `${BASE_URL}/settings`;
 
 function mapToFrontend(backend) {
     if (!backend) return null;
@@ -9,8 +9,6 @@ function mapToFrontend(backend) {
         platformName: backend.platform_name,
         timezone: backend.timezone,
         region: backend.region,
-        theme: "dark", // Mock, no backend
-        profile: "prod", // Mock, no backend
         defaultScanner: backend.default_scanner,
         concurrentScans: backend.concurrent_scans,
         scanTimeout: backend.scan_timeout,
@@ -22,7 +20,8 @@ function mapToFrontend(backend) {
         aiEnabled: backend.ai_enabled,
         aiProvider: backend.ai_provider,
         aiModel: backend.ai_model,
-        aiKey: backend.api_key,
+        aiKey: "",
+        aiKeyConfigured: backend.api_key_configured === true,
         aiTemp: backend.temperature,
         aiContext: backend.context_length,
         aiSummaries: backend.auto_summary,
@@ -52,7 +51,7 @@ function mapToBackend(frontend) {
         ai_enabled: frontend.aiEnabled,
         ai_provider: frontend.aiProvider,
         ai_model: frontend.aiModel,
-        api_key: frontend.aiKey,
+        ...(frontend.aiKey?.trim() ? { api_key: frontend.aiKey.trim() } : {}),
         temperature: parseFloat(frontend.aiTemp),
         context_length: parseInt(frontend.aiContext, 10),
         auto_summary: frontend.aiSummaries,
@@ -65,7 +64,7 @@ function mapToBackend(frontend) {
 }
 
 export async function getSettings() {
-    const res = await fetch(API_URL);
+    const res = await authFetch(API_URL);
     if (!res.ok) throw new Error("Failed to fetch settings");
     const data = await res.json();
     return mapToFrontend(data);
@@ -92,14 +91,14 @@ export async function updateSettings(frontendSettings) {
 }
 
 export async function resetSettings() {
-    const res = await fetch(`${API_URL}/reset`, { method: "POST" });
+    const res = await authFetch(`${API_URL}/reset`, { method: "POST" });
     if (!res.ok) throw new Error("Failed to reset settings");
     const data = await res.json();
     return mapToFrontend(data);
 }
 
 export async function exportSettings() {
-    const res = await fetch(`${API_URL}/export`);
+    const res = await authFetch(`${API_URL}/export`);
     if (!res.ok) throw new Error("Failed to export settings");
     const data = await res.json();
     
@@ -120,7 +119,7 @@ export async function importSettings(file) {
         reader.onload = async (e) => {
             try {
                 const configData = JSON.parse(e.target.result);
-                const res = await fetch(`${API_URL}/import`, {
+                const res = await authFetch(`${API_URL}/import`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(configData),

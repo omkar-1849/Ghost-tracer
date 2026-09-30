@@ -3,151 +3,119 @@ import os
 import time
 import urllib.request
 import urllib.parse
+from urllib.parse import urlsplit
 from app.database.database import SessionLocal
 from app.models.scan import Scan
 from app.services.audit_log_service import create_audit_log, resolve_audit_organization_id
 from app.services.scanners.base_scanner import BaseScanner
+from app.services.scanners.scanner_mixin import ScannerJobMixin
+from app.utils.destination import validate_destination
 from app.utils.scanner_utils import (
     clean_output, calculate_risk_score, ist_now,
 )
 
-class ZapScanner(BaseScanner):
+class ZapScanner(BaseScanner, ScannerJobMixin):
     name = "ZAP"
 
-    def start_scan(self, scan_id: int) -> None:
-        db = SessionLocal()
+    def start_scan(self, scan_id: int, worker_id=None) -> None:
+        """Legacy ZAP flow preserved behind explicit operator isolation config.
+
+        Residual limitation: ZAP performs its own network activity that this
+        application cannot pin or sandbox. It must run on an isolated, dedicated
+        daemon instance (SENTINEL_ZAP_API_URL) and never against shared state;
+        alerts are fetched scoped to this scan's target only. No global
+        purge/shutdown actions are ever called.
+        """
+        db, scan = self.begin_job(scan_id, worker_id)
+        if db is None:
+            return
+        spider_id = ascan_id = None
+        api_request = None
         try:
-            scan = db.query(Scan).filter(Scan.id == scan_id).first()
-            if not scan or scan.status == "Cancelled":
+            validate_destination(scan.target)
+            if os.getenv("SENTINEL_SCANNER_EGRESS_ISOLATED") != "1":
+                self.fail_job(db, scan,
+                    "ZAP requires operator-configured egress isolation; set SENTINEL_SCANNER_EGRESS_ISOLATED=1 and run ZAP on an isolated daemon.")
                 return
-            scan.status = "Running"
-            db.commit()
+            zap_url = os.getenv("SENTINEL_ZAP_API_URL", "")
+            zap_key = os.getenv("SENTINEL_ZAP_API_KEY", "")
+            if not zap_url:
+                self.fail_job(db, scan, "Set SENTINEL_ZAP_API_URL to the isolated ZAP daemon endpoint.")
+                return
+            parsed_url = urlsplit(zap_url)
+            if parsed_url.scheme not in ("http", "https") or (parsed_url.hostname or "") not in ("127.0.0.1", "localhost", "::1"):
+                self.fail_job(db, scan, "The ZAP daemon endpoint must be a local isolated instance.")
+                return
+            self.set_command(db, scan, "ZAP isolated instance")
+            if self.is_cancelled(db, scan):
+                return
 
-            zap_url = os.environ.get("ZAP_API_URL", "http://localhost:8080")
-            zap_key = os.environ.get("ZAP_API_KEY", "")
-            target = scan.target
-
-            scan.command = f"ZAP API Request to {zap_url}"
-            db.commit()
+            class NoRedirect(urllib.request.HTTPRedirectHandler):
+                def redirect_request(self, *args, **kwargs):
+                    raise ValueError('ZAP daemon redirects are denied.')
+            opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
             def api_request(path, params=None):
-                if params is None:
-                    params = {}
+                params = dict(params or {})
                 if zap_key:
                     params["apikey"] = zap_key
-                query = urllib.parse.urlencode(params)
-                url = f"{zap_url.rstrip('/')}{path}?{query}"
-                req = urllib.request.Request(url)
-                with urllib.request.urlopen(req, timeout=15) as response:
-                    return json.loads(response.read().decode('utf-8'))
+                url = f"{zap_url.rstrip('/')}{path}?{urllib.parse.urlencode(params)}"
+                with opener.open(urllib.request.Request(url), timeout=10) as response:
+                    body = response.read(50001)
+                    if len(body) > 50000:
+                        raise ValueError('ZAP response exceeded the capture limit.')
+                    return json.loads(body.decode("utf-8"))
 
             try:
                 api_request("/JSON/core/view/version/")
-            except Exception as e:
-                scan.status = "Failed"
-                scan.error = f"OWASP ZAP daemon is not reachable at {zap_url}. Please start ZAP in daemon mode."
-                scan.completed_at = ist_now()
-                db.commit()
-
-                org_id = resolve_audit_organization_id(db)
-                create_audit_log(
-                    db=db,
-                    organization_id=org_id if org_id is not None else 1,
-                    user_id=None,
-                    action="SCAN_FAILED",
-                    resource_type="SCAN",
-                    resource_id=str(scan.id),
-                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                )
+            except Exception:
+                self.fail_job(db, scan, "The isolated ZAP daemon is not reachable.")
                 return
 
             try:
-                # Start spider
-                spider_resp = api_request("/JSON/spider/action/scan/", {"url": target})
-                spider_id = spider_resp.get("scan")
-                
-                # Poll spider
+                spider_id = api_request("/JSON/spider/action/scan/", {"url": scan.target}).get("scan")
                 for _ in range(60):
-                    status_resp = api_request("/JSON/spider/view/status/", {"scanId": spider_id})
-                    if int(status_resp.get("status", 0)) >= 100:
+                    if self.is_cancelled(db, scan):
+                        return
+                    if int(api_request("/JSON/spider/view/status/", {"scanId": spider_id}).get("status", 0)) >= 100:
                         break
                     time.sleep(2)
-
-                # Start active scan
-                ascan_resp = api_request("/JSON/ascan/action/scan/", {"url": target})
-                ascan_id = ascan_resp.get("scan")
-
-                # Poll active scan
+                else:
+                    raise ValueError('ZAP spider did not reach a terminal state.')
+                ascan_id = api_request("/JSON/ascan/action/scan/", {"url": scan.target}).get("scan")
                 for _ in range(120):
-                    status_resp = api_request("/JSON/ascan/view/status/", {"scanId": ascan_id})
-                    if int(status_resp.get("status", 0)) >= 100:
+                    if self.is_cancelled(db, scan):
+                        return
+                    if int(api_request("/JSON/ascan/view/status/", {"scanId": ascan_id}).get("status", 0)) >= 100:
                         break
                     time.sleep(5)
-
-                # Get alerts
-                alerts_resp = api_request("/JSON/core/view/alerts/", {"baseurl": target})
-                raw_output = json.dumps(alerts_resp)
-
-            except Exception as e:
-                scan.status = "Failed"
-                scan.error = f"Error during ZAP API interaction: {str(e)}"
-                scan.completed_at = ist_now()
-                db.commit()
-
-                org_id = resolve_audit_organization_id(db)
-                create_audit_log(
-                    db=db,
-                    organization_id=org_id if org_id is not None else 1,
-                    user_id=None,
-                    action="SCAN_FAILED",
-                    resource_type="SCAN",
-                    resource_id=str(scan.id),
-                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                )
+                else:
+                    raise ValueError('ZAP scan did not reach a terminal state.')
+                raw_output = json.dumps(api_request("/JSON/core/view/alerts/", {"baseurl": scan.target}))
+            except Exception:
+                self.fail_job(db, scan, "The isolated ZAP instance reported an error during the scan.")
+                return
+            if self.is_cancelled(db, scan):
                 return
 
             parsed = self.parse_output(raw_output)
-            report = self.generate_report(parsed)
-            findings_list = parsed.get("findings", [])
-
-            scan.status = "Completed"
-            scan.findings = len(findings_list)
-            scan.risk_score = calculate_risk_score(findings_list)
-            scan.raw_output = clean_output(raw_output)
-            scan.parsed_output = report
-            scan.completed_at = ist_now()
-            db.commit()
-
-            org_id = resolve_audit_organization_id(db)
-            create_audit_log(
-                db=db,
-                organization_id=org_id if org_id is not None else 1,
-                user_id=None,
-                action="SCAN_COMPLETED",
-                resource_type="SCAN",
-                resource_id=str(scan.id),
-                description=f"Scan ({scan.engine}) on {scan.target} completed with {scan.findings} findings.",
-            )
-        except Exception as e:
-            try:
-                scan.status = "Failed"
-                scan.error = str(e)[:4000]
-                scan.completed_at = ist_now()
-                db.commit()
-
-                org_id = resolve_audit_organization_id(db)
-                create_audit_log(
-                    db=db,
-                    organization_id=org_id if org_id is not None else 1,
-                    user_id=None,
-                    action="SCAN_FAILED",
-                    resource_type="SCAN",
-                    resource_id=str(scan.id),
-                    description=f"Scan ({scan.engine}) on {scan.target} failed: {scan.error[:200] if scan.error else 'Unknown error'}.",
-                )
-            except Exception:
-                pass
+            if parsed.get("parse_error"):
+                self.fail_job(db, scan, "ZAP output could not be parsed.", raw_output=raw_output)
+                return
+            self.complete_job(db, scan, findings=len(parsed["findings"]),
+                risk_score=calculate_risk_score(parsed["findings"]),
+                raw_output=raw_output, parsed_output=self.generate_report(parsed))
+        except Exception:
+            self.fail_job(db, scan, "ZAP scan failed securely.")
         finally:
+            # Only this job's IDs; never stop all scans or purge shared state.
+            if api_request is not None:
+                for component, job_id in (("spider", spider_id), ("ascan", ascan_id)):
+                    if job_id is not None and str(job_id).isdigit():
+                        try:
+                            api_request(f"/JSON/{component}/action/stop/", {"scanId": job_id})
+                        except Exception:
+                            pass
             db.close()
 
     def parse_output(self, raw_output: str) -> dict:
@@ -171,7 +139,7 @@ class ZapScanner(BaseScanner):
                     "confidence": alert.get("confidence", "")
                 })
         except json.JSONDecodeError:
-            pass
+            parsed_data["parse_error"] = "ZAP JSON output could not be parsed (possibly truncated)."
         return parsed_data
 
     def generate_report(self, parsed_data: dict) -> dict:

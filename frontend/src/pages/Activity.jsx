@@ -3,14 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import {
     Activity as ActivityIcon,
     Search,
-    Filter,
-    ShieldAlert,
     ExternalLink,
     X,
     Clock,
-    Flame,
     Terminal,
-    Globe,
 } from "lucide-react";
 import { getRecentLogs } from "../services/api";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Lock, Mail, ShieldAlert, Cpu, Radar, CheckCircle2 } from "lucide-react";
-import { login } from "../services/authClient";
+import { useNavigate, useSearchParams, useLocation, Link } from "react-router-dom";
+import { Lock, Mail, CheckCircle2 } from "lucide-react";
+import { login, publicAuthRequest, clearToken } from "../services/authClient";
 
 function BrandMark({ size = 32 }) {
     return (
@@ -22,8 +22,16 @@ function BrandMark({ size = 32 }) {
 export default function Login() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const redirect = searchParams.get("redirect") || "/";
+    const requested = searchParams.get("redirect") || "/";
+    const redirect = requested.startsWith("/") && !requested.startsWith("//") && !requested.includes("\\") ? requested : "/";
+    const { pathname } = useLocation();
+    const isRegister = pathname === "/register";
+    const forgot = pathname === "/forgot-password";
+    const reset = pathname === "/reset-password";
+    const [message, setMessage] = useState("");
+    const [resetToken] = useState(() => searchParams.get("token") || new URLSearchParams(window.location.hash.slice(1)).get("token") || "");
 
+    const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
@@ -35,8 +43,23 @@ export default function Login() {
         setIsLoading(true);
 
         try {
-            await login(email, password);
-            navigate(redirect, { replace: true });
+            if (isRegister) {
+                await publicAuthRequest("register", { email, password, full_name: fullName.trim() || undefined });
+                await login(email, password);
+                navigate(redirect, { replace: true });
+            } else if (forgot) {
+                await publicAuthRequest("forgot-password", { email });
+                setMessage("If an account exists, recovery instructions will be sent to its email address.");
+            } else if (reset) {
+                await publicAuthRequest("reset-password", { token: resetToken, new_password: password });
+                clearToken();
+                setPassword("");
+                setMessage("Password reset successful. Sign in with your new password.");
+                window.history.replaceState(null, "", "/reset-password");
+            } else {
+                await login(email, password);
+                navigate(redirect, { replace: true });
+            }
         } catch (err) {
             setError(err.message || "Authentication failed. Check credentials.");
         } finally {
@@ -63,14 +86,32 @@ export default function Login() {
                     </p>
                 </div>
 
+                {message && <p role="status" className="text-sm">{message}</p>}
                 {error && (
                     <div className="p-3 rounded-lg bg-[rgba(230,57,70,0.12)] border border-[rgba(230,57,70,0.3)] text-[var(--color-critical)] text-xs font-mono">
                         {error}
                     </div>
                 )}
 
+                <h2>{isRegister ? "Create account" : forgot ? "Recover account" : reset ? "Reset password" : "Sign in"}</h2>
+                {reset && !resetToken && <p role="alert">Open the reset link from your email to continue.</p>}
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
+                    {isRegister && <div>
+                        <label className="block text-[11px] font-mono text-[var(--color-text-muted)] uppercase mb-1">
+                            Full Name
+                        </label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                placeholder="Security Analyst"
+                                className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3 py-2 text-xs text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
+                            />
+                        </div>
+                    </div>}
+
+                    {!reset && <div>
                         <label className="block text-[11px] font-mono text-[var(--color-text-muted)] uppercase mb-1">
                             Email Address
                         </label>
@@ -85,9 +126,9 @@ export default function Login() {
                                 className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
                             />
                         </div>
-                    </div>
+                    </div>}
 
-                    <div>
+                    {!forgot && <div>
                         <label className="block text-[11px] font-mono text-[var(--color-text-muted)] uppercase mb-1">
                             Password
                         </label>
@@ -95,6 +136,8 @@ export default function Login() {
                             <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
                             <input
                                 type="password"
+                                minLength={isRegister || reset ? 8 : undefined}
+                                autoComplete={isRegister || reset ? "new-password" : "current-password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••••••"
@@ -102,21 +145,33 @@ export default function Login() {
                                 className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
                             />
                         </div>
-                    </div>
+                    </div>}
 
                     <button
                         type="submit"
-                        disabled={isLoading}
+                        disabled={isLoading || (reset && !resetToken)}
                         className="w-full py-2.5 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all duration-150 shadow-sm disabled:opacity-50 mt-2"
                     >
-                        {isLoading ? "Authenticating…" : "Authenticate Session"}
+                        {isLoading ? "Please wait…" : isRegister ? "Create Account" : forgot ? "Send recovery email" : reset ? "Reset password" : "Authenticate Session"}
                     </button>
                 </form>
 
-                {/* Footer security badge */}
+                <div className="flex justify-between items-center text-xs">
+                    {isRegister ? (
+                        <Link className="underline text-[var(--color-text-muted)] hover:text-white" to="/login">Already have an account? Sign in</Link>
+                    ) : forgot || reset ? (
+                        <Link className="underline text-[var(--color-text-muted)] hover:text-white" to="/login">Back to sign in</Link>
+                    ) : (
+                        <>
+                            <Link className="underline text-[var(--color-text-muted)] hover:text-white" to="/register">Create account</Link>
+                            <Link className="underline text-[var(--color-text-muted)] hover:text-white" to="/forgot-password">Forgot password?</Link>
+                        </>
+                    )}
+                </div>
+                {/* Transport security depends on deployment */}
                 <div className="pt-4 border-t border-[var(--color-border-subtle)] text-center text-[11px] font-mono text-[var(--color-text-muted)] flex items-center justify-center gap-1.5">
                     <CheckCircle2 size={13} className="text-[var(--color-success)]" />
-                    <span>256-bit TLS Encrypted Session</span>
+                    <span>Use a trusted HTTPS deployment for remote access</span>
                 </div>
             </div>
         </div>

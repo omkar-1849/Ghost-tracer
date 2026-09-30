@@ -7,7 +7,7 @@ import ScanHistoryTable from "./ScanHistoryTable";
 import { useNavigate } from "react-router-dom";
 
 const stateThemes = {
-    ready: { label: "Ready", classes: "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]" },
+    ready: { label: "Registered", classes: "bg-[rgba(85,176,123,0.10)] text-[var(--color-success)] border-[rgba(85,176,123,0.25)]" },
     running: { label: "Running", classes: "bg-[var(--color-accent-subtle)] text-[var(--color-accent)] border-[rgba(69,165,131,0.25)]" },
     offline: { label: "Offline", classes: "bg-[var(--color-surface-3)] text-[var(--color-text-secondary)] border-[var(--color-border-default)]" },
 };
@@ -103,7 +103,7 @@ export default function OverviewTab({
         { label: "Running", value: stats.running, icon: Activity, tone: "var(--color-accent)" },
         { label: "Completed", value: stats.completed, icon: CheckCircle2, tone: "var(--color-success)" },
         { label: "Failed", value: stats.failed, icon: XCircle, tone: "var(--color-critical)" },
-        { label: "Critical Findings", value: criticalCount, icon: ShieldAlert, tone: "var(--color-critical)" },
+        { label: "Critical / High Findings", value: criticalCount, icon: ShieldAlert, tone: "var(--color-critical)" },
     ];
 
     return (
@@ -136,7 +136,7 @@ export default function OverviewTab({
             <div>
                 <h2 className="text-sm font-semibold text-[var(--color-text-primary)] mb-3 flex items-center gap-2">
                     <Radar className="text-[var(--color-text-muted)]" size={16} />
-                    Installed Security Engines
+                    Registered Security Engines
                 </h2>
 
                 {enginesLoading ? (
@@ -209,7 +209,7 @@ export default function OverviewTab({
                                     <div className="flex items-center justify-between gap-3">
                                         <span className="flex items-center gap-2.5 min-w-0 text-[var(--color-text-muted)]">
                                             <span className="mono-value text-[10px] text-[var(--color-text-disabled)] shrink-0">
-                                                v{engineInfo.version || "1.0"}
+                                                {engineInfo.version ? `v${engineInfo.version}` : "Version not reported"}
                                             </span>
                                             <span className="w-px h-3 bg-[var(--color-surface-3)] shrink-0" aria-hidden="true" />
                                             <span className="flex items-center gap-1 text-[11px] tabular-nums shrink-0">

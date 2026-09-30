@@ -1,3 +1,5 @@
+from app.utils.authorization import TenantContext, get_tenant_context, require_roles, scoped_get
+from app.models.incident import Incident
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -17,8 +19,10 @@ router = APIRouter(
 )
 def get_evidence(
     incident_id: int,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
+    scoped_get(db, Incident, incident_id, ctx)
     return incident_evidence_service.get_incident_evidence(
         db,
         incident_id

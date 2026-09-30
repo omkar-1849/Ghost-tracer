@@ -3,10 +3,10 @@ from datetime import datetime
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class ResponseAction(Base):
+class ResponseAction(TenantOwned, Base):
     __tablename__ = "response_actions"
 
     id = Column(Integer, primary_key=True, index=True)

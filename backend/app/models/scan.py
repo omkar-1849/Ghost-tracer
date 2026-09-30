@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from sqlalchemy import (
     Boolean,
@@ -12,10 +12,10 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class Scan(Base):
+class Scan(TenantOwned, Base):
     __tablename__ = "scans"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -32,7 +32,7 @@ class Scan(Base):
 
     started_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
+        default=datetime.utcnow,
     )
 
     completed_at = Column(DateTime, nullable=True)
@@ -51,15 +51,21 @@ class Scan(Base):
 
     scheduled = Column(Boolean, default=False)
 
+    # Scan worker coordination (UTC semantics)
+    worker_id = Column(String(64), nullable=True)
+    heartbeat_at = Column(DateTime, nullable=True)
+    truncated = Column(Boolean, default=False, server_default="0", nullable=False)
+    version = Column(Integer, default=0, server_default="0", nullable=False)
+
     created_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
+        default=datetime.utcnow,
     )
 
     updated_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
-        onupdate=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
     )
 
     website = relationship("Website")

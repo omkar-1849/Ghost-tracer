@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class IncidentTimeline(Base):
+class IncidentTimeline(TenantOwned, Base):
     __tablename__ = "incident_timeline"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -17,5 +17,5 @@ class IncidentTimeline(Base):
 
     created_at = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30)
+        default=datetime.utcnow
     )

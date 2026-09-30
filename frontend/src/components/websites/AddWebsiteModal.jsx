@@ -257,7 +257,7 @@ function AddWebsiteForm({ onClose, onSave, initialData, saving }) {
                         type="submit"
                         form="website-form"
                         disabled={saving}
-                        className="px-5 py-2.5 rounded-md text-sm font-bold text-[var(--color-text-primary)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-colors duration-150 border border-[var(--color-success)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-md text-sm font-bold text-[var(--color-accent-foreground)] bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] transition-colors duration-150 border border-transparent active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 shadow-sm"
                     >
                         {saving && <Loader2 size={15} className="animate-spin" />}
                         {isEdit ? (saving ? "Saving…" : "Save Changes") : (saving ? "Creating…" : "Create Website")}

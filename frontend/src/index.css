@@ -32,8 +32,14 @@
 
   /* Primary Brand & Selection Accents */
   --color-accent: #ffffff;
+  --color-accent-foreground: #08080a;  /* Stark obsidian/charcoal for accent button text */
+  --color-accent-hover: #e5e7eb;       /* Smooth off-white hover */
+  --color-accent-active: #d1d5db;      /* Active state */
   --color-accent-subtle: rgba(255, 255, 255, 0.08);
   --color-accent-glow: rgba(255, 255, 255, 0.15);
+  --color-signal: rgba(255, 255, 255, 0.8);
+  --color-signal-strong: #ffffff;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
 
   /* Semantic Severity */
   --color-critical: #e63946;           /* Tactical crimson (threats/breaches) */

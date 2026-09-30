@@ -32,7 +32,7 @@ def create_evidence(
     )
 
     db.add(evidence)
-    db.commit()
+    db.flush()
     db.refresh(evidence)
 
     return evidence

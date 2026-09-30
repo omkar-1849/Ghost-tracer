@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, HTTPException, status
@@ -6,10 +7,10 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
+from app.config.runtime import get_runtime_config
 from app.database.database import get_db
 from app.models.user import User
 
-SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET"
 ALGORITHM = "HS256"
 bearer_scheme = HTTPBearer()
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -19,6 +20,10 @@ pwd_context = CryptContext(
     deprecated="auto",
 )
 
+
+def _secret_key() -> str:
+    # Fail closed: JWT_SECRET is validated by the runtime configuration.
+    return get_runtime_config().jwt_secret
 
 
 def hash_password(password: str) -> str:
@@ -46,7 +51,7 @@ def create_access_token(
 
     return jwt.encode(
         payload,
-        SECRET_KEY,
+        _secret_key(),
         algorithm=ALGORITHM,
     )
 
@@ -55,7 +60,7 @@ def decode_access_token(token: str) -> dict | None:
     try:
         return jwt.decode(
             token,
-            SECRET_KEY,
+            _secret_key(),
             algorithms=[ALGORITHM],
         )
 
@@ -129,3 +134,14 @@ def get_current_user(
     )
 
     return user
+
+
+@contextmanager
+def transaction(db: Session):
+    """Single request-scoped commit; every mutation before this is flush-only."""
+    try:
+        yield
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

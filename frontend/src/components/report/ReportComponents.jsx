@@ -1,3 +1,4 @@
+import { severityBreakdown, scanCompleteness } from "../../services/evidence.js";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -137,7 +138,7 @@ export function AssessmentHero({ scan, report }) {
                         </span>
                         <span className="flex items-center gap-1.5 bg-[var(--color-surface-1)] px-2.5 py-1 rounded border border-[var(--color-border-default)]">
                             <Globe size={13} className="text-[var(--color-success)]" />
-                            Target Verified
+                            Verification not attested in this report
                         </span>
                     </div>
                 </div>
@@ -148,7 +149,7 @@ export function AssessmentHero({ scan, report }) {
                     </span>
                     <div className={`flex flex-col items-center gap-1.5 ${risk.color}`}>
                         {isHighRisk ? <ShieldAlert size={36} /> : <ShieldCheck size={36} />}
-                        <span className="text-3xl font-bold tabular-nums text-[var(--color-text-primary)]">{scan.risk_score ?? 0}</span>
+                        <span className="text-3xl font-bold tabular-nums text-[var(--color-text-primary)]">{scan.risk_score ?? "N/A"}</span>
                         <span className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">/ 100 · {risk.label}</span>
                     </div>
                 </div>
@@ -164,16 +165,16 @@ export function SummaryCard({ scan, report }) {
     const engineName = summary.engine || scan.scanner || "Scanner";
     const status = (scan.status || "").toUpperCase();
 
-    if (status === "FAILED") {
+    if (!scanCompleteness(scan).complete) {
         return (
             <div className="bg-[rgba(223,91,91,0.08)] border border-[rgba(223,91,91,0.25)] rounded-lg p-5 shadow-[var(--shadow-1)]">
                 <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={18} className="text-[var(--color-critical)]" />
-                    <h3 className="text-sm font-semibold text-[var(--color-critical)]">Scan Execution Failed</h3>
+                    <h3 className="text-sm font-semibold text-[var(--color-critical)]">Assessment {scanCompleteness(scan).label}</h3>
                 </div>
                 <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                     The <strong className="text-[var(--color-text-primary)]">{engineName}</strong> assessment against{" "}
-                    <strong className="text-[var(--color-text-primary)] font-mono">{scan.target}</strong> did not complete successfully.
+                    <strong className="text-[var(--color-text-primary)] font-mono">{scan.target}</strong> has incomplete coverage. Recorded findings are partial evidence, not a clean bill of health.
                 </p>
                 {scan.error && (
                     <div className="mt-3 text-xs text-[var(--color-critical)] bg-[var(--color-surface-1)] border border-[rgba(223,91,91,0.25)] rounded p-3 font-mono break-words">
@@ -197,19 +198,21 @@ export function SummaryCard({ scan, report }) {
             </h3>
             <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed space-y-2 max-w-4xl">
                 <p>
-                    A comprehensive security assessment was conducted targeting <strong className="text-[var(--color-text-primary)] font-mono">{summary.target || scan.target}</strong> using the <strong className="text-[var(--color-text-primary)]">{engineName}</strong> engine.{" "}
-                    {status === "COMPLETED" ? (
+                    An assessment was conducted targeting <strong className="text-[var(--color-text-primary)] font-mono">{summary.target || scan.target}</strong> using the <strong className="text-[var(--color-text-primary)]">{engineName}</strong> engine.{" "}
+                    {status === "COMPLETED" && !scan.truncated ? (
                         <>The scan completed in <strong className="text-[var(--color-text-primary)]">{duration || "an unknown duration"}</strong>.</>
+                    ) : status === "COMPLETED" ? (
+                        <>The scan ran to the end of its window; the output may be incomplete.</>
                     ) : (
                         <>The scan is currently {status.toLowerCase()}.</>
                     )}
                 </p>
                 <p>
-                    The calculated risk score for this target is <strong className={risk.color}>{scan.risk_score ?? 0}/100 ({risk.label})</strong> with{" "}
-                    <strong className="text-[var(--color-text-primary)] font-bold">{scan.findings ?? 0}</strong> reported findings.
+                    The calculated risk score for this target is <strong className={risk.color}>{scan.risk_score ?? "N/A"}/100 ({risk.label})</strong> with{" "}
+                    <strong className="text-[var(--color-text-primary)] font-bold">{scan.findings ?? "N/A"}</strong> reported findings.
                     {risk.label === "High"
                         ? " Immediate remediation is recommended for the identified vulnerability indicators."
-                        : " No high-severity exploits were triggered during this automated scan."}
+                        : " This automated scan did not reach the high-risk threshold."}
                 </p>
             </div>
         </div>
@@ -243,27 +246,8 @@ const SEVERITY_STYLES = {
     info: { bar: "bg-[var(--color-info)]", text: "text-[var(--color-info)]" },
 };
 
-function computeSeverityBreakdown(report) {
-    if (!report) return { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
-    if (report.summary?.severity_breakdown) return report.summary.severity_breakdown;
-    if (report.risk_breakdown) return report.risk_breakdown;
-
-    const breakdown = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
-    const list = report.findings;
-    if (Array.isArray(list)) {
-        for (const finding of list) {
-            const sev = (finding.severity || "info").toLowerCase();
-            if (sev in breakdown) breakdown[sev] += 1;
-        }
-    } else if (list && typeof list === "object") {
-        breakdown.critical = Array.isArray(list.critical) ? list.critical.length : 0;
-        breakdown.high = Array.isArray(list.warnings) ? list.warnings.length : 0;
-    }
-    return breakdown;
-}
-
 export function SeverityDistribution({ report }) {
-    const breakdown = computeSeverityBreakdown(report);
+    const breakdown = severityBreakdown(report);
     const total = SEVERITY_ORDER.reduce((acc, sev) => acc + (breakdown[sev] || 0), 0);
 
     return (
@@ -338,7 +322,7 @@ export function MetadataPanel({ scan }) {
                         </div>
                         <div>
                             <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Version</p>
-                            <p className="text-xs text-[var(--color-text-primary)] font-mono">1.0</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">Not reported</p>
                         </div>
                         <div>
                             <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Started</p>
@@ -346,7 +330,7 @@ export function MetadataPanel({ scan }) {
                         </div>
                         <div>
                             <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Completed</p>
-                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{scan.completed_at ? formatDate(scan.completed_at) : "In Progress"}</p>
+                            <p className="text-xs text-[var(--color-text-primary)] font-mono">{scan.completed_at ? formatDate(scan.completed_at) : "Not recorded"}</p>
                         </div>
                         <div>
                             <p className="text-[10px] font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-1">Status</p>

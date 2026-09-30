@@ -1,14 +1,23 @@
-from sqlalchemy import Column, Integer, String, DateTime
-# from datetime import datetime
-from zoneinfo import ZoneInfo
-from datetime import datetime, timedelta
-from app.database.base import Base
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
+from datetime import datetime
+
+from app.database.base import Base, TenantOwned
 
 
-class Log(Base):
+class Log(TenantOwned, Base):
     __tablename__ = "logs"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    # Proven parent link (security history must survive website deletion).
+    # Legacy rows created before this column existed remain NULL.
+    website_id = Column(
+        Integer,
+        ForeignKey("websites.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
     ip_address = Column(String(50))
     method = Column(String(10))
@@ -23,5 +32,7 @@ class Log(Base):
 
     timestamp = Column(
         DateTime,
-        default=lambda: datetime.utcnow() + timedelta(hours=5, minutes=30)
+        default=datetime.utcnow,
     )
+
+    website = relationship("Website", foreign_keys=[website_id])

@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "Sentinel AI Dashboard",
+  "version": "1.0.0",
+  "description": "Visual tokens for SENTINEL_DASHBOARD_FINAL_SPEC.md. Values are CSS-ready unless a unit is stated.",
+  "sourceOfTruth": "SENTINEL_DASHBOARD_FINAL_SPEC.md",
+  "designPrinciples": {
+    "material": "warm graphite translucent glass with genuine backdrop transmission",
+    "composition": "one continuous instrument with metric rails and structural dividers",
+    "accent": "restrained bronze and amber",
+    "typography": "sans-led system typography; monospace reserved for aligned data",
+    "canvas": "technical ambient background asset and composition remain open; behavior constraints are specified in the companion MD"
+  },
+  "color": {
+    "canvas": {
+      "base": "#100F0D",
+      "fallback": "#100F0D",
+      "ambientBronze": "rgba(185, 130, 72, 0.10)",
+      "ambientWarm": "rgba(211, 160, 106, 0.06)",
+      "ambientNeutral": "rgba(245, 241, 236, 0.025)"
+    },
+    "surface": {
+      "graphite": "#211F1C",
+      "graphiteDeep": "#171614",
+      "graphiteLifted": "#292621",
+      "glassFallback": "rgba(29, 27, 24, 0.94)",
+      "glassGradientTop": "rgba(52, 48, 42, 0.70)",
+      "glassGradientBottom": "rgba(24, 23, 21, 0.78)",
+      "glassInset": "rgba(245, 241, 236, 0.025)",
+      "glassHover": "rgba(211, 160, 106, 0.055)",
+      "glassActive": "rgba(211, 160, 106, 0.09)",
+      "subregion": "rgba(16, 15, 13, 0.20)",
+      "badge": "rgba(245, 241, 236, 0.055)"
+    },
+    "text": {
+      "primary": "#F5F1EC",
+      "secondary": "#D6CFC7",
+      "tertiary": "#A9A199",
+      "muted": "#8B837B",
+      "disabled": "#625D57",
+      "onAccent": "#17130F"
+    },
+    "accent": {
+      "bronze": "#D3A06A",
+      "bronzeLight": "#E3B985",
+      "bronzeDeep": "#B98248",
+      "bronzeMuted": "#9C6A37",
+      "bronzeWash": "rgba(211, 160, 106, 0.12)",
+      "bronzeHairline": "rgba(211, 160, 106, 0.28)"
+    },
+    "semantic": {
+      "healthy": "#79B892",
+      "healthyWash": "rgba(121, 184, 146, 0.12)",
+      "high": "#D3A06A",
+      "highWash": "rgba(211, 160, 106, 0.13)",
+      "critical": "#D97868",
+      "criticalWash": "rgba(217, 120, 104, 0.14)",
+      "unknown": "#A9A199",
+      "unknownWash": "rgba(169, 161, 153, 0.10)",
+      "loading": "#A9A199"
+    },
+    "line": {
+      "subtle": "rgba(245, 241, 236, 0.075)",
+      "default": "rgba(245, 241, 236, 0.12)",
+      "strong": "rgba(245, 241, 236, 0.18)",
+      "glassRim": "rgba(245, 241, 236, 0.15)",
+      "focus": "#E3B985"
+    },
+    "chart": {
+      "grid": "rgba(245, 241, 236, 0.075)",
+      "axis": "#8B837B",
+      "signal": "#E3B985",
+      "signalSecondary": "#D3A06A",
+      "areaTop": "rgba(211, 160, 106, 0.22)",
+      "areaBottom": "rgba(211, 160, 106, 0.015)",
+      "cursor": "rgba(227, 185, 133, 0.48)",
+      "point": "#F5F1EC"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "sans": "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Inter, sans-serif",
+      "mono": "'SF Mono', 'Cascadia Code', 'IBM Plex Mono', monospace"
+    },
+    "usage": {
+      "sans": ["page headings", "section headings", "metric labels", "descriptions", "controls", "table headings", "threat reasons"],
+      "mono": ["metric and telemetry values where alignment helps", "IP and host values", "event timestamps"],
+      "prohibitedMonoUsage": ["ordinary headings", "subtitles", "all table headers", "general body copy"]
+    },
+    "size": {
+      "pageTitle": "30px",
+      "scoreValue": "42px",
+      "metricValue": "30px",
+      "sectionTitle": "17px",
+      "body": "15px",
+      "bodyCompact": "14px",
+      "label": "13px",
+      "overline": "11px",
+      "dataSmall": "12px"
+    },
+    "weight": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "pageTitle": 650
+    },
+    "lineHeight": {
+      "heading": 1.18,
+      "body": 1.5,
+      "compact": 1.35
+    },
+    "letterSpacing": {
+      "heading": "-0.025em",
+      "body": "0",
+      "label": "0.005em",
+      "overline": "0.09em",
+      "data": "0"
+    },
+    "numeric": {
+      "fontVariantNumeric": "tabular-nums lining-nums",
+      "scoreFontFamily": "sans",
+      "metricFontFamily": "mono"
+    }
+  },
+  "layout": {
+    "pageMaxWidth": "1600px",
+    "pageGutter": {
+      "wide": "32px",
+      "intermediate": "24px",
+      "compact": "18px"
+    },
+    "verticalRhythm": {
+      "pageHeaderToPosture": "28px",
+      "postureToMonitoring": "24px",
+      "sectionHeaderBottom": "18px",
+      "rowGap": "24px"
+    },
+    "breakpoint": {
+      "compactMax": "699px",
+      "intermediateMin": "700px",
+      "intermediateMax": "1099px",
+      "wideMin": "1100px",
+      "monitoringPaneMin": "340px"
+    },
+    "composition": {
+      "desktopScoreMetricRatio": "1:2.8",
+      "monitoringTelemetryFeedRatio": "2:1",
+      "compactMetricColumns": 2,
+      "metricDividerWidth": "1px",
+      "minimumActionTarget": "44px"
+    }
+  },
+  "spacing": {
+    "1": "4px",
+    "2": "8px",
+    "3": "12px",
+    "4": "16px",
+    "5": "20px",
+    "6": "24px",
+    "8": "32px",
+    "10": "40px",
+    "12": "48px"
+  },
+  "surface": {
+    "mainMaterial": {
+      "background": "linear-gradient(160deg, rgba(52, 48, 42, 0.70) 0%, rgba(24, 23, 21, 0.78) 100%)",
+      "fallbackBackground": "rgba(29, 27, 24, 0.94)",
+      "backdropFilter": "blur(24px) saturate(118%)",
+      "webkitBackdropFilter": "blur(24px) saturate(118%)",
+      "border": "1px solid rgba(245, 241, 236, 0.12)",
+      "topRim": "inset 0 1px 0 rgba(245, 241, 236, 0.15)",
+      "shadow": "0 18px 48px rgba(0, 0, 0, 0.22)",
+      "radius": "20px"
+    },
+    "subregion": {
+      "background": "rgba(16, 15, 13, 0.20)",
+      "border": "1px solid rgba(245, 241, 236, 0.075)",
+      "radius": "12px"
+    },
+    "interaction": {
+      "hoverBackground": "rgba(211, 160, 106, 0.055)",
+      "hoverBorder": "rgba(211, 160, 106, 0.22)",
+      "hoverShadow": "inset 0 1px 0 rgba(227, 185, 133, 0.10)",
+      "activeBackground": "rgba(211, 160, 106, 0.09)",
+      "focusOutline": "2px solid #E3B985",
+      "focusOutlineOffset": "2px"
+    }
+  },
+  "shape": {
+    "radius": {
+      "instrument": "20px",
+      "subregion": "12px",
+      "control": "10px",
+      "badge": "999px",
+      "metric": "0px"
+    },
+    "divider": {
+      "thickness": "1px",
+      "color": "rgba(245, 241, 236, 0.12)",
+      "metricColor": "rgba(245, 241, 236, 0.075)"
+    }
+  },
+  "component": {
+    "scoreGauge": {
+      "width": "196px",
+      "height": "132px",
+      "strokeWidth": "7px",
+      "trackColor": "rgba(245, 241, 236, 0.12)",
+      "progressColor": "#D3A06A",
+      "progressHighlight": "#E3B985",
+      "valueSize": "42px",
+      "tierSize": "12px"
+    },
+    "metricRail": {
+      "valueSize": "30px",
+      "labelSize": "13px",
+      "descriptionSize": "13px",
+      "itemPaddingInline": "20px",
+      "iconSize": "18px"
+    },
+    "telemetry": {
+      "desktopHeight": "240px",
+      "compactMinHeight": "200px",
+      "strokeWidth": "2px",
+      "gridDash": "2 6",
+      "gridStrokeWidth": "1px",
+      "areaOpacityTop": 0.22,
+      "areaOpacityBottom": 0.015
+    },
+    "activityFeed": {
+      "desktopRowMinHeight": "48px",
+      "compactRowMinHeight": "72px",
+      "rowDivider": "rgba(245, 241, 236, 0.075)",
+      "severityBadgeRadius": "999px",
+      "inspectTargetMinSize": "44px"
+    },
+    "pageClock": {
+      "dateSize": "14px",
+      "timeSize": "28px",
+      "timeWeight": 600,
+      "timeFormat": "h:mm a",
+      "dateFormat": "EEEE, dd MMM yyyy",
+      "timezone": "browser-local",
+      "displayRefresh": "next local minute boundary"
+    },
+    "aggregateError": {
+      "background": "rgba(211, 160, 106, 0.08)",
+      "borderInlineStart": "2px solid #D3A06A",
+      "textColor": "#D6CFC7",
+      "radius": "8px",
+      "padding": "12px 16px"
+    }
+  },
+  "motion": {
+    "durationFast": "160ms",
+    "durationStandard": "200ms",
+    "durationSlow": "220ms",
+    "easing": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "properties": ["background-color", "border-color", "box-shadow", "color", "transform"],
+    "hoverTransform": "translateY(-1px)",
+    "reducedMotion": "disable nonessential transitions and animation",
+    "prohibited": ["looping glow", "pulsing", "parallax", "animation implying additional live data"]
+  },
+  "accessibility": {
+    "minimumBodySize": "14px",
+    "focusIndicator": "2px solid #E3B985 with 2px offset",
+    "minimumInteractiveTarget": "44px",
+    "semanticStatusRequiresText": true,
+    "loadingAnnouncements": "Do not announce each polling refresh repeatedly",
+    "ambientBackgroundContrastRequirement": "Maintain readable text contrast over every canvas region visible through glass"
+  },
+  "constraints": {
+    "forbiddenColors": ["cyan", "electric blue", "purple", "cool navy", "rainbow gradients", "neon hues"],
+    "forbiddenEffects": ["stark white hover outline", "white glow", "excessive glow", "opaque fake glass"],
+    "doNotEncode": ["API contracts", "polling intervals", "routes", "backend behavior", "new metrics"]
+  }
+}

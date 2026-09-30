@@ -6,11 +6,6 @@ import {
     RefreshCw,
     ChevronDown,
     ChevronUp,
-    Terminal,
-    User,
-    Calendar,
-    Globe,
-    Layers,
 } from "lucide-react";
 import { getAuditLogs } from "../services/auditLogApi";
 import { isAuthenticated } from "../services/authClient";
@@ -73,11 +68,11 @@ function AuditLogs() {
     };
 
     useEffect(() => {
-        if (isAuthed) {
-            fetchLogs();
-        } else {
-            setLoading(false);
-        }
+        const initial = setTimeout(() => {
+            if (isAuthed) fetchLogs();
+            else setLoading(false);
+        }, 0);
+        return () => clearTimeout(initial);
     }, [isAuthed]);
 
     const toggleRow = (id) => {
@@ -246,7 +241,7 @@ function AuditLogs() {
                                                                     </div>
                                                                     <div>
                                                                         <span className="text-[var(--color-text-muted)] block">Organization:</span>
-                                                                        <span className="text-white">Org #{item.organization_id || "1"}</span>
+                                                                        <span className="text-white">Org #{item.organization_id || "Unknown"}</span>
                                                                     </div>
                                                                 </div>
 

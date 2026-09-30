@@ -1,10 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 from datetime import datetime
 
 
 class IncidentNoteCreate(BaseModel):
-    analyst: str
-    note: str
+    model_config = ConfigDict(extra="forbid")
+    analyst: str | None = None  # ignored; actor always comes from authentication
+    note: str = Field(min_length=1, max_length=10000)
 
 
 class IncidentNoteResponse(BaseModel):

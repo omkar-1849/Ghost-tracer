@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Sentinel Smoked Bronze Glass Material System (SENTINEL_GLASS_MATERIAL_SPEC)
+   ========================================================================== */
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Inter, sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+  --canvas-base: #0D0C0A;
+  --canvas-deep: #080807;
+  --canvas-elevated: #11100E;
+  --ambient-bronze: rgba(185, 130, 72, 0.10);
+  --ambient-warm: rgba(211, 160, 106, 0.055);
+  --text-primary: #F5F1EC;
+  --text-secondary: #D6CFC7;
+  --text-tertiary: #A9A199;
+  --text-muted: #8B837B;
+  --bronze-primary: #D3A06A;
+  --bronze-light: #E3B985;
+  --bronze-deep: #B98248;
+  --semantic-critical: #E67868;
+  --semantic-healthy: #77C79A;
+  --motion-control: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Dashboard Full-Viewport Fixed Background & Atmosphere (back.jpg)
+   ========================================================================== */
+.dashboard-viewport {
+  position: relative;
+  min-height: 100%;
+  width: 100%;
+}
+
+.dashboard-viewport::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/back.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.dashboard-viewport::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(10, 9, 8, 0.40);
+  pointer-events: none;
+}
+
+/* Base Page Container */
+.dashboard-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 86px 32px 32px;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Sentinel Smoked Bronze Glass Material System - Floating Translucent Glass
+   ========================================================================== */
+.sentinel-glass {
+  position: relative;
+  background: rgba(18, 16, 14, 0.38);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
+  border: none;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 24px 56px -12px rgba(0, 0, 0, 0.55),
+    0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/* Static reflection layer: extremely subtle warm glint at the perimeter edge only - NO yellow patch */
+.sentinel-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, transparent 40%, rgba(211, 160, 106, 0.015) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  z-index: 1;
+}
+
+/* Subtle lower depth */
+.sentinel-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 45% at 50% 100%, rgba(0, 0, 0, 0.22), transparent 75%);
+  z-index: 1;
+}
+
+/* Ensure glass direct children render above reflection pseudo-elements */
+.sentinel-glass > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Fallback for environments without backdrop-filter support */
+@supports not (backdrop-filter: blur(24px)) {
+  .sentinel-glass {
+    background: rgba(18, 16, 14, 0.94);
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* ==========================================================================
+   Floating Search Island & Notification Control (Preserved Exactly)
+   ========================================================================== */
+.search-island {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(820px, calc(100vw - 420px));
+  min-width: 420px;
+  height: 58px;
+  border-radius: 29px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  z-index: 40;
+  border: none !important;
+  background: rgba(20, 18, 16, 0.40);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.09),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 16px 40px -8px rgba(0, 0, 0, 0.45),
+    0 6px 16px -2px rgba(0, 0, 0, 0.28);
+}
+
+.search-island:focus-within {
+  outline: none !important;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 0 0 1.5px rgba(211, 160, 106, 0.28),
+    0 20px 48px -8px rgba(0, 0, 0, 0.55);
+}
+
+.search-island input,
+.search-island input:focus,
+.search-island input:focus-visible {
+  outline: none !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  -webkit-appearance: none;
+}
+
+.notification-bell-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 23px;
+  border: 1px solid rgba(211, 160, 106, 0.18) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  cursor: pointer;
+  transform: none !important;
+  transition: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.notification-bell-btn:focus-visible {
+  outline: 2px solid rgba(211, 160, 106, 0.70);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Band 1: Command / Header
+   ========================================================================== */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.dashboard-header h1 {
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.dashboard-header .subtitle {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.dashboard-header .header-right {
+  text-align: right;
+}
+
+.page-clock .date {
+  font-size: 14px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+  display: block;
+}
+
+.page-clock .time {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.aggregate-error {
+  margin-top: 16px;
+  border-left: 2px solid var(--bronze-primary);
+  background-color: rgba(211, 160, 106, 0.08);
+  color: var(--text-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   Band 2: Upper Dashboard Instrument - ONE SINGLE CONTINUOUS GLASS SURFACE
+   ========================================================================== */
+.posture-band {
+  border-radius: 20px;
+  min-height: 184px;
+  margin-top: 28px;
+  margin-bottom: 24px;
+  padding: 24px 26px;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.82fr) repeat(4, minmax(150px, 1fr));
+  gap: 0;
+  align-items: center;
+}
+
+/* Informational surface - strictly NO hover animations or border shifts */
+.posture-band,
+.posture-band:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+.posture-band.sentinel-glass {
+  background: rgba(18, 16, 14, 0.38) !important;
+  border: none !important;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 24px 56px -12px rgba(0, 0, 0, 0.55),
+    0 8px 24px -4px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Left Posture Cell */
+.posture-score-cell {
+  padding-right: 24px;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Four Metrics - pure typography, NO cards, NO background, NO borders */
+.metric-cell {
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.posture-band .metric-label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.posture-band .metric-value {
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  margin-bottom: 4px;
+}
+
+.posture-band .metric-value.critical {
+  color: var(--semantic-critical);
+}
+
+.posture-band .metric-description {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+/* ==========================================================================
+   Band 3: Monitoring (Telemetry & Live Attack Feed) - Floating Glass Surfaces
+   ========================================================================== */
+.monitoring-band {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.monitoring-section {
+  border-radius: 20px;
+  padding: 24px;
+}
+
+/* Informational monitoring panels - NO hover animations */
+.monitoring-section,
+.monitoring-section:hover {
+  transform: none !important;
+  transition: none !important;
+}
+
+.monitoring-section.sentinel-glass {
+  background: rgba(18, 16, 14, 0.38) !important;
+  border: none !important;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 24px 56px -12px rgba(0, 0, 0, 0.55),
+    0 8px 24px -4px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1099px) {
+  .dashboard-page {
+    padding: 86px 24px 24px;
+  }
+
+  .search-island {
+    width: min(640px, calc(100vw - 360px));
+  }
+
+  .posture-band {
+    grid-template-columns: minmax(170px, 0.72fr) repeat(2, minmax(150px, 1fr));
+    grid-template-rows: auto auto;
+    row-gap: 20px;
+    padding: 20px 22px;
+  }
+
+  .posture-score-cell {
+    grid-row: span 2;
+    padding-right: 20px;
+  }
+
+  .metric-cell {
+    padding: 8px 16px;
+  }
+
+  .monitoring-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 699px) {
+  .dashboard-page {
+    padding: 82px 18px 18px;
+  }
+
+  .search-island {
+    left: 14px;
+    transform: none;
+    width: calc(100vw - 84px);
+    min-width: 0;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .dashboard-header .header-right {
+    text-align: left;
+  }
+
+  .posture-band {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .posture-score-cell {
+    grid-column: span 2;
+    grid-row: span 1;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding-right: 0;
+    padding-bottom: 16px;
+  }
+
+  .metric-cell {
+    padding: 4px 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sentinel-glass,
+  .posture-band,
+  .monitoring-section {
+    transition: none !important;
+  }
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--bronze-light);
+  outline-offset: 2px;
+}

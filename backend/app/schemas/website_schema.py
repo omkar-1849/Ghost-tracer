@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class WebsiteBase(BaseModel):
@@ -36,10 +36,11 @@ class WebsiteBase(BaseModel):
 
 
 class WebsiteCreate(WebsiteBase):
-    pass
+    model_config = ConfigDict(extra="forbid")
 
 
 class WebsiteUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     url: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None

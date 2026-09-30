@@ -1,23 +1,23 @@
 from sqlalchemy.orm import Session
 from app.models.log import Log
 from app.models.alert import Alert
-from sqlalchemy import func
+from sqlalchemy import func, extract
 
 
 
-def get_dashboard_stats(db: Session):
-    total_logs = db.query(Log).count()
+def get_dashboard_stats(db: Session, organization_id: int):
+    total_logs = db.query(Log).filter(Log.organization_id == organization_id).count()
 
-    total_alerts = db.query(Alert).count()
+    total_alerts = db.query(Alert).filter(Alert.organization_id == organization_id).count()
 
     critical_alerts = (
-        db.query(Alert)
+        db.query(Alert).filter(Alert.organization_id == organization_id)
         .filter(Alert.threat_level == "CRITICAL")
         .count()
     )
 
     high_alerts = (
-        db.query(Alert)
+        db.query(Alert).filter(Alert.organization_id == organization_id)
         .filter(Alert.threat_level == "HIGH")
         .count()
     )
@@ -29,7 +29,7 @@ def get_dashboard_stats(db: Session):
         "high_alerts": high_alerts,
     }
 
-def get_top_attacking_ips(db):
+def get_top_attacking_ips(db, organization_id: int):
     """
     Returns the top 10 IP addresses with the highest number of log entries.
     """
@@ -39,6 +39,7 @@ def get_top_attacking_ips(db):
             Log.ip_address,
             func.count(Log.id).label("attack_count")
         )
+        .filter(Log.organization_id == organization_id)
         .group_by(Log.ip_address)
         .order_by(func.count(Log.id).desc())
         .limit(10)
@@ -53,14 +54,16 @@ def get_top_attacking_ips(db):
         for row in results
     ]
 
-def get_threat_activity(db):
+def get_threat_activity(db, organization_id: int):
+    hour_col = extract("hour", Log.timestamp).label("hour")
     results = (
         db.query(
-            func.hour(Log.timestamp).label("hour"),
+            hour_col,
             func.count(Log.id).label("threats")
         )
-        .group_by(func.hour(Log.timestamp))
-        .order_by(func.hour(Log.timestamp))
+        .filter(Log.organization_id == organization_id)
+        .group_by(extract("hour", Log.timestamp))
+        .order_by(extract("hour", Log.timestamp))
         .all()
     )
 
@@ -72,12 +75,13 @@ def get_threat_activity(db):
         for row in results
     ]
 
-def get_threat_distribution(db):
+def get_threat_distribution(db, organization_id: int):
     results = (
         db.query(
             Log.threat_level,
             func.count(Log.id).label("count")
         )
+        .filter(Log.organization_id == organization_id)
         .group_by(Log.threat_level)
         .all()
     )
@@ -90,12 +94,13 @@ def get_threat_distribution(db):
         for row in results
     ]
 
-def get_top_targeted_urls(db):
+def get_top_targeted_urls(db, organization_id: int):
     results = (
         db.query(
             Log.url,
             func.count(Log.id).label("count")
         )
+        .filter(Log.organization_id == organization_id)
         .group_by(Log.url)
         .order_by(func.count(Log.id).desc())
         .limit(10)
@@ -110,15 +115,15 @@ def get_top_targeted_urls(db):
         for row in results
     ]
 
-def get_security_score(db):
-    total_logs = db.query(Log).count()
+def get_security_score(db, organization_id: int):
+    total_logs = db.query(Log).filter(Log.organization_id == organization_id).count()
 
     if total_logs == 0:
         return {"score": 100}
 
-    critical = db.query(Log).filter(Log.threat_level == "CRITICAL").count()
-    high = db.query(Log).filter(Log.threat_level == "HIGH").count()
-    medium = db.query(Log).filter(Log.threat_level == "MEDIUM").count()
+    critical = db.query(Log).filter(Log.organization_id == organization_id).filter(Log.threat_level == "CRITICAL").count()
+    high = db.query(Log).filter(Log.organization_id == organization_id).filter(Log.threat_level == "HIGH").count()
+    medium = db.query(Log).filter(Log.organization_id == organization_id).filter(Log.threat_level == "MEDIUM").count()
 
     penalty = (
         critical * 5 +
@@ -130,8 +135,8 @@ def get_security_score(db):
 
     return {"score": score}
 
-def get_attack_types(db):
-    logs = db.query(Log).all()
+def get_attack_types(db, organization_id: int):
+    logs = db.query(Log).filter(Log.organization_id == organization_id).all()
 
     attacks = {
         "SQL Injection": 0,
@@ -168,9 +173,9 @@ def get_attack_types(db):
         if count > 0
     ]
 
-def get_live_attack_feed(db):
+def get_live_attack_feed(db, organization_id: int):
     logs = (
-        db.query(Log)
+        db.query(Log).filter(Log.organization_id == organization_id)
         .filter(Log.threat_level.in_(["HIGH", "CRITICAL"]))
         .order_by(Log.timestamp.desc())
         .limit(10)

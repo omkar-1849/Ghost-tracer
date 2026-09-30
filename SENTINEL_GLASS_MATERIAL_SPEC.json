@@ -1,0 +1,313 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schema_version": "1.0.0",
+  "document": {
+    "name": "SENTINEL_GLASS_MATERIAL_SPEC",
+    "status": "FINAL_IMPLEMENTATION_REFERENCE",
+    "purpose": "Authoritative visual-material and component-composition specification for reproducing the supplied Sentinel AI dashboard glass reference.",
+    "reference_basis": "User-supplied reference image in the current conversation",
+    "core_principle": "The glass effect is a MATERIAL SYSTEM, not a collection of rounded cards.",
+    "preserve_existing_functionality": true,
+    "backend_changes": false,
+    "api_changes": false,
+    "polling_changes": false,
+    "route_changes": false
+  },
+  "reference_interpretation": {
+    "replicate": [
+      "dark cinematic SOC atmosphere",
+      "smoked graphite translucency",
+      "real background transmission",
+      "backdrop blur and saturation",
+      "thin warm illuminated rims",
+      "soft bronze internal reflections",
+      "subtle physical depth",
+      "floating glass search island",
+      "one continuous upper glass instrument",
+      "compact security posture",
+      "stable informational metrics"
+    ],
+    "do_not_copy": [
+      "generated decorative metric icons",
+      "generated background architecture",
+      "invented data",
+      "decorative waves unless already present in Sentinel",
+      "invented labels",
+      "generated layout changes that conflict with Sentinel architecture"
+    ]
+  },
+  "visual_language": {
+    "mood": ["premium", "technical", "cinematic", "engineered", "quiet", "warm", "high-end security operations console"],
+    "surface_strategy": "Use a small number of large continuous surfaces. Internal content must not become nested cards.",
+    "color_strategy": "Warm graphite is the physical material. Bronze/amber is reflected light and semantic emphasis, not a dominant fill.",
+    "forbidden_styles": ["generic SaaS card grid", "white glassmorphism", "neon cyberpunk", "cool blue security UI", "rainbow gradients", "excessive glow", "hard white borders"]
+  },
+  "canvas": {
+    "base": "#0D0C0A",
+    "deep": "#080807",
+    "elevated": "#11100E",
+    "ambient_bronze": "rgba(185,130,72,0.10)",
+    "ambient_warm": "rgba(211,160,106,0.055)",
+    "texture": "Optional subtle technical texture only; no nature imagery and no AI-looking decorative background.",
+    "rule": "The canvas must remain darker than glass so translucency and edge illumination remain visible."
+  },
+  "palette": {
+    "graphite": {
+      "glass_dark": "rgba(12,11,10,0.68)",
+      "glass_base": "rgba(25,22,18,0.58)",
+      "glass_mid": "rgba(35,30,25,0.48)",
+      "glass_light": "rgba(52,44,36,0.36)"
+    },
+    "text": {
+      "primary": "#F5F1EC",
+      "secondary": "#D6CFC7",
+      "tertiary": "#A9A199",
+      "muted": "#8B837B",
+      "disabled": "#625C55"
+    },
+    "bronze": {
+      "primary": "#D3A06A",
+      "light": "#E3B985",
+      "deep": "#B98248",
+      "muted": "#9C6A37"
+    },
+    "semantic": {
+      "healthy": "#77C79A",
+      "warning": "#D3A06A",
+      "critical": "#E67868",
+      "live": "#77C79A"
+    },
+    "forbidden": ["cyan", "electric blue", "purple", "rainbow", "neon", "cool navy", "bright white glass"]
+  },
+  "typography": {
+    "sans": "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Inter, sans-serif",
+    "mono": "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+    "use_sans_for": ["titles", "labels", "descriptions", "navigation", "search", "buttons", "table headings"],
+    "use_mono_for": ["IPs", "hosts", "timestamps", "fixed-width technical identifiers", "telemetry values where appropriate"],
+    "sizes": {
+      "page_title": "30px",
+      "score": "38px",
+      "metric_value": "30px",
+      "section_title": "17px",
+      "body": "15px",
+      "body_compact": "14px",
+      "label": "13px",
+      "overline": "11px",
+      "data_small": "12px",
+      "search": "14px"
+    },
+    "weights": {"page_title": 650, "score": 600, "metric_value": 600, "section_title": 600, "body": 400, "label": 500, "overline": 600}
+  },
+  "glass_material": {
+    "name": "Sentinel Smoked Bronze Glass",
+    "layer_order": [
+      "translucent_graphite_base",
+      "background_transmission",
+      "backdrop_blur",
+      "backdrop_saturation",
+      "upper_surface_highlight",
+      "bronze_ambient_light",
+      "thin_warm_outer_rim",
+      "lower_warmth",
+      "soft_atmospheric_shadow",
+      "static_reflection_overlay"
+    ],
+    "background": [
+      "linear-gradient(135deg, rgba(255,248,238,0.065) 0%, rgba(255,248,238,0.018) 42%, rgba(13,12,10,0.24) 100%)",
+      "rgba(25,22,18,0.58)"
+    ],
+    "opacity": {"target": "0.55-0.68", "maximum": 0.72},
+    "backdrop_filter": {"blur": "26px", "saturation": "132%", "minimum_blur": "20px", "maximum_blur": "34px"},
+    "border": {"width": "1px", "color": "rgba(211,160,106,0.18)", "maximum": "rgba(227,185,133,0.24)", "style": "quiet warm rim"},
+    "inner_lighting": {
+      "top": "inset 0 1px 0 rgba(255,248,238,0.10)",
+      "bottom": "inset 0 -1px 0 rgba(185,130,72,0.07)",
+      "ambient": "inset 0 0 44px rgba(185,130,72,0.045)",
+      "lower_depth": "inset 0 -20px 42px rgba(0,0,0,0.10)"
+    },
+    "outer_shadow": "0 16px 50px rgba(0,0,0,0.24)",
+    "fallback": {"background": "rgba(24,21,18,0.92)", "border": "1px solid rgba(211,160,106,0.20)", "backdrop_filter": "none"}
+  },
+  "reflection_system": {
+    "enabled": true,
+    "implementation": "Pseudo-elements or non-interactive absolute overlays.",
+    "pointer_events": "none",
+    "aria_hidden": true,
+    "layers": {
+      "upper_reflection": {
+        "gradient": "radial-gradient(ellipse 42% 70% at 50% 0%, rgba(211,160,106,0.18) 0%, rgba(211,160,106,0.055) 38%, transparent 74%)",
+        "opacity": 0.70,
+        "blend_mode": "screen",
+        "blur": "8px"
+      },
+      "edge_reflection": {
+        "gradient": "linear-gradient(105deg, transparent 0%, rgba(227,185,133,0.045) 34%, rgba(227,185,133,0.12) 50%, transparent 67%)",
+        "opacity": 0.75,
+        "blend_mode": "screen"
+      },
+      "lower_warmth": {
+        "gradient": "radial-gradient(ellipse 46% 45% at 50% 100%, rgba(185,130,72,0.10), transparent 72%)",
+        "opacity": 0.65,
+        "blend_mode": "screen"
+      }
+    },
+    "motion": {"enabled": false, "hover_sweep": false, "continuous_shimmer": false, "parallax": false}
+  },
+  "floating_search": {
+    "concept": "A floating smoked-glass island suspended above the dashboard, not a full navigation row.",
+    "position": {"mode": "fixed_or_sticky_within_existing_app_shell", "top": "14px", "left": "50%", "transform": "translateX(-50%)", "z_index": 40},
+    "dimensions": {"width": "min(820px, calc(100vw - 420px))", "min_width": "420px", "height": "58px", "radius": "29px", "padding_inline": "20px"},
+    "clearance": {"left_right": "visible breathing room", "sidebar": "never touch", "right_utility": "72px", "viewport": "never touch"},
+    "material": "Sentinel Smoked Bronze Glass",
+    "appearance": {
+      "background": "same global glass material",
+      "border": "1px solid rgba(211,160,106,0.20)",
+      "shadow": "0 12px 36px rgba(0,0,0,0.22)",
+      "inner_bronze": "inset 0 0 34px rgba(185,130,72,0.045)"
+    },
+    "contents": {
+      "logo": {"enabled": false},
+      "organization_label": {"enabled": false},
+      "account_control": {"enabled": false},
+      "search_icon": {"size": "18px", "color": "#D6CFC7"},
+      "placeholder": {"size": "14px", "color": "#A9A199", "font_family": "sans"},
+      "shortcut": {"enabled": true, "radius": "8px", "background": "rgba(255,248,238,0.045)", "border": "1px solid rgba(255,248,238,0.08)"}
+    },
+    "behavior": {"does_not_create_layout_row": true, "does_not_push_content_down": true, "preserve_existing_search": true, "preserve_shortcut": true, "preserve_routing": true},
+    "hover": {"animation": false, "scale": false, "lift": false, "glow": false, "border_change": false},
+    "focus": {"outline": "2px solid rgba(211,160,106,0.62)", "outline_offset": "2px"}
+  },
+  "notification_control": {
+    "concept": "Single standalone floating glass notification control.",
+    "organization_badge": false,
+    "account": false,
+    "position": {"top": "14px", "right": "24px", "z_index": 41},
+    "dimensions": {"size": "46px", "radius": "23px"},
+    "material": "Sentinel Smoked Bronze Glass",
+    "icon": {"size": "18px", "color": "#D6CFC7"},
+    "unread_indicator": {"enabled": true, "size": "6px", "color": "#E67868", "position": "top-right"},
+    "animation": {"normal": "none", "unread": "finite subtle pulse only when an unread notification exists", "reduced_motion": "none"}
+  },
+  "upper_instrument": {
+    "concept": "ONE large continuous glass instrument. Metrics are content inside the surface, never nested cards.",
+    "single_surface": true,
+    "nested_metric_cards": false,
+    "individual_metric_backgrounds": false,
+    "individual_metric_borders": false,
+    "individual_metric_shadows": false,
+    "strong_vertical_dividers": false,
+    "dimensions": {"min_height": "184px", "radius": "20px"},
+    "material": "Sentinel Smoked Bronze Glass",
+    "desktop_layout": {"display": "grid", "columns": "minmax(190px,0.82fr) repeat(4,minmax(150px,1fr))", "gap": "0"},
+    "intermediate_layout": {"display": "grid", "columns": "minmax(170px,0.72fr) repeat(2,minmax(150px,1fr))", "rows": "auto auto"},
+    "compact_layout": {"display": "grid", "columns": "1fr 1fr", "rows": "auto auto auto"},
+    "padding": {"desktop": "24px 26px", "compact": "18px"},
+    "interaction": {"hover": "none", "transform": "none", "shadow_change": "none", "border_change": "none", "glow_change": "none"}
+  },
+  "security_score": {
+    "concept": "Compact posture anchor integrated into the left side of the unified instrument.",
+    "separate_surface": false,
+    "gauge": {"width": "150px", "height": "104px", "stroke": "7px", "track": "rgba(255,248,238,0.10)", "progress": "#D3A06A"},
+    "value": {"size": "38px", "weight": 600, "color": "#F5F1EC"},
+    "denominator": {"size": "12px", "color": "#8B837B"},
+    "risk_label": {"size": "12px", "weight": 600, "letter_spacing": "0.04em"},
+    "live": {"dot_size": "6px", "color": "#77C79A", "animation": "none unless actual live-state behavior already exists"},
+    "footer": {"size": "12px", "color": "#8B837B", "divider": "none"}
+  },
+  "aggregate_metrics": {
+    "container": {"background": "transparent", "border": "none", "radius": "0", "shadow": "none"},
+    "metrics": [
+      {"id": "totalWebsites", "label": "Total Websites", "description": "Registered Domains", "semantic": "neutral"},
+      {"id": "totalAlerts", "label": "Total Alerts", "description": "Recorded Detections", "semantic": "neutral"},
+      {"id": "completedScans", "label": "Completed Scans", "description": "Completed status records", "semantic": "neutral"},
+      {"id": "criticalAlerts", "label": "Critical Alerts", "description": "Recorded Critical Detections", "semantic": "critical"}
+    ],
+    "label": {"size": "13px", "weight": 500, "color": "#A9A199"},
+    "value": {"size": "30px", "weight": 600, "line_height": 1, "color": "#F5F1EC"},
+    "description": {"size": "13px", "color": "#8B837B"},
+    "critical_value": {"color": "#E67868"},
+    "separation": {"preferred": "whitespace", "fallback": "extremely faint 1px warm hairline only if required", "strong_dividers": false},
+    "hover": {"enabled": false, "animation": false, "scale": false, "lift": false, "glow": false, "border": false}
+  },
+  "dashboard_header": {
+    "title": {"size": "30px", "weight": 650, "color": "#F5F1EC"},
+    "subtitle": {"preserve_existing_text": true, "size": "15px", "color": "#A9A199"},
+    "datetime": {"date_size": "14px", "time_size": "28px", "time_weight": 600, "browser_local": true, "minute_boundary_refresh": true}
+  },
+  "lower_monitoring": {
+    "scope": "Preserve current Telemetry and Live Threat Activity functionality during this material pass.",
+    "material": "Sentinel Smoked Bronze Glass",
+    "do_not_add": ["nested cards", "white hover borders", "neon glow", "cool-color glass"]
+  },
+  "shape": {
+    "large_instrument_radius": "20px",
+    "search_radius": "29px",
+    "notification_radius": "23px",
+    "control_radius": "10px",
+    "metric_radius": "0px"
+  },
+  "spacing": {
+    "wide_gutter": "32px",
+    "intermediate_gutter": "24px",
+    "compact_gutter": "18px",
+    "section_gap": "24px",
+    "header_instrument_gap": "28px",
+    "instrument_monitoring_gap": "24px",
+    "search_top": "14px"
+  },
+  "responsive": {
+    "wide": {"min_width": "1100px", "search": "centered floating island", "instrument": "single row"},
+    "intermediate": {"min_width": "700px", "max_width": "1099px", "search": "narrower floating island", "instrument": "two-row if required"},
+    "compact": {"max_width": "699px", "search_width": "calc(100% - 36px)", "search_min_width": "0", "instrument": "stacked content inside one surface", "horizontal_overflow": false}
+  },
+  "motion": {
+    "allowed": {"control_transition": "160-220ms ease-out", "focus_transition": "160ms ease-out"},
+    "forbidden": ["metric hover lift", "metric hover scale", "metric hover glow", "glass shimmer", "glass sweep", "continuous reflection animation", "parallax", "pulsing dashboard surfaces"],
+    "reduced_motion": {"disable_nonessential_motion": true}
+  },
+  "accessibility": {
+    "focus_ring": "2px solid rgba(211,160,106,0.70)",
+    "focus_offset": "2px",
+    "minimum_interactive_target": "44px",
+    "decorative_layers": {"pointer_events": "none", "aria_hidden": true},
+    "readability": "Text must remain readable against all translucent surfaces.",
+    "fallback_rule": "If backdrop-filter is unavailable, increase surface opacity while preserving the warm rim and internal lighting hierarchy."
+  },
+  "implementation_boundaries": {
+    "modify_only": ["Dashboard presentation components", "Dashboard-specific styles", "directly related search presentation if owned by the dashboard shell"],
+    "do_not_modify": ["backend", "API contracts", "polling intervals", "business calculations", "routes", "database", "authentication", "unrelated pages", "sidebar architecture"],
+    "new_dependencies": false
+  },
+  "anti_patterns": {
+    "metric_grid": "Forbidden: four separate rounded cards.",
+    "nested_glass": "Forbidden: glass cards inside the main glass instrument.",
+    "strong_dividers": "Forbidden: strong vertical separators between aggregate metrics.",
+    "hover_effects": "Forbidden: informational metrics must remain visually stable.",
+    "search_row": "Forbidden: search must not become a large layout row.",
+    "search_logo": "Forbidden: no logo inside search.",
+    "top_right_clutter": "Forbidden: no organization badge and no account control.",
+    "white_border": "Forbidden: use warm translucent rim instead.",
+    "neon": "Forbidden: no neon or cool-color glow."
+  },
+  "acceptance_checklist": [
+    "Search is a floating translucent smoked-glass island.",
+    "Search does not create a large extra navigation row.",
+    "Search has no logo.",
+    "Organization badge is absent.",
+    "Account control is absent.",
+    "Notification control is the only upper-right utility.",
+    "Upper metrics are exactly one continuous glass instrument.",
+    "No metric has an individual glass card.",
+    "No strong vertical metric borders exist.",
+    "Security score is compact and integrated.",
+    "Informational metrics have no hover animation.",
+    "Glass visibly transmits and softens the background.",
+    "Glass contains restrained bronze internal illumination and static reflections.",
+    "Glass uses a thin warm rim rather than a white outline.",
+    "Palette remains warm graphite and bronze.",
+    "No cyan, blue, purple, rainbow, or neon effects appear.",
+    "Existing Dashboard functionality is unchanged.",
+    "No horizontal overflow occurs at supported breakpoints.",
+    "Reduced-motion behavior is respected."
+  ]
+}

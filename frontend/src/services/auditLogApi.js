@@ -1,6 +1,6 @@
-import { authFetch } from "./authClient";
+import { authFetch, BASE_URL } from "./authClient";
 
-const API_URL = "http://127.0.0.1:8000/audit-logs";
+const API_URL = `${BASE_URL}/audit-logs`;
 
 async function getErrorMessage(response) {
     try {

@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 from typing import Optional
 from datetime import datetime
 
@@ -19,7 +20,8 @@ class IncidentCreate(IncidentBase):
 
 
 class IncidentUpdateStatus(BaseModel):
-    status: str
+    model_config = ConfigDict(extra="forbid")
+    status: Literal["OPEN", "INVESTIGATING", "RESOLVED"]
 
 
 class IncidentResponse(IncidentBase):
@@ -35,4 +37,5 @@ class IncidentResponse(IncidentBase):
         from_attributes = True
 
 class IncidentAssign(BaseModel):
-    assigned_to: str
+    model_config = ConfigDict(extra="forbid")
+    assigned_to: str = Field(min_length=1, max_length=100)

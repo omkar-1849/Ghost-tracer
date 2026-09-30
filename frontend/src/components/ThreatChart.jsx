@@ -6,6 +6,7 @@ import {
     YAxis,
     Tooltip,
     ResponsiveContainer,
+    CartesianGrid
 } from "recharts";
 import { getThreatActivity } from "../services/api";
 
@@ -13,24 +14,26 @@ function CustomTelemetryTooltip({ active, payload, label }) {
     if (!active || !payload || !payload.length) return null;
 
     const data = payload[0]?.payload;
-    const value1 = payload[0]?.value ?? 0;
-    const value2 = payload[1]?.value ?? 0;
+    const value = payload[0]?.value ?? 0;
 
     return (
-        <div className="rounded-lg bg-[var(--color-surface-3)] border border-[rgba(255,255,255,0.25)] px-3 py-1.5 shadow-[var(--shadow-hover)] text-[11px] mono-text select-none">
-            <div className="flex items-center gap-2 text-white font-semibold">
+        <div style={{
+            background: 'rgba(29,27,24,0.94)',
+            border: '1px solid rgba(245,241,236,0.12)',
+            borderRadius: '10px',
+            boxShadow: '0 18px 48px rgba(0,0,0,0.22)'
+        }} className="px-3 py-2 text-[11px] font-mono text-[#F5F1EC]">
+            <div className="flex items-center gap-2">
                 <span>{data?.time || label}</span>
-                <span className="text-[var(--color-text-muted)]">|</span>
-                <span className="text-white">{value1} Events</span>
-                {value2 > 0 && <span className="text-[var(--color-text-secondary)]">({value2} Blocked)</span>}
+                <span className="text-[#A9A199]">|</span>
+                <span>{value} Events</span>
             </div>
         </div>
     );
 }
 
 function ThreatChart() {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [state, setState] = useState({ data: null, error: "" });
 
     useEffect(() => {
         let isMounted = true;
@@ -40,30 +43,17 @@ function ThreatChart() {
                 if (!isMounted) return;
 
                 if (Array.isArray(result) && result.length > 0) {
-                    const mapped = result.map((item, idx) => ({
-                        time: item.time || `${idx * 2}h`,
+                    const mapped = result.map((item) => ({
+                        time: item.time,
                         threats: Number(item.threats) || 0,
-                        secondary: Math.max(0, Math.round((Number(item.threats) || 0) * 0.65)),
                     }));
-                    setData(mapped);
+                    setState({ data: mapped, error: "" });
                 } else {
-                    // Fallback to 24h timeline points
-                    const defaultPoints = [
-                        { time: "0h", threats: 15, secondary: 8 },
-                        { time: "4h", threats: 32, secondary: 20 },
-                        { time: "8h", threats: 24, secondary: 14 },
-                        { time: "12h", threats: 48, secondary: 30 },
-                        { time: "14h", threats: 85, secondary: 55 },
-                        { time: "16h", threats: 42, secondary: 25 },
-                        { time: "20h", threats: 60, secondary: 38 },
-                        { time: "24h", threats: 75, secondary: 45 },
-                    ];
-                    setData(defaultPoints);
+                    setState({ data: [], error: "" });
                 }
             } catch (err) {
                 console.error("Telemetry fetch error", err);
-            } finally {
-                if (isMounted) setLoading(false);
+                setState({ data: [], error: "Threat activity is unavailable." });
             }
         }
 
@@ -75,84 +65,94 @@ function ThreatChart() {
         };
     }, []);
 
-    return (
-        <div className="frosted-card p-5 h-full flex flex-col justify-between select-none">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-                <div>
-                    <h3 className="text-white text-[13.5px] font-semibold tracking-tight">Telemetry</h3>
-                    <p className="text-[11px] text-[var(--color-text-muted)]">Real-time threat traffic volume</p>
+    const renderChartArea = () => {
+        if (state.error) {
+            return (
+                <div className="absolute inset-0 flex items-center justify-center text-[#A9A199]">
+                    <p role="alert">{state.error}</p>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] mono-text text-[var(--color-text-secondary)]">
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-3 h-0.5 bg-white rounded-full inline-block" />
-                        <span>Signals</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                        <span className="w-3 h-0.5 bg-[var(--color-text-muted)] rounded-full inline-block" />
-                        <span>Baseline</span>
-                    </div>
+            );
+        }
+        if (state.data === null) {
+            return (
+                <div className="absolute inset-0 flex items-center justify-center text-[#A9A199]">
+                    <p>Loading telemetry…</p>
+                </div>
+            );
+        }
+        if (state.data.length === 0) {
+            return (
+                <div className="absolute inset-0 flex items-center justify-center text-[#A9A199]">
+                    <p>No threat activity recorded for this period.</p>
+                </div>
+            );
+        }
+
+        return (
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={state.data} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="waveGradPrimary" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="rgba(211,160,106,0.22)" />
+                            <stop offset="100%" stopColor="rgba(211,160,106,0.015)" />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid 
+                        stroke="rgba(245,241,236,0.075)" 
+                        strokeDasharray="2 6" 
+                        strokeWidth={1}
+                        vertical={false}
+                    />
+                    <XAxis
+                        dataKey="time"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#8B837B", fontSize: 11, fontFamily: "'SF Mono', 'Cascadia Code', 'IBM Plex Mono', monospace" }}
+                        dy={10}
+                    />
+                    <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#8B837B", fontSize: 11, fontFamily: "'SF Mono', 'Cascadia Code', 'IBM Plex Mono', monospace" }}
+                    />
+                    <Tooltip
+                        content={<CustomTelemetryTooltip />}
+                        cursor={{ stroke: "rgba(227,185,133,0.48)", strokeWidth: 1, strokeDasharray: "3 3" }}
+                    />
+                    <Area
+                        type="monotone"
+                        dataKey="threats"
+                        stroke="#E3B985"
+                        strokeWidth={2}
+                        fill="url(#waveGradPrimary)"
+                        activeDot={{ fill: "#F5F1EC", stroke: "none", r: 4 }}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
+        );
+    };
+
+    return (
+        <div className="flex flex-col w-full h-full select-none">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+                <div>
+                    <h3 className="text-[17px] font-semibold text-[#F5F1EC] tracking-[-0.025em] font-sans">
+                        Telemetry
+                    </h3>
+                    <p className="text-[14px] text-[#A9A199] font-sans mt-0.5">
+                        Real-time threat traffic volume
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 text-[13px] text-[#A9A199]">
+                    <span className="w-4 h-0.5 bg-[#E3B985] rounded-full inline-block" />
+                    <span>Signals</span>
                 </div>
             </div>
 
-            {/* Area Chart Container */}
-            <div className="w-full h-52 -ml-2">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
-                        <defs>
-                            {/* Primary wave gradient */}
-                            <linearGradient id="waveGradPrimary" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#FFFFFF" stopOpacity={0.25} />
-                                <stop offset="95%" stopColor="#FFFFFF" stopOpacity={0.0} />
-                            </linearGradient>
-                            {/* Secondary wave gradient */}
-                            <linearGradient id="waveGradSecondary" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#9DA3AE" stopOpacity={0.15} />
-                                <stop offset="95%" stopColor="#9DA3AE" stopOpacity={0.0} />
-                            </linearGradient>
-                        </defs>
-
-                        <XAxis
-                            dataKey="time"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666D7A", fontSize: 11, fontFamily: "IBM Plex Mono" }}
-                            dy={5}
-                        />
-                        <YAxis
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: "#666D7A", fontSize: 11, fontFamily: "IBM Plex Mono" }}
-                        />
-
-                        <Tooltip
-                            content={<CustomTelemetryTooltip />}
-                            cursor={{ stroke: "rgba(255, 255, 255, 0.4)", strokeWidth: 1, strokeDasharray: "3 3" }}
-                        />
-
-                        {/* Primary Monochromatic Curve */}
-                        <Area
-                            type="monotone"
-                            dataKey="threats"
-                            stroke="#FFFFFF"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#waveGradPrimary)"
-                            isAnimationActive={true}
-                        />
-
-                        {/* Secondary Overlapping Sine Curve */}
-                        <Area
-                            type="monotone"
-                            dataKey="secondary"
-                            stroke="#666D7A"
-                            strokeWidth={1.5}
-                            fillOpacity={1}
-                            fill="url(#waveGradSecondary)"
-                            isAnimationActive={true}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
+            {/* Chart Container */}
+            <div className="w-full min-h-[200px] md:h-[240px] flex-1 relative">
+                {renderChartArea()}
             </div>
         </div>
     );

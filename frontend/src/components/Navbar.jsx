@@ -1,35 +1,86 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Bell, User, LogOut, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../services/authClient";
-import LiveDot from "./ui/LiveDot";
+import { getRecentAlerts, getLiveFeed } from "../services/api";
+import "../pages/Dashboard.css";
 
-function Navbar({ title = "Dashboard", subtitle = "Security Operations Overview" }) {
+function formatNotificationTime(ts) {
+    if (!ts) return "Just now";
+    try {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return String(ts);
+        const now = new Date();
+        const diffSec = Math.floor((now - d) / 1000);
+        if (diffSec < 60) return "Just now";
+        if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+        if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+        return `${d.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+    } catch {
+        return "Recent";
+    }
+}
+
+function Navbar() {
     const navigate = useNavigate();
-    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const menuRef = useRef(null);
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(false);
     const notifRef = useRef(null);
 
-    // Close menus on outside click
+    // Fetch live notifications from backend alerts / live feed
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const alerts = await getRecentAlerts();
+            if (Array.isArray(alerts) && alerts.length > 0) {
+                setNotifications(alerts);
+            } else {
+                const live = await getLiveFeed().catch(() => []);
+                if (Array.isArray(live) && live.length > 0) {
+                    setNotifications(live.map((item, idx) => ({
+                        id: `live-${idx}`,
+                        threat_level: item.threat_level,
+                        message: item.reason || "Security event detected",
+                        ip_address: item.ip_address,
+                        created_at: item.timestamp,
+                    })));
+                } else {
+                    setNotifications([]);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to load notifications", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 15000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Close notifications menu on outside click or escape key
     useEffect(() => {
         function handleClickOutside(e) {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-                setUserMenuOpen(false);
-            }
             if (notifRef.current && !notifRef.current.contains(e.target)) {
                 setNotificationsOpen(false);
             }
         }
+        function handleKeyDown(e) {
+            if (e.key === "Escape") {
+                setNotificationsOpen(false);
+            }
+        }
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
-
-    const handleLogout = () => {
-        logout();
-        navigate("/login");
-    };
 
     const handleSearchSubmit = (e) => {
         if (e.key === "Enter" && searchQuery.trim()) {
@@ -38,111 +89,183 @@ function Navbar({ title = "Dashboard", subtitle = "Security Operations Overview"
     };
 
     return (
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-4 px-8 py-3.5 bg-[var(--color-canvas)]/80 backdrop-blur-md border-b border-[var(--color-border-subtle)] select-none">
-            {/* Left / Center: Global Search Bar matching reference image */}
-            <div className="flex-1 max-w-xl">
-                <div className="relative">
-                    <Search
-                        size={15}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
-                    />
-                    <input
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleSearchSubmit}
-                        placeholder="Search threats, assets, logs, IP addresses..."
-                        className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-10 pr-12 py-2 text-[13px] text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)] focus:shadow-[0_0_12px_rgba(255,255,255,0.06)] transition-all duration-150"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-[var(--color-text-disabled)] border border-[var(--color-border-subtle)] px-1.5 py-0.5 rounded bg-[var(--color-surface-inset)]">
-                        ⌘K
-                    </span>
-                </div>
+        <header className="sticky top-0 z-40 w-full h-0 pointer-events-none select-none">
+            {/* Floating Glass Search Control Island */}
+            <div className="search-island sentinel-glass pointer-events-auto">
+                <Search size={18} color="#D6CFC7" className="shrink-0 mr-3 pointer-events-none" />
+                <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchSubmit}
+                    placeholder="Search threats, assets, logs, IP addresses..."
+                    className="flex-1 bg-transparent border-0 outline-none text-[#F5F1EC] text-[14px] placeholder:text-[#A9A199] font-sans shadow-none focus:outline-none focus:ring-0 focus:border-0"
+                    style={{
+                        outline: 'none',
+                        border: 'none',
+                        boxShadow: 'none',
+                        background: 'transparent'
+                    }}
+                />
+                <span
+                    className="ml-2 px-2 py-0.5 text-[11px] font-mono text-[#A9A199] shrink-0"
+                    style={{
+                        borderRadius: '8px',
+                        background: 'rgba(255,248,238,0.045)',
+                        border: '1px solid rgba(255,248,238,0.08)'
+                    }}
+                >
+                    ⌘K
+                </span>
             </div>
 
-            {/* Right: Telemetry Badge + Notifications + User Avatar */}
-            <div className="flex items-center gap-3">
-                {/* System Status Pill matching reference image */}
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[12px] font-medium text-white shadow-sm">
-                    <LiveDot color="var(--color-success)" size={6} />
-                    <span>System: <span className="text-[var(--color-success)]">Secure</span></span>
-                </div>
-
-                {/* Notifications Bell */}
-                <div className="relative" ref={notifRef}>
-                    <button
-                        type="button"
-                        onClick={() => setNotificationsOpen(!notificationsOpen)}
-                        className="relative p-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-white hover:border-[var(--color-border-strong)] transition-all duration-150"
-                        aria-label="Notifications"
-                    >
-                        <Bell size={16} />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[var(--color-critical)] ring-2 ring-[var(--color-canvas)]" />
-                    </button>
-
-                    {notificationsOpen && (
-                        <div className="absolute right-0 mt-2 w-80 rounded-xl bg-[var(--color-surface-3)] border border-[var(--color-border-default)] shadow-[var(--shadow-modal)] p-3 text-[12.5px] z-50 animate-fade-in">
-                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-[var(--color-border-subtle)]">
-                                <span className="font-semibold text-white">Live SOC Alerts</span>
-                                <span className="text-[11px] text-[var(--color-text-muted)]">Real-time</span>
-                            </div>
-                            <div className="space-y-2">
-                                <div className="p-2 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-white text-[12px]">Firewall Intercept</span>
-                                        <span className="text-[10px] text-[var(--color-critical)] font-mono">CRITICAL</span>
-                                    </div>
-                                    <p className="text-[11px] text-[var(--color-text-muted)] mt-1">Brute force SSH attempt blocked from 192.168.1.101</p>
-                                </div>
-                                <div className="p-2 rounded-lg bg-[var(--color-surface-inset)] border border-[var(--color-border-subtle)]">
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-medium text-white text-[12px]">Vulnerability Scan</span>
-                                        <span className="text-[10px] text-[var(--color-success)] font-mono">COMPLETE</span>
-                                    </div>
-                                    <p className="text-[11px] text-[var(--color-text-muted)] mt-1">SSL & Nmap scan finished for monitored endpoints</p>
-                                </div>
-                            </div>
-                        </div>
+            {/* Standalone Stationary Floating Glass Notification Control */}
+            <div
+                className="pointer-events-auto"
+                ref={notifRef}
+                style={{
+                    position: 'absolute',
+                    top: '14px',
+                    right: '24px',
+                    width: '46px',
+                    height: '46px',
+                    zIndex: 41
+                }}
+            >
+                <button
+                    type="button"
+                    onClick={() => {
+                        const next = !notificationsOpen;
+                        setNotificationsOpen(next);
+                        if (next) fetchNotifications();
+                    }}
+                    className="sentinel-glass notification-bell-btn relative focus:outline-none"
+                    aria-label="Notifications"
+                    style={{
+                        width: '46px',
+                        height: '46px',
+                        position: 'relative',
+                        transform: 'none',
+                        margin: 0,
+                        padding: 0
+                    }}
+                >
+                    <Bell size={18} color="#D6CFC7" />
+                    {notifications.length > 0 && (
+                        <span
+                            style={{
+                                position: 'absolute',
+                                top: '11px',
+                                right: '11px',
+                                width: '6px',
+                                height: '6px',
+                                borderRadius: '50%',
+                                backgroundColor: '#E67868'
+                            }}
+                        />
                     )}
-                </div>
+                </button>
 
-                {/* User Profile Avatar with Dropdown */}
-                <div className="relative" ref={menuRef}>
-                    <button
-                        type="button"
-                        onClick={() => setUserMenuOpen(!userMenuOpen)}
-                        className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] transition-all duration-150"
+                {notificationsOpen && (
+                    <div
+                        className="sentinel-glass"
+                        style={{
+                            position: 'absolute',
+                            top: '56px',
+                            right: 0,
+                            width: '340px',
+                            borderRadius: '16px',
+                            padding: '16px',
+                            boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.65), 0 8px 24px -4px rgba(0, 0, 0, 0.45)',
+                            zIndex: 50,
+                            color: '#A9A199',
+                            fontSize: '12.5px',
+                            maxHeight: '480px',
+                            overflowY: 'auto'
+                        }}
                     >
-                        <div className="w-7 h-7 rounded-md bg-[var(--color-surface-3)] border border-[rgba(255,255,255,0.12)] flex items-center justify-center text-white">
-                            <User size={14} />
-                        </div>
-                        <span className="text-[12.5px] font-medium text-white hidden md:inline">Admin</span>
-                    </button>
-
-                    {userMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-48 rounded-xl bg-[var(--color-surface-3)] border border-[var(--color-border-default)] shadow-[var(--shadow-modal)] py-1 text-[12.5px] z-50 animate-fade-in">
-                            <div className="px-3 py-2 border-b border-[var(--color-border-subtle)]">
-                                <p className="font-semibold text-white">Admin Analyst</p>
-                                <p className="text-[11px] text-[var(--color-text-muted)] truncate">admin@sentinel.local</p>
+                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-[rgba(245,241,236,0.075)]">
+                            <div className="flex items-center gap-2">
+                                <span className="font-semibold text-[#F5F1EC] text-[13px]">Notifications</span>
+                                {notifications.length > 0 && (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-medium bg-[rgba(230,120,104,0.14)] text-[#E67868]">
+                                        {notifications.length}
+                                    </span>
+                                )}
                             </div>
+                            <span className="text-[11px] text-[#8B837B]">
+                                {loading ? "Checking…" : notifications.length > 0 ? "Live Stream" : "Up to date"}
+                            </span>
+                        </div>
+
+                        {loading && notifications.length === 0 ? (
+                            <div className="py-6 text-center text-[#A9A199] text-[12px]">
+                                Loading security events…
+                            </div>
+                        ) : notifications.length === 0 ? (
+                            <div className="py-5 text-center">
+                                <p className="text-[13px] text-[#F5F1EC] font-medium mb-1">
+                                    No new security notifications.
+                                </p>
+                                <p className="text-[11.5px] text-[#8B837B]">
+                                    All monitored systems reporting nominal status.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-0.5">
+                                {notifications.slice(0, 5).map((item, idx) => {
+                                    const severity = (item.threat_level || item.threatLevel || "RECORDED").toUpperCase();
+                                    const title = item.message || "Security threat detected";
+                                    const ip = item.ip_address || item.ipAddress || null;
+                                    const ts = item.created_at || item.timestamp;
+                                    const badgeClass = severity === "CRITICAL"
+                                        ? "text-[#E67868] bg-[rgba(230,120,104,0.12)] border-[rgba(230,120,104,0.22)]"
+                                        : severity === "HIGH"
+                                            ? "text-[#D3A06A] bg-[rgba(211,160,106,0.12)] border-[rgba(211,160,106,0.20)]"
+                                            : "text-[#A9A199] bg-[rgba(169,161,153,0.08)] border-[rgba(169,161,153,0.14)]";
+
+                                    return (
+                                        <div
+                                            key={item.id || idx}
+                                            className="p-2.5 rounded-lg bg-[rgba(255,248,238,0.02)] border border-[rgba(245,241,236,0.06)] hover:bg-[rgba(211,160,106,0.04)] transition-colors"
+                                        >
+                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${badgeClass}`}>
+                                                    {severity}
+                                                </span>
+                                                <span className="text-[10.5px] font-mono text-[#8B837B]">
+                                                    {formatNotificationTime(ts)}
+                                                </span>
+                                            </div>
+                                            <p className="text-[12.5px] font-medium text-[#F5F1EC] leading-tight line-clamp-2">
+                                                {title}
+                                            </p>
+                                            {ip && (
+                                                <p className="text-[11px] font-mono text-[#D6CFC7] mt-1">
+                                                    Origin: {ip}
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        <div className="pt-3 mt-3 border-t border-[rgba(245,241,236,0.06)] flex justify-between items-center text-[11.5px]">
+                            <span className="text-[#8B837B]">Sentinel Security Stream</span>
                             <button
                                 type="button"
-                                onClick={() => { setUserMenuOpen(false); navigate("/settings"); }}
-                                className="w-full text-left px-3 py-2 text-[var(--color-text-secondary)] hover:text-white hover:bg-[rgba(255,255,255,0.06)]"
+                                onClick={() => {
+                                    setNotificationsOpen(false);
+                                    navigate("/alerts");
+                                }}
+                                className="text-[#D3A06A] hover:text-[#E3B985] font-medium transition-colors"
                             >
-                                Settings & Profile
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleLogout}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-[var(--color-critical)] hover:bg-[rgba(230,57,70,0.1)] border-t border-[var(--color-border-subtle)]"
-                            >
-                                <LogOut size={13} />
-                                <span>Sign out</span>
+                                View all alerts →
                             </button>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
             </div>
         </header>
     );

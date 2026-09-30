@@ -1,3 +1,5 @@
+from app.utils.authorization import TenantContext, get_tenant_context, require_roles, scoped_get
+from app.models.website import Website
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
@@ -13,7 +15,6 @@ from app.services.integration_service import (
     regenerate_keys,
     revoke_integration,
 )
-from app.utils.security import get_current_user
 
 
 router = APIRouter(
@@ -30,12 +31,14 @@ def connect_website(
     website_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    ctx: TenantContext = Depends(require_roles("owner", "admin")),
 ):
+
+    scoped_get(db, Website, website_id, ctx)
     integration, api_key, api_secret = create_integration(
         db=db,
         website_id=website_id,
-        user_id=current_user.id,
+        user_id=ctx.user.id,
         ip_address=(
             request.client.host
             if request.client
@@ -69,8 +72,10 @@ def connect_website(
 def get_website_integration(
     website_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    ctx: TenantContext = Depends(get_tenant_context),
 ):
+
+    scoped_get(db, Website, website_id, ctx)
     integration = get_integration(
         db,
         website_id,
@@ -93,12 +98,14 @@ def regenerate_website_key(
     website_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    ctx: TenantContext = Depends(require_roles("owner", "admin")),
 ):
+
+    scoped_get(db, Website, website_id, ctx)
     result = regenerate_keys(
         db=db,
         website_id=website_id,
-        user_id=current_user.id,
+        user_id=ctx.user.id,
         ip_address=(
             request.client.host
             if request.client
@@ -129,12 +136,14 @@ def disconnect_website(
     website_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user),
+    ctx: TenantContext = Depends(require_roles("owner", "admin")),
 ):
+
+    scoped_get(db, Website, website_id, ctx)
     result = revoke_integration(
         db=db,
         website_id=website_id,
-        user_id=current_user.id,
+        user_id=ctx.user.id,
         ip_address=(
             request.client.host
             if request.client

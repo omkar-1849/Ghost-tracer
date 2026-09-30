@@ -1,17 +1,18 @@
+from datetime import datetime
+
 from sqlalchemy import (
     Column,
     Integer,
     String,
     DateTime,
     ForeignKey,
-    func,
 )
 from sqlalchemy.orm import relationship
 
-from app.database.base import Base
+from app.database.base import Base, TenantOwned
 
 
-class Integration(Base):
+class Integration(TenantOwned, Base):
     __tablename__ = "integrations"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -38,14 +39,14 @@ class Integration(Base):
 
     created_at = Column(
         DateTime(timezone=True),
-        server_default=func.now(),
+        default=datetime.utcnow,
         nullable=False,
     )
 
     updated_at = Column(
         DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
         nullable=False,
     )
 

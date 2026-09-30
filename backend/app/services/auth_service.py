@@ -1,179 +1,82 @@
-from fastapi import HTTPException, status
+"""Auth mutations flush only; owning route commits together with audit."""
+from datetime import datetime, timedelta, timezone
+
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.user import User
+from app.models.password_reset_token import PasswordResetToken
+from app.models.session import Session as UserSession
 from app.schemas.auth_schema import LoginRequest, RegisterRequest
+from app.utils.reset_token import generate_reset_token, hash_reset_token
 from app.utils.security import create_access_token, hash_password, verify_password
 
-from datetime import datetime, timedelta, timezone
 
-from app.models.password_reset_token import PasswordResetToken
-from app.utils.reset_token import generate_reset_token, hash_reset_token
-
-
-def register_user(
-    db: Session,
-    data: RegisterRequest,
-) -> User:
-
-    existing_user = (
-        db.query(User)
-        .filter(User.email == data.email.lower())
-        .first()
-    )
-
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists.",
-        )
-
-    user = User(
-        email=data.email.lower(),
-        password_hash=hash_password(data.password),
-        full_name=data.full_name,
-    )
-
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-
-    return user
-
-
-def authenticate_user(
-    db: Session,
-    data: LoginRequest,
-) -> User:
-
+def register_user(db: Session, data: RegisterRequest) -> User:
     email = data.email.lower().strip()
-
-    user = (
-        db.query(User)
-        .filter(User.email == email)
-        .first()
-    )
-
-    if not user or not verify_password(
-        data.password,
-        user.password_hash,
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This account is disabled.",
-        )
-
+    if db.query(User).filter(User.email == email).first():
+        raise HTTPException(409, "Unable to register with these details.")
+    user = User(email=email, password_hash=hash_password(data.password), full_name=data.full_name)
+    db.add(user)
+    db.flush()
     return user
 
 
-def create_user_token(
-    user: User,
-    session_id: str,
-) -> str:
-    return create_access_token(
-        str(user.id),
-        session_id,
-    )
+def authenticate_user(db: Session, data: LoginRequest) -> User:
+    # Serialize login/session creation with password rotation. Refresh a previously
+    # loaded identity so concurrent changes cannot authenticate an old password.
+    user = (db.query(User).filter(User.email == data.email.lower().strip())
+            .populate_existing().with_for_update().first())
+    if not user or not user.is_active or not verify_password(data.password, user.password_hash):
+        raise HTTPException(401, "Invalid email or password.", headers={"WWW-Authenticate": "Bearer"})
+    return user
 
 
-def create_password_reset_token(
-    db: Session,
-    email: str,
-) -> str | None:
+def create_user_token(user: User, session_id: str) -> str:
+    return create_access_token(str(user.id), session_id)
 
-    user = (
-        db.query(User)
-        .filter(User.email == email.lower().strip())
-        .first()
-    )
 
-    if not user:
+def invalidate_user_credentials(db: Session, user_id: int) -> None:
+    """Caller holds the user row lock; invalidate sessions and all reset tokens."""
+    db.query(UserSession).filter(UserSession.user_id == user_id).update(
+        {UserSession.revoked: True}, synchronize_session=False)
+    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user_id).update(
+        {PasswordResetToken.used: True}, synchronize_session=False)
+    db.flush()
+
+
+def create_password_reset_token(db: Session, email: str) -> str | None:
+    user = (db.query(User).filter(User.email == email.lower().strip())
+            .populate_existing().with_for_update().first())
+    if not user or not user.is_active:
         return None
-
-    # Invalidate previous unused tokens
-    (
-        db.query(PasswordResetToken)
-        .filter(
-            PasswordResetToken.user_id == user.id,
-            PasswordResetToken.used == False,
-        )
-        .update({"used": True})
-    )
-
+    db.query(PasswordResetToken).filter(PasswordResetToken.user_id == user.id).update(
+        {PasswordResetToken.used: True}, synchronize_session=False)
     raw_token = generate_reset_token()
-
-    reset_token = PasswordResetToken(
-        user_id=user.id,
-        token_hash=hash_reset_token(raw_token),
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=30),
-    )
-
-    db.add(reset_token)
-    db.commit()
-
+    db.add(PasswordResetToken(user_id=user.id, token_hash=hash_reset_token(raw_token),
+                             expires_at=datetime.now(timezone.utc) + timedelta(minutes=30)))
+    db.flush()
     return raw_token
 
 
-def reset_password(
-    db: Session,
-    token: str,
-    new_password: str,
-) -> None:
-
+def reset_password(db: Session, token: str, new_password: str) -> User:
     token_hash = hash_reset_token(token)
-
-    reset_token = (
-        db.query(PasswordResetToken)
-        .filter(
-            PasswordResetToken.token_hash == token_hash,
-            PasswordResetToken.used == False,
-        )
-        .first()
-    )
-
+    reset_token = db.query(PasswordResetToken).filter(PasswordResetToken.token_hash == token_hash).first()
     if not reset_token:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired reset token.",
-        )
-
-    now = datetime.now(timezone.utc)
-
-    expires_at = reset_token.expires_at
-
-    if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-
-    if expires_at < now:
-        reset_token.used = True
-        db.commit()
-
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired reset token.",
-        )
-
-    user = (
-        db.query(User)
-        .filter(User.id == reset_token.user_id)
-        .first()
-    )
-
-    if not user:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid reset token.",
-        )
-
+        raise HTTPException(400, "Invalid or expired reset token.")
+    # Always lock user before token to keep issuance/change/reset lock ordering.
+    user = (db.query(User).filter(User.id == reset_token.user_id)
+            .populate_existing().with_for_update().first())
+    if not user or not user.is_active:
+        raise HTTPException(400, "Invalid or expired reset token.")
+    claimed = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token_hash == token_hash,
+        PasswordResetToken.used.is_(False),
+        PasswordResetToken.expires_at > datetime.now(timezone.utc),
+    ).update({PasswordResetToken.used: True}, synchronize_session=False)
+    if claimed != 1:
+        raise HTTPException(400, "Invalid or expired reset token.")
     user.password_hash = hash_password(new_password)
-
-    reset_token.used = True
-
-    db.commit()
+    invalidate_user_credentials(db, user.id)
+    db.flush()
+    return user

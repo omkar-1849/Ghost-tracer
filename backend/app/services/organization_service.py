@@ -67,45 +67,20 @@ def create_organization(
 
     db.add(membership)
 
-    db.commit()
+    db.flush()
     db.refresh(organization)
 
     return organization
 
 
-def get_user_organization(
-    db: Session,
-    user: User,
-) -> Organization:
-
-    membership = (
-        db.query(OrganizationMember)
-        .filter(
-            OrganizationMember.user_id == user.id
-        )
-        .first()
-    )
-
-    if not membership:
-        raise HTTPException(
-            status_code=404,
-            detail="User does not belong to an organization.",
-        )
-
-    organization = (
-        db.query(Organization)
-        .filter(
-            Organization.id == membership.organization_id
-        )
-        .first()
-    )
-
-    if not organization:
-        raise HTTPException(
-            status_code=404,
-            detail="Organization not found.",
-        )
-
+def get_user_organization(db: Session, user: User, organization_id: int | None = None) -> Organization:
+    organization_id = organization_id or db.info.get("organization_id")
+    if organization_id is None:
+        raise HTTPException(status_code=400, detail="Select an organization using X-Organization-ID.")
+    require_role(db, user, organization_id, ALLOWED_ROLES)
+    organization = db.query(Organization).filter(Organization.id == organization_id).first()
+    if organization is None:
+        raise HTTPException(status_code=404, detail="Organization not found.")
     return organization
 
 
@@ -196,6 +171,7 @@ def add_member(
     organization_id: int,
     email: str,
     role: str,
+    actor_id: int,
 ) -> MemberResponse:
 
     role = role.lower().strip()
@@ -239,13 +215,13 @@ def add_member(
     )
 
     db.add(membership)
-    db.commit()
+    db.flush()
     db.refresh(membership)
 
     create_audit_log(
         db=db,
         organization_id=organization_id,
-        user_id=user.id,
+        user_id=actor_id,
         action="ADD_ORGANIZATION_MEMBER",
         resource_type="ORGANIZATION_MEMBER",
         resource_id=str(membership.id),
@@ -267,6 +243,7 @@ def update_member_role(
     organization_id: int,
     user_id: int,
     role: str,
+    actor_id: int,
 ) -> OrganizationMember:
 
     role = role.lower().strip()
@@ -298,13 +275,13 @@ def update_member_role(
     old_role = membership.role
     membership.role = role
 
-    db.commit()
+    db.flush()
     db.refresh(membership)
 
     create_audit_log(
         db=db,
         organization_id=organization_id,
-        user_id=user_id,
+        user_id=actor_id,
         action="CHANGE_MEMBER_ROLE",
         resource_type="ORGANIZATION_MEMBER",
         resource_id=str(membership.id),
@@ -318,6 +295,7 @@ def remove_member(
     db: Session,
     organization_id: int,
     user_id: int,
+    actor_id: int,
 ) -> None:
 
     membership = get_membership(
@@ -351,12 +329,12 @@ def remove_member(
         target_email = user.email
 
     db.delete(membership)
-    db.commit()
+    db.flush()
 
     create_audit_log(
         db=db,
         organization_id=organization_id,
-        user_id=user_id,
+        user_id=actor_id,
         action="REMOVE_ORGANIZATION_MEMBER",
         resource_type="ORGANIZATION_MEMBER",
         resource_id=str(membership_id),

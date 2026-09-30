@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { getSecurityScore } from "../services/api";
 
-function SecurityScore({ stats = {} }) {
-    const [score, setScore] = useState(96);
+function SecurityScore() {
+    const [score, setScore] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10,11 +10,10 @@ function SecurityScore({ stats = {} }) {
         async function loadScore() {
             try {
                 const data = await getSecurityScore();
-                if (isMounted && data && typeof data.score === "number") {
-                    setScore(data.score);
-                }
+                if (isMounted) setScore(Number.isFinite(data?.score) ? data.score : null);
             } catch (err) {
                 console.error("Failed to load security score", err);
+                if (isMounted) setScore(null);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -28,89 +27,163 @@ function SecurityScore({ stats = {} }) {
         };
     }, []);
 
-    const clamped = Math.max(0, Math.min(100, Math.round(score)));
+    const clamped = score == null ? null : Math.max(0, Math.min(100, Math.round(score)));
 
-    // Status evaluation
-    let statusLabel = "SECURE";
-    let statusColor = "#FFFFFF";
-    if (clamped < 60) {
-        statusLabel = "ELEVATED RISK";
-        statusColor = "var(--color-critical)";
-    } else if (clamped < 85) {
-        statusLabel = "GUARDED";
-        statusColor = "var(--color-high)";
+    // Status evaluation from SENTINEL_GLASS_MATERIAL_SPEC.json
+    let statusLabel = clamped == null ? "UNAVAILABLE" : "LOW LOG RISK";
+    let statusColor = "#A9A199";
+    if (clamped != null) {
+        if (clamped < 60) {
+            statusLabel = "ELEVATED RISK";
+            statusColor = "#E67868";
+        } else if (clamped < 85) {
+            statusLabel = "GUARDED";
+            statusColor = "#D3A06A";
+        } else {
+            statusLabel = "LOW LOG RISK";
+            statusColor = "#77C79A";
+        }
     }
 
-    // Semi-circle SVG parameters
-    const size = 170;
-    const strokeWidth = 8;
-    const radius = 70;
-    const circumference = Math.PI * radius; // Half circle arc length
-    const strokeDashoffset = circumference - (clamped / 100) * circumference;
+    // Semi-circle SVG parameters from SENTINEL_GLASS_MATERIAL_SPEC.json
+    // width: 150px, height: 104px, stroke: 7px, track: rgba(255,248,238,0.10), progress: #D3A06A
+    const width = 150;
+    const height = 104;
+    const strokeWidth = 7;
+    const radius = 62;
+    const cx = 75;
+    const cy = 88;
+    const circumference = Math.PI * radius; // Half circle arc length (~194.78px)
+    const strokeDashoffset = clamped == null ? circumference : circumference - (clamped / 100) * circumference;
 
     return (
-        <div className="frosted-card p-5 flex flex-col justify-between h-full select-none relative overflow-hidden group">
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-medium text-[var(--color-text-muted)] uppercase tracking-wider">Security Posture</span>
-                <span className="text-[11px] font-mono text-[var(--color-text-muted)]">Live</span>
+        <div className="flex flex-col justify-between h-full select-none w-full box-border">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-1">
+                <span 
+                    style={{ 
+                        fontSize: '11px', 
+                        fontWeight: 600, 
+                        letterSpacing: '0.08em', 
+                        color: '#8B837B', 
+                        textTransform: 'uppercase' 
+                    }}
+                >
+                    Log-based Score
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 500, color: '#A9A199' }}>
+                    {clamped != null && (
+                        <span 
+                            style={{ 
+                                width: '6px', 
+                                height: '6px', 
+                                borderRadius: '50%', 
+                                backgroundColor: '#77C79A' 
+                            }} 
+                        />
+                    )}
+                    <span>{clamped == null ? "Unavailable" : "Live"}</span>
+                </div>
             </div>
 
             {/* Gauge Area */}
-            <div className="relative flex flex-col items-center justify-center my-1">
+            <div className="relative flex flex-col items-center justify-center flex-1 my-1">
                 <svg
-                    width={size}
-                    height={size / 1.75}
-                    viewBox={`0 0 ${size} ${size / 1.75}`}
+                    width={width}
+                    height={height}
+                    viewBox={`0 0 ${width} ${height}`}
                     className="overflow-visible"
+                    aria-label={`Security score: ${clamped == null ? 'Unavailable' : clamped}`}
+                    role="img"
                 >
+                    <defs>
+                        <linearGradient id="progressGradient" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="#D3A06A" />
+                            <stop offset="100%" stopColor="#E3B985" />
+                        </linearGradient>
+                    </defs>
+                    
                     {/* Background Track Arc */}
                     <path
-                        d={`M 15 ${size / 2} A ${radius} ${radius} 0 0 1 ${size - 15} ${size / 2}`}
+                        d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
                         fill="none"
-                        stroke="#1E222B"
+                        stroke="rgba(255,248,238,0.10)"
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
                     />
 
                     {/* Active Progress Arc */}
-                    <path
-                        d={`M 15 ${size / 2} A ${radius} ${radius} 0 0 1 ${size - 15} ${size / 2}`}
-                        fill="none"
-                        stroke={statusColor}
-                        strokeWidth={strokeWidth}
-                        strokeDasharray={circumference}
-                        strokeDashoffset={strokeDashoffset}
-                        strokeLinecap="round"
-                        style={{
-                            transition: "stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease",
-                            filter: "drop-shadow(0 0 6px rgba(255,255,255,0.25))"
-                        }}
-                    />
+                    {clamped != null && (
+                        <path
+                            d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+                            fill="none"
+                            stroke="url(#progressGradient)"
+                            strokeWidth={strokeWidth}
+                            strokeDasharray={circumference}
+                            strokeDashoffset={strokeDashoffset}
+                            strokeLinecap="round"
+                            className="motion-reduce:transition-none"
+                            style={{
+                                transition: "stroke-dashoffset 1s cubic-bezier(0.16, 1, 0.3, 1)",
+                                filter: "drop-shadow(0 0 6px rgba(211,160,106,0.25))"
+                            }}
+                        />
+                    )}
                 </svg>
 
                 {/* Centered Numbers */}
-                <div className="text-center mt-[-32px]">
-                    <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-3xl font-bold tracking-tight text-white font-mono">
-                            {loading ? "--" : clamped}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pt-7">
+                    <div className="flex items-baseline justify-center">
+                        <span 
+                            className="font-sans tabular-nums lining-nums"
+                            style={{ 
+                                fontSize: '34px', 
+                                fontWeight: 600, 
+                                color: '#F5F1EC', 
+                                letterSpacing: '-0.02em',
+                                lineHeight: '1'
+                            }}
+                        >
+                            {loading ? "--" : clamped ?? "—"}
                         </span>
-                        <span className="text-sm font-semibold text-[var(--color-text-muted)] font-mono">
+                        <span 
+                            style={{ 
+                                fontSize: '12px', 
+                                fontWeight: 500, 
+                                color: '#8B837B',
+                                marginLeft: '3px'
+                            }}
+                        >
                             /100
                         </span>
                     </div>
                     <p
-                        className="text-[10px] font-bold tracking-[0.14em] uppercase mt-0.5"
-                        style={{ color: statusColor }}
+                        style={{ 
+                            fontSize: '11px', 
+                            fontWeight: 600, 
+                            letterSpacing: '0.06em', 
+                            textTransform: 'uppercase', 
+                            color: statusColor,
+                            marginTop: '3px'
+                        }}
                     >
                         {statusLabel}
                     </p>
                 </div>
             </div>
 
-            {/* Sub-label */}
-            <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] pt-2 border-t border-[var(--color-border-subtle)]">
-                <span>Threat Defense</span>
-                <span className="font-mono text-white text-[10.5px]">Active Policy</span>
+            {/* Footer without strong divider per spec (divider: none) */}
+            <div 
+                className="flex items-center justify-between mt-1 pt-1"
+                style={{ 
+                    fontSize: '12px', 
+                    color: '#8B837B' 
+                }}
+            >
+                <span>Derived from recorded logs</span>
+                <span>
+                    {clamped == null ? "—" : "Measured"}
+                </span>
             </div>
         </div>
     );

@@ -7,16 +7,18 @@ def create_note(
     db: Session,
     incident_id: int,
     analyst: str,
-    note: str
+    note: str,
+    organization_id: int | None = None,
 ):
     incident_note = IncidentNote(
+        organization_id=organization_id,
         incident_id=incident_id,
         analyst=analyst,
-        note=note
+        note=note,
     )
 
     db.add(incident_note)
-    db.commit()
+    db.flush()
     db.refresh(incident_note)
 
     return incident_note

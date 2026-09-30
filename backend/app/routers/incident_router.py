@@ -1,8 +1,9 @@
+from app.utils.authorization import TenantContext, get_tenant_context, require_roles, scoped_get
+from app.models.incident import Incident
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
-from app.models.user import User
 from app.schemas.incident_schema import (
     IncidentResponse,
     IncidentUpdateStatus,
@@ -11,10 +12,8 @@ from app.schemas.incident_schema import (
 from typing import Optional
 from app.services import incident_service
 from app.services.incident_timeline_service import get_incident_timeline
-from app.services.audit_log_service import resolve_audit_organization_id
 from app.services.incident_evidence_service import get_incident_evidence
 from app.services.incident_note_service import get_notes
-from app.utils.security import get_current_user
 
 router = APIRouter(
     prefix="/incidents",
@@ -22,7 +21,8 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[IncidentResponse])
+@router.get("", response_model=list[IncidentResponse])
+@router.get("/", response_model=list[IncidentResponse], include_in_schema=False)
 def get_all_incidents(
     status: Optional[str] = None,
     severity: Optional[str] = None,
@@ -30,10 +30,12 @@ def get_all_incidents(
     search: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
     return incident_service.get_all_incidents(
         db=db,
+        organization_id=ctx.organization_id,
         status=status,
         severity=severity,
         assigned_to=assigned_to,
@@ -46,12 +48,10 @@ def get_all_incidents(
 @router.get("/{incident_id}")
 def get_incident(
     incident_id: int,
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    incident = incident_service.get_incident_by_id(
-        db,
-        incident_id
-    )
+    incident = scoped_get(db, Incident, incident_id, ctx)
 
     if incident is None:
         raise HTTPException(
@@ -76,6 +76,26 @@ def get_incident(
     }
 
 
+@router.get("/{incident_id}/timeline")
+def get_timeline(
+    incident_id: int,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    scoped_get(db, Incident, incident_id, ctx)
+    return get_incident_timeline(db, incident_id)
+
+
+@router.get("/{incident_id}/evidence")
+def get_evidence(
+    incident_id: int,
+    ctx: TenantContext = Depends(get_tenant_context),
+    db: Session = Depends(get_db)
+):
+    scoped_get(db, Incident, incident_id, ctx)
+    return get_incident_evidence(db, incident_id)
+
+
 @router.patch(
     "/{incident_id}/status",
     response_model=IncidentResponse
@@ -83,15 +103,16 @@ def get_incident(
 def update_incident_status(
     incident_id: int,
     payload: IncidentUpdateStatus,
-    current_user: User = Depends(get_current_user),
+    ctx: TenantContext = Depends(require_roles("owner", "admin", "analyst")),
     db: Session = Depends(get_db)
 ):
+    scoped_get(db, Incident, incident_id, ctx)
     incident = incident_service.update_incident_status(
         db=db,
         incident_id=incident_id,
         status=payload.status,
-        user_id=current_user.id,
-        organization_id=resolve_audit_organization_id(db, current_user.id),
+        user_id=ctx.user.id,
+        organization_id=ctx.organization_id,
     )
 
     if incident is None:
@@ -110,12 +131,16 @@ def update_incident_status(
 def assign_incident(
     incident_id: int,
     payload: IncidentAssign,
+    ctx: TenantContext = Depends(require_roles("owner", "admin", "analyst")),
     db: Session = Depends(get_db)
 ):
+    scoped_get(db, Incident, incident_id, ctx)
     incident = incident_service.assign_incident(
         db=db,
         incident_id=incident_id,
-        assigned_to=payload.assigned_to
+        assigned_to=payload.assigned_to,
+        user_id=ctx.user.id,
+        organization_id=ctx.organization_id,
     )
 
     if incident is None:
@@ -128,6 +153,7 @@ def assign_incident(
 
 @router.get("/statistics/overview")
 def get_statistics(
+    ctx: TenantContext = Depends(get_tenant_context),
     db: Session = Depends(get_db)
 ):
-    return incident_service.get_incident_statistics(db)
+    return incident_service.get_incident_statistics(db, ctx.organization_id)

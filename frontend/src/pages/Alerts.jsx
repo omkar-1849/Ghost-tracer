@@ -5,11 +5,8 @@ import {
     TriangleAlert,
     Flame,
     Search,
-    Filter,
     ArrowUpRight,
     CheckCircle2,
-    Clock,
-    AlertCircle,
     RefreshCw,
 } from "lucide-react";
 import { getRecentAlerts, getDashboardStats } from "../services/api";
@@ -52,9 +49,9 @@ function Alerts() {
     };
 
     useEffect(() => {
-        loadAlertsData();
+        const initial = setTimeout(loadAlertsData, 0);
         const interval = setInterval(loadAlertsData, 6000);
-        return () => clearInterval(interval);
+        return () => { clearTimeout(initial); clearInterval(interval); };
     }, []);
 
     const filtered = useMemo(() => {

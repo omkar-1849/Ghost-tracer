@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, DateTime, Integer, String, Text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
 
 from app.database.base import Base
 
@@ -10,8 +10,15 @@ class AuditLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    organization_id = Column(Integer, nullable=False, index=True)
-    user_id = Column(Integer, nullable=True, index=True)
+    # Unknown historical actors/tenants stay nullable; never invent identities.
+    organization_id = Column(
+        Integer, ForeignKey("organizations.id", ondelete="RESTRICT"),
+        nullable=True, index=True,
+    )
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True, index=True,
+    )
 
     action = Column(String(100), nullable=False, index=True)
     resource_type = Column(String(100), nullable=True)

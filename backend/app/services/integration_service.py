@@ -43,6 +43,7 @@ def create_integration(
         api_secret = secrets.token_urlsafe(48)
 
         integration = Integration(
+            organization_id=organization_id or website.organization_id,
             website_id=website_id,
             api_key_hash=_hash(api_key),
             api_secret_hash=_hash(api_secret),
@@ -50,7 +51,7 @@ def create_integration(
         )
 
         db.add(integration)
-        db.commit()
+        db.flush()
         db.refresh(integration)
 
         if user_id is not None and organization_id is not None:
@@ -72,12 +73,13 @@ def create_integration(
         api_key = f"sk_{secrets.token_urlsafe(24)}"
         api_secret = secrets.token_urlsafe(48)
 
+        existing.organization_id = organization_id or website.organization_id or existing.organization_id
         existing.api_key_hash = _hash(api_key)
         existing.api_secret_hash = _hash(api_secret)
         existing.status = "Connected"
         existing.updated_at = datetime.utcnow()
 
-        db.commit()
+        db.flush()
         db.refresh(existing)
 
         if user_id is not None and organization_id is not None:
@@ -133,7 +135,7 @@ def regenerate_keys(
     integration.api_secret_hash = _hash(api_secret)
     integration.updated_at = datetime.utcnow()
 
-    db.commit()
+    db.flush()
     db.refresh(integration)
 
     if user_id is not None and organization_id is not None:
@@ -179,7 +181,7 @@ def revoke_integration(
     integration.status = "Revoked"
     integration.updated_at = datetime.utcnow()
 
-    db.commit()
+    db.flush()
     db.refresh(integration)
 
     if user_id is not None and organization_id is not None:
@@ -215,26 +217,12 @@ def validate_api_key(
 
     if integration:
         integration.last_used = datetime.utcnow()
-        db.commit()
+        db.flush()
         db.refresh(integration)
 
-        organization_id = 1
-
-        # Find the website owner's organization if possible
-        if integration.website_id is not None:
-            from app.models.website import Website
-            website = (
-                db.query(Website)
-                .filter(Website.id == integration.website_id)
-                .first()
-            )
-            if website is not None:
-                org_member = (
-                    db.query(OrganizationMember)
-                    .first()
-                )
-                if org_member:
-                    organization_id = org_member.organization_id
+        organization_id = integration.organization_id
+        if organization_id is None:
+            return None
 
         create_audit_log(
             db=db,

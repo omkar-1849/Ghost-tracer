@@ -3,27 +3,22 @@ import {
     TriangleAlert,
     Search,
     Clock,
-    User,
     CheckCircle2,
-    Flame,
     X,
     FileText,
     Activity,
     Zap,
-    Send,
-    Plus,
     AlertCircle,
 } from "lucide-react";
 import {
     getIncidents,
     getIncidentById,
     updateIncidentStatus,
-    assignIncident,
     addIncidentNote,
     createResponseAction,
     executeResponseAction,
 } from "../services/api";
-import { isAuthenticated } from "../services/authClient";
+
 
 function formatTimestamp(ts) {
     if (!ts) return "—";
@@ -43,6 +38,7 @@ function Incidents() {
     const [search, setSearch] = useState("");
     const [selectedIncident, setSelectedIncident] = useState(null);
     const [incidentDetail, setIncidentDetail] = useState(null);
+    const [listError, setListError] = useState("");
     const [loading, setLoading] = useState(true);
     const [detailLoading, setDetailLoading] = useState(false);
     const [statusUpdating, setStatusUpdating] = useState(false);
@@ -67,18 +63,19 @@ function Incidents() {
             const data = await getIncidents();
             if (Array.isArray(data)) {
                 setIncidents(data);
+                setListError("");
             }
         } catch (err) {
-            console.error("Failed to load incidents", err);
+            setListError(err.message);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchIncidentList();
+        const initial = setTimeout(fetchIncidentList, 0);
         const interval = setInterval(fetchIncidentList, 10000);
-        return () => clearInterval(interval);
+        return () => { clearTimeout(initial); clearInterval(interval); };
     }, []);
 
     // Load full detail when an incident is selected
@@ -90,7 +87,8 @@ function Incidents() {
             setIncidentDetail(full);
         } catch (err) {
             console.error("Failed to load incident detail", err);
-            setIncidentDetail({ incident: inc, timeline: [], evidence: [], notes: [] });
+            setIncidentDetail(null);
+            showToast("Incident detail unavailable. Retry loading.", "error");
         } finally {
             setDetailLoading(false);
         }
@@ -101,7 +99,7 @@ function Incidents() {
         if (!selectedIncident) return;
         setStatusUpdating(true);
         try {
-            const updated = await updateIncidentStatus(selectedIncident.id, newStatus);
+            await updateIncidentStatus(selectedIncident.id, newStatus);
             setSelectedIncident((prev) => ({ ...prev, status: newStatus }));
             showToast(`Incident status updated to ${newStatus}.`);
             fetchIncidentList();
@@ -120,7 +118,7 @@ function Incidents() {
         if (!newNote.trim() || !selectedIncident) return;
         setSubmittingNote(true);
         try {
-            await addIncidentNote(selectedIncident.id, "Admin Analyst", newNote.trim());
+            await addIncidentNote(selectedIncident.id, newNote.trim());
             setNewNote("");
             showToast("Analyst note added.");
             const full = await getIncidentById(selectedIncident.id);
@@ -138,12 +136,12 @@ function Incidents() {
         try {
             const res = await createResponseAction(selectedIncident.id, {
                 action_type: actionType,
-                target: selectedIncident.source_ip || "192.168.1.101",
+                target: selectedIncident.source_ip || "",
                 reason: `Mitigation action for incident ${selectedIncident.title}`,
             });
             if (res && res.id) {
                 const execRes = await executeResponseAction(res.id);
-                showToast(`Action ${actionType} dispatched (Status: ${execRes.status || "EXECUTED"}).`);
+                showToast(`Action ${actionType} ${execRes.status || "requested"} (simulation only; no external enforcement yet).`);
             } else {
                 showToast(`Action ${actionType} registered as PENDING.`);
             }
@@ -173,6 +171,7 @@ function Incidents() {
 
     return (
         <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+            {listError && <p role="alert">Incident list unavailable or incomplete: {listError}</p>}
             {/* Native Toast */}
             {toast && (
                 <div

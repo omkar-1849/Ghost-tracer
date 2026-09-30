@@ -1,4 +1,5 @@
-const API_URL = "http://127.0.0.1:8000/websites";
+import { authFetch, BASE_URL } from "./authClient";
+const API_URL = `${BASE_URL}/websites`;
 
 function mapToFrontend(backend) {
     if (!backend) return null;
@@ -47,7 +48,7 @@ function mapToBackend(frontend) {
 }
 
 export async function getWebsites() {
-    const res = await fetch(API_URL);
+    const res = await authFetch(API_URL);
     if (!res.ok) throw new Error("Failed to fetch websites");
     const data = await res.json();
     return data.map(mapToFrontend);
@@ -55,7 +56,7 @@ export async function getWebsites() {
 
 export async function searchWebsites(query) {
     if (!query) return getWebsites();
-    const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
+    const res = await authFetch(`${API_URL}/search?q=${encodeURIComponent(query)}`);
     if (!res.ok) throw new Error("Failed to search websites");
     const data = await res.json();
     return data.map(mapToFrontend);
@@ -63,7 +64,7 @@ export async function searchWebsites(query) {
 
 export async function createWebsite(frontendData) {
     const payload = mapToBackend(frontendData);
-    const res = await fetch(API_URL, {
+    const res = await authFetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -79,7 +80,7 @@ export async function createWebsite(frontendData) {
 
 export async function updateWebsite(id, frontendData) {
     const payload = mapToBackend(frontendData);
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await authFetch(`${API_URL}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -94,7 +95,7 @@ export async function updateWebsite(id, frontendData) {
 }
 
 export async function deleteWebsite(id) {
-    const res = await fetch(`${API_URL}/${id}`, {
+    const res = await authFetch(`${API_URL}/${id}`, {
         method: "DELETE",
     });
     if (!res.ok) {
@@ -120,13 +121,13 @@ async function errorMessage(res) {
 }
 
 export async function getVerificationToken(websiteId) {
-    const res = await fetch(`${API_URL}/${websiteId}/verification-token`);
+    const res = await authFetch(`${API_URL}/${websiteId}/verification-token`);
     if (!res.ok) throw new Error(await errorMessage(res));
     return res.json();
 }
 
 export async function verifyWebsite(websiteId, method) {
-    const res = await fetch(`${API_URL}/${websiteId}/verify/${encodeURIComponent(method)}`, {
+    const res = await authFetch(`${API_URL}/${websiteId}/verify/${encodeURIComponent(method)}`, {
         method: "POST",
     });
     if (!res.ok) throw new Error(await errorMessage(res));
@@ -138,13 +139,13 @@ export async function verifyWebsite(websiteId, method) {
  * ------------------------------------------------------------------ */
 
 export async function getIntegration(websiteId) {
-    const res = await fetch(`${API_URL}/${websiteId}/integration`);
+    const res = await authFetch(`${API_URL}/${websiteId}/integration`);
     if (!res.ok) throw new Error(await errorMessage(res));
     return res.json();
 }
 
 export async function connectWebsite(websiteId) {
-    const res = await fetch(`${API_URL}/${websiteId}/connect`, {
+    const res = await authFetch(`${API_URL}/${websiteId}/connect`, {
         method: "POST",
     });
     if (!res.ok) throw new Error(await errorMessage(res));
@@ -152,7 +153,7 @@ export async function connectWebsite(websiteId) {
 }
 
 export async function regenerateIntegrationKeys(websiteId) {
-    const res = await fetch(`${API_URL}/${websiteId}/regenerate-key`, {
+    const res = await authFetch(`${API_URL}/${websiteId}/regenerate-key`, {
         method: "POST",
     });
     if (!res.ok) throw new Error(await errorMessage(res));
@@ -160,7 +161,7 @@ export async function regenerateIntegrationKeys(websiteId) {
 }
 
 export async function disconnectWebsite(websiteId) {
-    const res = await fetch(`${API_URL}/${websiteId}/disconnect`, {
+    const res = await authFetch(`${API_URL}/${websiteId}/disconnect`, {
         method: "DELETE",
     });
     if (!res.ok) throw new Error(await errorMessage(res));

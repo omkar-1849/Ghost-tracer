@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
     Zap,
     Search,
@@ -27,11 +27,11 @@ function formatTimestamp(ts) {
 
 function StatusBadge({ status }) {
     const s = String(status || "PENDING").toUpperCase();
-    if (s === "EXECUTED" || s === "COMPLETED") {
+    if (s === "SIMULATED" || s === "EXECUTED" || s === "COMPLETED") {
         return (
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[rgba(16,185,129,0.12)] border border-[rgba(16,185,129,0.3)] text-[var(--color-success)] font-medium">
                 <CheckCircle2 size={12} />
-                <span>EXECUTED</span>
+                <span>SIMULATED</span>
             </span>
         );
     }
@@ -68,6 +68,7 @@ function ResponseActions() {
     const [newActionType, setNewActionType] = useState("BLOCK_IP");
     const [newTarget, setNewTarget] = useState("");
     const [newReason, setNewReason] = useState("");
+    const [loadError, setLoadError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
     const showToast = (msg, type = "success") => {
@@ -75,42 +76,41 @@ function ResponseActions() {
         setTimeout(() => setToast(null), 4000);
     };
 
-    const loadActions = async () => {
+    const loadActions = useCallback(async () => {
         try {
             const [actionsData, incData] = await Promise.allSettled([
                 getResponseActions(),
                 getIncidents(),
             ]);
+            setLoadError([actionsData, incData].some((item) => item.status === "rejected") ? "Response action data unavailable. Retry loading; the queue may be incomplete." : "");
             if (actionsData.status === "fulfilled" && Array.isArray(actionsData.value)) {
                 setActions(actionsData.value);
             }
             if (incData.status === "fulfilled" && Array.isArray(incData.value)) {
                 setIncidents(incData.value);
-                if (incData.value.length > 0 && !newIncidentId) {
-                    setNewIncidentId(incData.value[0].id);
-                }
+                if (incData.value.length > 0) setNewIncidentId((current) => current || incData.value[0].id);
             }
         } catch (err) {
             console.error("Failed to load actions", err);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        loadActions();
+        const initial = setTimeout(loadActions, 0);
         const interval = setInterval(loadActions, 8000);
-        return () => clearInterval(interval);
-    }, []);
+        return () => { clearTimeout(initial); clearInterval(interval); };
+    }, [loadActions]);
 
     const handleExecute = async (actionId) => {
         setExecutingId(actionId);
         try {
             const res = await executeResponseAction(actionId);
-            showToast(`Action executed by backend. Status: ${res.status || "EXECUTED"}.`);
+            showToast(`Action recorded as ${res.status || "SIMULATED"} (simulation only; no external enforcement yet).`);
             await loadActions();
         } catch (err) {
-            showToast(`Execution failed: ${err.message}`, "error");
+            showToast(`Simulation failed: ${err.message}`, "error");
         } finally {
             setExecutingId(null);
         }
@@ -152,6 +152,7 @@ function ResponseActions() {
 
     return (
         <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+            {loadError && <p role="alert">{loadError}</p>}
             {/* Native Toast Feedback */}
             {toast && (
                 <div
@@ -174,7 +175,7 @@ function ResponseActions() {
                         <span>Defensive Response Actions</span>
                     </h1>
                     <p className="text-sm text-[var(--color-text-muted)] mt-1">
-                        Defensive countermeasure queue, execution confirmations, and policy enforcement
+                        Simulation queue only — actions do not enforce blocking or isolation
                     </p>
                 </div>
 
@@ -215,7 +216,7 @@ function ResponseActions() {
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
-                    {["ALL", "PENDING", "EXECUTED", "FAILED"].map((st) => (
+                    {["ALL", "PENDING", "SIMULATED", "FAILED"].map((st) => (
                         <button
                             key={st}
                             type="button"
@@ -244,7 +245,7 @@ function ResponseActions() {
                                 <th className="pb-3.5 font-medium">Status</th>
                                 <th className="pb-3.5 font-medium">Reason / Rationale</th>
                                 <th className="pb-3.5 font-medium">Created At</th>
-                                <th className="pb-3.5 font-medium text-right">Execute</th>
+                                <th className="pb-3.5 font-medium text-right">Simulate</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--color-border-subtle)]">

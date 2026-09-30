@@ -13,7 +13,7 @@ export default function EmptyState({ onAdd }) {
             </p>
             <button
                 onClick={onAdd}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-text-primary)] rounded-md text-sm font-bold transition-colors duration-150 border border-transparent active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--color-signal)]"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-[var(--color-accent-foreground)] rounded-md text-sm font-bold transition-colors duration-150 border border-transparent active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[var(--color-signal)]"
             >
                 <Plus size={16} />
                 Add Your First Website

@@ -1,6 +1,7 @@
+import { authFetch, BASE_URL } from "./authClient";
 import { getWebsites } from "./websiteApi";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = BASE_URL;
 
 // Backend engine value -> display name and frontend tab id.
 const ENGINE_META = {
@@ -36,6 +37,7 @@ function mapScanToFrontend(scan) {
         raw_output: scan.raw_output,
         parsed_output: scan.parsed_output,
         error: scan.error,
+        truncated: scan.truncated === true,
         created_at: scan.started_at,
         started_at: scan.started_at,
         completed_at: scan.completed_at,
@@ -43,7 +45,7 @@ function mapScanToFrontend(scan) {
 }
 
 async function request(url, options = {}) {
-    const response = await fetch(url, options);
+    const response = await authFetch(url, options);
 
     if (!response.ok) {
         let message = null;

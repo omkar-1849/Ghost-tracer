@@ -1,12 +1,14 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 
 class ResponseActionCreate(BaseModel):
-    action_type: str
-    target: str
-    reason: str | None = None
+    model_config = ConfigDict(extra="forbid")
+    action_type: Literal["BLOCK_IP"]
+    target: str = Field(min_length=1, max_length=50)
+    reason: str | None = Field(None, max_length=2000)
 
 
 class ResponseActionResponse(BaseModel):

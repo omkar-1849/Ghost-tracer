@@ -30,7 +30,8 @@ const DEFAULT_SETTINGS = {
     aiEnabled: true,
     aiProvider: "openai",
     aiModel: "gpt-4o",
-    aiKey: "sk-••••••••••••••••••••••••",
+    aiKey: "",
+    aiKeyConfigured: false,
     aiTemp: 0.2,
     aiContext: 128000,
     aiSummaries: true,
@@ -84,7 +85,7 @@ const CONTEXT_DATA = {
         description: "Configure Large Language Models for automated vulnerability analysis and summaries.",
         notes: [
             "We recommend GPT-4o for the most accurate remediation snippets.",
-            "API Keys are securely encrypted at rest."
+            "API keys are redacted in read responses."
         ],
         docs: "View AI Documentation",
         status: "Operational",

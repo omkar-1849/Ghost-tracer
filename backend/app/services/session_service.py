@@ -32,7 +32,7 @@ def create_session(
     )
 
     db.add(session)
-    db.commit()
+    db.flush()
     db.refresh(session)
 
     return session
@@ -102,7 +102,7 @@ def validate_session(
 
     if expires_at < datetime.now(timezone.utc):
         session.revoked = True
-        db.commit()
+        db.flush()
 
         raise HTTPException(
             status_code=401,
@@ -110,7 +110,7 @@ def validate_session(
         )
 
     session.last_used_at = datetime.now(timezone.utc)
-    db.commit()
+    db.flush()
 
     return session
 
@@ -132,7 +132,7 @@ def revoke_session(
 
     if session:
         session.revoked = True
-        db.commit()
+        db.flush()
 
 
 def revoke_all_sessions(
@@ -154,4 +154,4 @@ def revoke_all_sessions(
         )
     )
 
-    db.commit()
+    db.flush()

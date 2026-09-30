@@ -1,9 +1,10 @@
+import { safeHttpUrl } from "../../services/evidence.js";
 import { useEffect, useState } from "react";
 import {
-    X, ExternalLink, Globe, Calendar, User, Server, HeartPulse,
-    ShieldCheck, ShieldAlert, ActivitySquare, Database, Terminal, Eye, EyeOff, Pencil,
+    X, ExternalLink, Globe, Server,
+    ShieldCheck, ShieldAlert, ActivitySquare, Terminal, Eye, EyeOff, Pencil,
     Copy, Check, FileCode2, Tag, Hash, PlugZap, KeyRound, Loader2,
-    RotateCcw, Unplug, CheckCircle2, XCircle, Info, Link2,
+    RotateCcw, Unplug, CheckCircle2, XCircle, Info,
 } from "lucide-react";
 import * as api from "../../services/websiteApi";
 
@@ -431,7 +432,7 @@ export default function WebsiteDetailsDrawer({ website, onClose, onEdit, onRefre
                             <div className="min-w-0">
                                 <h2 className="text-lg font-bold text-[var(--color-text-primary)] leading-tight truncate">{website.name}</h2>
                                 <a
-                                    href={website.url}
+                                    href={safeHttpUrl(website.url)}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="mono-value text-[var(--color-info)] hover:text-[var(--color-accent-hover)] flex items-center gap-1 mt-1 transition-colors duration-150"

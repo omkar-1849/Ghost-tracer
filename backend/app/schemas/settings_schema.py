@@ -1,6 +1,6 @@
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class SettingsBase(BaseModel):
@@ -24,7 +24,8 @@ class SettingsBase(BaseModel):
     ai_enabled: bool = True
     ai_provider: str = "openai"
     ai_model: str = "gpt-4o"
-    api_key: str = "sk-••••••••••••••••••••••••"
+    api_key: None = None
+    api_key_configured: bool = False
     temperature: float = Field(0.2, ge=0.0, le=2.0)
     context_length: int = Field(128000, ge=1024, le=1000000)
     confidence_threshold: float = Field(0.7, ge=0.0, le=1.0)
@@ -39,6 +40,9 @@ class SettingsBase(BaseModel):
 
 
 class SettingsUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    api_key_configured: Optional[bool] = None  # read-only compatibility marker
+
     organization_name: Optional[str] = None
     platform_name: Optional[str] = None
     timezone: Optional[str] = None
@@ -71,6 +75,13 @@ class SettingsUpdate(BaseModel):
 
     email_notifications: Optional[bool] = None
     desktop_notifications: Optional[bool] = None
+
+    @field_validator("api_key")
+    @classmethod
+    def reject_plaintext_secret(cls, value):
+        if value is not None:
+            raise ValueError("API keys are deployment-managed; configure SENTINEL_AI_API_KEY in the server environment.")
+        return value
 
 
 class SettingsResponse(SettingsBase):

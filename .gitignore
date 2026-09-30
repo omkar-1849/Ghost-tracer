@@ -1,30 +1,74 @@
-# Python
+# Python Caches & Bytecode
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 *.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Databases
+*.sqlite
 *.sqlite3
 *.db
+*.db-journal
 
 # Virtual Environments
 venv/
 .venv/
 env/
+ENV/
+backend/venv/
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
 .env.*
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+!.env.example
+!backend/.env.example
+!frontend/.env.example
 
-# Logs
+# Logs & Diagnostics
 *.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# VS Code
+# IDE & Editor Files
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-# React / Node
+# React / Node / Bundler
+node_modules/
 frontend/node_modules/
+dist/
 frontend/dist/
+.eslintcache
+.vite/
+frontend/.vite/
 
-# OS Files
+# Operating System Files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+desktop.ini
+
+# Test Artifacts & Temporary Files
+gui-test-screenshots/
+screenshots/
+artifacts/
+tmp/
+scratch/

@@ -1,7 +1,11 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import logging
 
-from app.database.base import Base
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app.config.runtime import get_runtime_config
 from app.database.database import engine
 
 # Models
@@ -44,8 +48,12 @@ from app.routers.organization_router import router as organization_router
 from app.routers.scan_router import router as scan_router
 from app.routers.response_action_router import router as response_action_router
 
+from app.middleware.http_security import SecurityMiddleware
+from app.services.scanner_worker import start_scan_workers, stop_scan_workers
 
-Base.metadata.create_all(bind=engine)
+config = get_runtime_config()
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 
 
 app = FastAPI(
@@ -55,18 +63,31 @@ app = FastAPI(
 )
 
 
-# CORS Configuration
+@app.exception_handler(RequestValidationError)
+async def invalid_request(_request: Request, _exc: RequestValidationError):
+    return JSONResponse(status_code=422, content={"detail": "Request validation failed. Check the submitted fields."})
+
+
+@app.on_event("startup")
+def start_background_services():
+    from app.database.migrations import check_schema
+    check_schema(engine)
+    if config.environment != "test":
+        start_scan_workers()
+
+
+@app.on_event("shutdown")
+def stop_background_services():
+    stop_scan_workers()
+
+
+app.add_middleware(SecurityMiddleware, max_body_bytes=262144)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-    ],
+    allow_origins=config.cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Organization-ID"],
 )
 
 

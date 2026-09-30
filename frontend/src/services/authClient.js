@@ -1,111 +1,120 @@
-/**
- * Centralized authentication client for Sentinel AI.
- *
- * Provides login, token management, and an authenticated fetch wrapper.
- * All protected API services should import `authFetch` from this module
- * rather than implementing their own token logic.
- *
- * Uses the same base URL pattern already established by the other
- * service modules (api.js, settingsApi.js, etc.).
- */
-
-const BASE_URL = "http://127.0.0.1:8000";
+// Credentials are only sent to the configured API, never to target/report URLs.
+export function resolveApiBase(env = {}) {
+    const value = env.VITE_API_BASE_URL || (env.DEV ? "http://127.0.0.1:8000" : "");
+    if (!value) return "";
+    const url = new URL(value);
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error("Invalid API base URL");
+    if (!env.DEV && url.protocol !== "https:") throw new Error("Production API requires HTTPS");
+    return url.href.replace(/\/$/, "");
+}
+export const BASE_URL = resolveApiBase(import.meta.env);
 const TOKEN_KEY = "sentinel_access_token";
-
-// ---------------------------------------------------------------------------
-// Token helpers
-// ---------------------------------------------------------------------------
-
-/** Retrieve the stored JWT access token. */
-export function getToken() {
-    if (typeof window === "undefined") return null;
-    return window.sessionStorage.getItem(TOKEN_KEY);
-}
-
-/** Store a JWT access token in session storage. */
+const ORG_KEY = "sentinel_organization_id";
+let membership = null;
+const storage = () => typeof window === "undefined" ? null : window.sessionStorage;
+export const getToken = () => storage()?.getItem(TOKEN_KEY) || null;
+export const getOrganization = () => membership;
 export function setToken(token) {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.setItem(TOKEN_KEY, token);
+    membership = null;
+    storage()?.removeItem(ORG_KEY);
+    storage()?.setItem(TOKEN_KEY, token);
 }
-
-/** Clear the stored token (logout / session expiry). */
 export function clearToken() {
-    if (typeof window === "undefined") return;
-    window.sessionStorage.removeItem(TOKEN_KEY);
+    membership = null;
+    storage()?.removeItem(TOKEN_KEY);
+    storage()?.removeItem(ORG_KEY);
+    if (typeof window !== "undefined") window.dispatchEvent(new Event("sentinel-auth-change"));
 }
-
-/** Returns true when a token is currently stored. */
+export function tokenExpired(token) {
+    try {
+        const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        return !Number.isFinite(payload.exp) || payload.exp * 1000 <= Date.now();
+    } catch { return true; }
+}
 export function isAuthenticated() {
-    return !!getToken();
+    const token = getToken();
+    return !!token && !tokenExpired(token);
 }
-
-// ---------------------------------------------------------------------------
-// Login / Logout
-// ---------------------------------------------------------------------------
-
-/**
- * Authenticate against the Sentinel AI backend.
- *
- * On success the JWT is persisted to sessionStorage and the full
- * response payload `{ access_token, token_type, user }` is returned.
- *
- * On failure an Error with the backend's detail message is thrown.
- */
-export async function login(email, password) {
-    const response = await fetch(`${BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-    });
-
+export function apiUrl(input, base = BASE_URL) {
+    if (!base) throw new Error("Configure VITE_API_BASE_URL before using the application.");
+    const root = new URL(`${base}/`);
+    const url = new URL(input, root);
+    if (url.origin !== root.origin || !url.pathname.startsWith(root.pathname) || url.username || url.password) throw new Error("Refusing credentials outside the configured API");
+    return url.href;
+}
+async function checked(response) {
     if (!response.ok) {
-        let detail = "Authentication failed.";
+        let message = `Request failed (${response.status})`;
         try {
-            const payload = await response.json();
-            detail = payload?.detail || detail;
-        } catch {
-            // ignore JSON parse errors on non-JSON error bodies
-        }
-        throw new Error(detail);
+            const data = await response.json();
+            if (typeof data.detail === "string") message = data.detail;
+        } catch { /* Non-JSON error */ }
+        const error = new Error(message);
+        error.status = response.status;
+        throw error;
     }
-
+    return response;
+}
+async function authenticatedRequest(url, options = {}, organizationId) {
+    const destination = apiUrl(url); // Validate before accessing/attaching any secret.
+    const token = getToken();
+    if (!token || tokenExpired(token)) {
+        clearToken();
+        throw new Error("Session expired. Please sign in again.");
+    }
+    const headers = new Headers(options.headers);
+    headers.set("Authorization", `Bearer ${token}`);
+    headers.delete("X-Organization-ID");
+    if (organizationId) headers.set("X-Organization-ID", String(organizationId));
+    const response = await fetch(destination, { ...options, headers, credentials: "omit", redirect: "error" });
+    if (response.status === 401) clearToken();
+    return checked(response);
+}
+export async function authFetch(url, options = {}) {
+    if (!membership) throw new Error("Select a validated organization before accessing application data.");
+    return authenticatedRequest(url, options, membership.id);
+}
+export async function getMemberships() {
+    const response = await authenticatedRequest(`${BASE_URL}/organization/list`);
     const data = await response.json();
+    if (!Array.isArray(data)) throw new Error("Invalid membership list");
+    return data;
+}
+export async function selectOrganization(id) {
+    membership = null;
+    const response = await authenticatedRequest(`${BASE_URL}/organization`, {}, id);
+    const data = await response.json();
+    if (String(data.id) !== String(id)) throw new Error("Organization validation failed");
+    membership = data;
+    storage()?.setItem(ORG_KEY, String(id));
+    return data;
+}
+export async function createOrganization(name) {
+    const response = await authenticatedRequest(`${BASE_URL}/organization`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+    });
+    return response.json();
+}
+export function switchOrganization() {
+    membership = null;
+    storage()?.removeItem(ORG_KEY);
+    window.dispatchEvent(new Event("sentinel-org-change"));
+}
+export const storedOrganizationId = () => storage()?.getItem(ORG_KEY);
+export async function publicAuthRequest(path, body) {
+    const response = await checked(await fetch(apiUrl(`${BASE_URL}/auth/${path}`), {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body), credentials: "omit", redirect: "error",
+    }));
+    return response.json();
+}
+export async function login(email, password) {
+    const data = await publicAuthRequest("login", { email, password });
     setToken(data.access_token);
     return data;
 }
-
-/** Clear all client-side session state. */
-export function logout() {
+export async function logout() {
+    await authenticatedRequest(`${BASE_URL}/sessions/logout`, { method: "POST" }, membership?.id);
     clearToken();
-}
-
-// ---------------------------------------------------------------------------
-// Authenticated fetch wrapper
-// ---------------------------------------------------------------------------
-
-/**
- * Drop-in replacement for the native `fetch` that automatically attaches
- * the stored Bearer token to the `Authorization` header.
- *
- * If the server responds with 401 the local token is cleared so that
- * subsequent `isAuthenticated()` checks return false.
- *
- * Usage is identical to `fetch(url, options)`.
- */
-export async function authFetch(url, options = {}) {
-    const token = getToken();
-    const headers = { ...(options.headers || {}) };
-
-    if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(url, { ...options, headers });
-
-    // On 401, clear the stale/expired token.
-    if (response.status === 401) {
-        clearToken();
-    }
-
-    return response;
 }
