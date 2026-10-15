@@ -10,9 +10,9 @@ class IncidentBase(BaseModel):
     threat_level: str
     priority: str
     status: str
-    source_ip: str
-    target: str
-    confidence: int
+    source_ip: str | None = None
+    target: str | None = None
+    confidence: int | None = 0
     assigned_to: str | None = None
 
 class IncidentCreate(IncidentBase):

@@ -24,7 +24,7 @@ class NmapScanner(BaseScanner, ScannerJobMixin):
                 return
 
             hostname = extract_hostname(scan.target)
-            cmd = [binary, "-sV", "-sC", "--open", "-oX", "-", hostname]
+            cmd = [binary, "-sV", "-sC", "--open", "-T3", "--host-timeout", "300s", "-oX", "-", hostname]
             self.set_command(db, scan, " ".join(cmd))
 
             result = run_subprocess(cmd, timeout=300, cancelled=lambda: self.is_cancelled(db, scan))

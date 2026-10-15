@@ -67,10 +67,36 @@ class SSLScanner(BaseScanner, ScannerJobMixin):
                                 "tls_version": tls.version(), "hostname": destination.hostname,
                                 "port": destination.port}
             except ssl.SSLCertVerificationError:
-                self.fail_job(db, scan, "TLS certificate verification failed; no insecure retry was performed.",
-                    parsed_output={"scanner": "SSL", "validity_status": "Invalid",
-                        "findings": [{"title": "TLS Certificate Verification Failed", "severity": "high",
-                        "description": "Certificate trust, identity, or validity verification failed."}]})
+                finding = {
+                    "title": "TLS Certificate Verification Failed",
+                    "severity": normalize_severity("high"),
+                    "description": "Certificate trust, identity, or validity verification failed (e.g. untrusted CA, expired, or hostname mismatch).",
+                    "category": "tls_configuration",
+                }
+                report = {
+                    "scanner": self.name,
+                    "summary": "Found 1 issue during SSL/TLS analysis.",
+                    "certificate_details": {"validity_status": "Invalid"},
+                    "cipher_info": {},
+                    "findings": [finding],
+                    "validity_status": "Invalid",
+                    "recommendations": [
+                        "Ensure the server uses a valid certificate signed by a recognized Certificate Authority.",
+                        "Verify hostname matches the Common Name (CN) or Subject Alternative Name (SAN).",
+                    ]
+                }
+                self.complete_job(
+                    db,
+                    scan,
+                    findings=1,
+                    risk_score=calculate_risk_score([finding]),
+                    raw_output=json.dumps({
+                        "error": "SSLCertVerificationError",
+                        "hostname": destination.hostname,
+                        "port": destination.port,
+                    }),
+                    parsed_output=report,
+                )
                 return
             if self.is_cancelled(db, scan):
                 return

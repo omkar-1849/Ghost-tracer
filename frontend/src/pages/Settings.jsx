@@ -122,31 +122,32 @@ export default function Settings() {
     };
 
     return (
-        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
-            {loadError && <p role="alert">{loadError}</p>}
-            {!canAdmin && <p>Organization settings require an owner or admin role. Account sessions remain available.</p>}
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
+            {loadError && <p role="alert" className="text-xs text-[#FF8585]">{loadError}</p>}
+            {!canAdmin && <p className="text-xs text-[#E5B374]">Organization settings require an owner or admin role. Account sessions remain available.</p>}
             {/* Toast feedback */}
             {toastMessage && (
                 <div
-                    className={`fixed top-5 right-8 z-50 flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium shadow-[var(--shadow-modal)] animate-fade-in ${
+                    className={`fixed top-5 right-8 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold shadow-[0_12px_32px_rgba(0,0,0,0.6)] animate-fade-in ${
                         toastMessage.type === "error"
-                            ? "bg-[var(--color-surface-3)] border-[var(--color-critical)] text-[var(--color-critical)]"
-                            : "bg-[var(--color-surface-3)] border-white/40 text-white"
+                            ? "bg-[#12100E]/95 border-[#FF8585]/40 text-[#FF8585]"
+                            : "bg-[#12100E]/95 border-[#D3A06A]/40 text-[#F5F1EC]"
                     }`}
                 >
-                    {toastMessage.type === "error" ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+                    {toastMessage.type === "error" ? <AlertCircle size={16} /> : <CheckCircle2 size={16} className="text-[#77C79A]" />}
                     <span>{toastMessage.text}</span>
                 </div>
             )}
 
             {/* Top Title & Sticky Save Control Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border-subtle)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-                        <SettingsIcon size={24} className="text-white" />
+                    <p className="text-[11px] font-semibold tracking-wider uppercase text-[#D3A06A] mb-1.5">System Administration</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC] flex items-center gap-2.5">
+                        <SettingsIcon size={22} className="text-[#D3A06A]" />
                         <span>System & Security Settings</span>
                     </h1>
-                    <p className="text-sm text-[var(--color-text-muted)] mt-0.5">
+                    <p className="text-xs text-[#9E948A] mt-1">
                         Enterprise configuration, scanning rules, access controls, and preferences
                     </p>
                 </div>
@@ -156,7 +157,7 @@ export default function Settings() {
                         type="button"
                         disabled={!canAdmin || loading || saving || !!loadError}
                         onClick={handleReset}
-                        className="px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs text-[var(--color-text-secondary)] hover:text-white transition-all"
+                        className="px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs text-[#D6CFC7] hover:text-[#F5F1EC] transition-all disabled:opacity-50"
                     >
                         Reset Defaults
                     </button>
@@ -164,7 +165,7 @@ export default function Settings() {
                         type="button"
                         onClick={handleSave}
                         disabled={!canAdmin || loading || saving || !!loadError}
-                        className="flex items-center gap-2 px-5 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-all shadow-sm disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] font-semibold text-xs hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(211,160,106,0.25)] disabled:opacity-50"
                     >
                         <Save size={14} />
                         <span>{saving ? "Saving Changes…" : "Save Changes"}</span>
@@ -175,7 +176,7 @@ export default function Settings() {
             {/* Layout Grid: Left Sidebar Navigation + Right Config Panel */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
                 {/* Navigation Tabs */}
-                <div className="frosted-card p-2 space-y-1 md:col-span-1">
+                <div className="sentinel-glass p-2.5 rounded-2xl space-y-1 md:col-span-1">
                     {SECTIONS.filter((sec) => canAdmin || ["organization", "sessions", "about"].includes(sec.id)).map((sec) => {
                         const isActive = activeSection === sec.id;
                         return (
@@ -183,10 +184,10 @@ export default function Settings() {
                                 key={sec.id}
                                 type="button"
                                 onClick={() => setActiveSection(sec.id)}
-                                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all ${
                                     isActive
-                                        ? "bg-white text-black font-semibold shadow-sm"
-                                        : "text-[var(--color-text-secondary)] hover:text-white hover:bg-[rgba(255,255,255,0.04)]"
+                                        ? "bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] font-semibold shadow-sm"
+                                        : "text-[#D6CFC7] hover:text-[#F5F1EC] hover:bg-white/5"
                                 }`}
                             >
                                 <sec.icon size={16} />
@@ -197,7 +198,7 @@ export default function Settings() {
                 </div>
 
                 {/* Configuration Forms */}
-                <div className="md:col-span-3 frosted-card p-6 space-y-6">
+                <div className="md:col-span-3 sentinel-glass p-6 rounded-2xl space-y-6">
                     {canAdmin && <p className="text-xs">AI provider key: {settings.aiKeyConfigured ? "Configured (redacted)" : "Not configured"}. Stored configuration does not prove an engine or notification channel is active.</p>}
                     {/* 1. General & Platform */}
                     {activeSection === "platform" && (

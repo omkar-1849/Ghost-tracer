@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from urllib.parse import urlsplit
 from sqlalchemy.orm import Session
 
 from app.models.alert import Alert
@@ -6,6 +8,57 @@ from app.models.incident_evidence import IncidentEvidence
 from app.models.incident_timeline import IncidentTimeline
 from app.models.audit_log import AuditLog
 from app.models.log import Log
+
+ALERT_CORRELATION_WINDOW_SECONDS = 10
+
+
+def find_correlated_incident(
+    db: Session,
+    organization_id: int,
+    website_id: int | None,
+    ip_address: str,
+    target_path: str,
+    threat_reasons: str,
+    now: datetime,
+) -> tuple[Alert, Incident] | None:
+    """Find recent active open incident for the exact same event across log sources.
+
+    Correlates identical attacks from the same IP against the same asset/path
+    within ALERT_CORRELATION_WINDOW_SECONDS to avoid duplicating alerts/incidents
+    when multi-file loggers record the same HTTP transaction.
+    """
+    window_start = now - timedelta(seconds=ALERT_CORRELATION_WINDOW_SECONDS)
+    candidates = (
+        db.query(Alert)
+        .filter(
+            Alert.organization_id == organization_id,
+            Alert.website_id == website_id,
+            Alert.ip_address == (ip_address or None),
+            Alert.created_at >= window_start,
+            Alert.created_at <= now,
+        )
+        .order_by(Alert.created_at.desc())
+        .all()
+    )
+    for alert in candidates:
+        if alert.message != (threat_reasons or "Security threat detected.")[:255]:
+            continue
+        if alert.log:
+            alert_path = urlsplit(alert.log.url or "").path.lower()
+            if alert_path != target_path:
+                continue
+        incident = (
+            db.query(Incident)
+            .filter(
+                Incident.organization_id == organization_id,
+                Incident.alert_id == alert.id,
+                Incident.status == "OPEN",
+            )
+            .first()
+        )
+        if incident is not None:
+            return alert, incident
+    return None
 
 
 def create_alert(
@@ -27,14 +80,54 @@ def create_alert(
     flushes to obtain ids, and a single commit by the request-scoped session
     (get_db) makes the whole graph atomic; any failure rolls back everything.
     """
+    now = datetime.utcnow()
+    req_path = urlsplit(log.url or "").path.lower() if log is not None else ""
+    norm_message = (message or "Security threat detected.")[:255]
+
+    if log is not None:
+        correlated = find_correlated_incident(
+            db=db,
+            organization_id=organization_id,
+            website_id=website_id,
+            ip_address=ip_address or "Unknown",
+            target_path=req_path,
+            threat_reasons=norm_message,
+            now=now,
+        )
+        if correlated is not None:
+            existing_alert, existing_incident = correlated
+            db.add(IncidentEvidence(
+                organization_id=organization_id,
+                incident_id=existing_incident.id,
+                filename=f"correlated_log_{log.id}.log",
+                file_type="HTTP Request",
+                description=f"Correlated cross-source log record (ID {log.id})",
+                url=log.url,
+                method=log.method,
+                status_code=log.status_code,
+                user_agent=log.user_agent,
+                ip_address=log.ip_address,
+                risk_score=log.risk_score,
+                detection_reason=log.detection_reason,
+            ))
+            db.add(IncidentTimeline(
+                organization_id=organization_id,
+                incident_id=existing_incident.id,
+                event="Correlated Telemetry Attached",
+                description=f"Correlated cross-source log record (Log ID {log.id}) attached to incident.",
+            ))
+            db.flush()
+            return existing_alert, existing_incident
+
     alert = Alert(
         organization_id=organization_id,
         ip_address=ip_address or None,
         threat_level=threat_level,
-        message=(message or "Security threat detected.")[:255],
+        message=norm_message,
         website_id=website_id,
         event_id=event_id,
         log_id=log.id if log is not None else None,
+        created_at=now,
     )
     db.add(alert)
     db.flush()

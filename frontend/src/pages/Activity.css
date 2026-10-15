@@ -1,0 +1,497 @@
+/* ============================================================
+   SENTINEL AI — Security Event Stream (Activity) Redesign Stylesheet
+   Continuous dense security table with neutral dark graphite glass
+   ============================================================ */
+
+:root {
+  /* Surfaces & Atmosphere — Neutral Dark Graphite Glass */
+  --act-canvas: #111211;
+  --act-canvas-elevated: #171817;
+  --act-surface-control: #202120;
+  --act-surface-control-hover: #282927;
+  --act-surface-glass: rgba(20, 21, 22, 0.65);
+  --act-surface-glass-hover: rgba(236, 238, 240, 0.035);
+
+  /* Typography Colors */
+  --act-text-primary: #E7E5E1;
+  --act-text-value: #E1DFDA;
+  --act-text-secondary: #A09F9A;
+  --act-text-muted: #777873;
+  --act-text-disabled: #555752;
+
+  /* Icons */
+  --act-icon-primary: #C5C3BF;
+  --act-icon-muted: #858681;
+
+  /* Borders & Dividers */
+  --act-border-subtle: rgba(198, 196, 189, 0.12);
+  --act-border-control: rgba(204, 202, 195, 0.20);
+  --act-border-hover: rgba(218, 216, 208, 0.24);
+  --act-border-highlight: rgba(235, 233, 226, 0.09);
+  --act-row-divider: rgba(198, 196, 189, 0.08);
+
+  /* Focus Ring */
+  --act-focus-ring: #D4A968;
+
+  /* Severity Tokens */
+  --act-sev-critical-text: #FF8178;
+  --act-sev-critical-bg: rgba(239, 76, 70, 0.12);
+  --act-sev-critical-border: rgba(239, 76, 70, 0.30);
+  --act-sev-critical-indicator: #EF4C46;
+
+  --act-sev-high-text: #F2A06E;
+  --act-sev-high-bg: rgba(226, 121, 54, 0.12);
+  --act-sev-high-border: rgba(226, 121, 54, 0.28);
+  --act-sev-high-indicator: #E27936;
+
+  --act-sev-medium-text: #E8C06F;
+  --act-sev-medium-bg: rgba(201, 154, 61, 0.12);
+  --act-sev-medium-border: rgba(201, 154, 61, 0.26);
+  --act-sev-medium-indicator: #C99A3D;
+
+  --act-sev-low-text: #84C9A1;
+  --act-sev-low-bg: rgba(75, 164, 112, 0.11);
+  --act-sev-low-border: rgba(75, 164, 112, 0.25);
+  --act-sev-low-indicator: #4BA470;
+
+  --act-sev-info-text: #9BB8D1;
+  --act-sev-info-bg: rgba(107, 153, 193, 0.11);
+  --act-sev-info-border: rgba(107, 153, 193, 0.24);
+  --act-sev-info-indicator: #6B99C1;
+}
+
+/* Page Container — Corrected width constraints, zero horizontal overflow */
+.activity-page {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 80px 24px 32px;
+  box-sizing: border-box;
+  color: var(--act-text-primary);
+  background: transparent;
+  font-family: var(--font-sans, "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+}
+
+@media (max-width: 1024px) {
+  .activity-page {
+    padding: 80px 18px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .activity-page {
+    padding: 76px 14px 20px;
+  }
+}
+
+/* Atmospheric Vignette Overlay */
+.activity-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(5,6,7,0.40), rgba(5,6,7,0.22) 55%, rgba(5,6,7,0.38));
+  z-index: 0;
+}
+
+/* Header Section */
+.activity-header {
+  margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .activity-header {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.act-page-title {
+  font-size: 34px;
+  font-weight: 750;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--act-text-primary);
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+  .act-page-title {
+    font-size: 24px;
+  }
+}
+
+.act-page-subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: #888783;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+/* Real-Time Stream Status Badge */
+.act-stream-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(28, 29, 30, 0.72);
+  backdrop-filter: blur(14px) saturate(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(104%);
+  border: 1px solid var(--act-border-control);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--act-text-value);
+  white-space: nowrap;
+}
+
+/* Control Toolbar */
+.activity-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 20;
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .activity-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+}
+
+/* ============================================================
+   Continuous Unified Table Surface
+   One single continuous glass container, NOT individual cards
+   ============================================================ */
+.act-table-container {
+  width: 100%;
+  background: var(--act-surface-glass);
+  backdrop-filter: blur(14px) saturate(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(104%);
+  border: 1px solid var(--act-border-subtle);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 var(--act-border-highlight);
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.act-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.act-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  text-align: left;
+}
+
+@media (max-width: 960px) {
+  .act-table {
+    min-width: 900px;
+  }
+}
+
+/* Table Header */
+.act-table-head {
+  background: rgba(26, 27, 28, 0.45);
+  border-bottom: 1px solid var(--act-border-subtle);
+}
+
+.act-table-th {
+  padding: 10px 14px;
+  vertical-align: middle;
+  user-select: none;
+}
+
+.act-header-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.act-header-icon {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--act-icon-muted);
+  flex-shrink: 0;
+}
+
+.act-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.act-header-primary {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--act-icon-primary);
+  white-space: nowrap;
+}
+
+.act-header-secondary {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--act-text-muted);
+  white-space: nowrap;
+}
+
+/* Table Body Rows — Dense, continuous, NO separate card styling */
+.act-table-row {
+  height: 52px;
+  border-bottom: 1px solid var(--act-row-divider);
+  background: transparent;
+  transition: background-color 140ms ease;
+  cursor: pointer;
+}
+
+.act-table-row:last-child {
+  border-bottom: none;
+}
+
+/* Subtle, restrained row hover */
+.act-table-row:hover {
+  background-color: var(--act-surface-glass-hover);
+}
+
+.act-table-row:focus-visible {
+  outline: 2px solid var(--act-focus-ring);
+  outline-offset: -2px;
+}
+
+.act-table-td {
+  padding: 8px 14px;
+  vertical-align: middle;
+  font-size: 13px;
+  overflow: hidden;
+}
+
+/* Severity Chips */
+.sentinel-severity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  user-select: none;
+  width: fit-content;
+  flex-shrink: 0;
+}
+
+.sentinel-severity-chip .sev-indicator-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sentinel-severity-chip.sev-critical {
+  color: var(--act-sev-critical-text);
+  background-color: var(--act-sev-critical-bg);
+  border-color: var(--act-sev-critical-border);
+}
+.sentinel-severity-chip.sev-critical .sev-indicator-dot {
+  background-color: var(--act-sev-critical-indicator);
+}
+
+.sentinel-severity-chip.sev-high {
+  color: var(--act-sev-high-text);
+  background-color: var(--act-sev-high-bg);
+  border-color: var(--act-sev-high-border);
+}
+.sentinel-severity-chip.sev-high .sev-indicator-dot {
+  background-color: var(--act-sev-high-indicator);
+}
+
+.sentinel-severity-chip.sev-medium {
+  color: var(--act-sev-medium-text);
+  background-color: var(--act-sev-medium-bg);
+  border-color: var(--act-sev-medium-border);
+}
+.sentinel-severity-chip.sev-medium .sev-indicator-dot {
+  background-color: var(--act-sev-medium-indicator);
+}
+
+.sentinel-severity-chip.sev-low {
+  color: var(--act-sev-low-text);
+  background-color: var(--act-sev-low-bg);
+  border-color: var(--act-sev-low-border);
+}
+.sentinel-severity-chip.sev-low .sev-indicator-dot {
+  background-color: var(--act-sev-low-indicator);
+}
+
+.sentinel-severity-chip.sev-info {
+  color: var(--act-sev-info-text);
+  background-color: var(--act-sev-info-bg);
+  border-color: var(--act-sev-info-border);
+}
+.sentinel-severity-chip.sev-info .sev-indicator-dot {
+  background-color: var(--act-sev-info-indicator);
+}
+
+/* Action Button ("View Payload") */
+.act-payload-btn {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 7px;
+  background: rgba(230, 232, 234, 0.08);
+  border: 1px solid rgba(230, 232, 234, 0.16);
+  color: var(--act-text-primary);
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 140ms ease;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.act-payload-btn:hover {
+  background: rgba(238, 240, 242, 0.15);
+  border-color: rgba(238, 240, 242, 0.28);
+  color: #FFFFFF;
+}
+
+.act-payload-btn:focus-visible {
+  outline: 2px solid var(--act-focus-ring);
+  outline-offset: 1px;
+}
+
+/* Continuous Table Bottom "See more" Bar */
+.act-see-more-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 16px;
+  border-top: 1px solid var(--act-border-subtle);
+  background: rgba(18, 19, 20, 0.35);
+}
+
+.act-see-more-btn {
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(28, 29, 30, 0.72);
+  backdrop-filter: blur(14px) saturate(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(104%);
+  border: 1px solid var(--act-border-control);
+  box-shadow: inset 0 1px 0 var(--act-border-highlight), 0 4px 14px rgba(0, 0, 0, 0.16);
+  color: var(--act-text-primary);
+  font-size: 12.5px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+.act-see-more-btn:hover {
+  background: rgba(39, 40, 39, 0.92);
+  border-color: var(--act-border-hover);
+  color: #FFFFFF;
+}
+
+.act-see-more-btn:focus-visible {
+  outline: 2px solid var(--act-focus-ring);
+  outline-offset: 1px;
+}
+
+.act-see-more-count {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11.5px;
+  color: var(--act-text-secondary);
+}
+
+/* Skeleton Loading Table Rows */
+.act-skeleton-pulse {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  animation: actSkeletonPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes actSkeletonPulse {
+  0%, 100% {
+    opacity: 0.30;
+  }
+  50% {
+    opacity: 0.70;
+  }
+}
+
+/* Payload Inspection Drawer */
+.act-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.act-drawer-panel {
+  width: 100%;
+  max-width: 640px;
+  height: 100%;
+  background: rgba(14, 15, 16, 0.96);
+  backdrop-filter: blur(24px) saturate(104%);
+  -webkit-backdrop-filter: blur(24px) saturate(104%);
+  border-left: 1px solid rgba(230, 232, 234, 0.12);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .act-table-row,
+  .act-payload-btn,
+  .act-see-more-btn,
+  .act-skeleton-pulse {
+    transition: none !important;
+    animation: none !important;
+  }
+}

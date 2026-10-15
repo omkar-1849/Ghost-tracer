@@ -13,21 +13,21 @@ export default function EmptyState({
     <div
       className={`
         flex flex-col items-center justify-center gap-3 py-12 px-6
-        rounded-lg border border-dashed border-[var(--color-border-default)]
-        bg-[var(--color-surface-1)]
+        rounded-[20px] border border-dashed border-[rgba(211,160,106,0.18)]
+        bg-[rgba(18,16,14,0.30)] backdrop-blur-[16px]
         ${className}
       `.trim()}
     >
       {Icon && (
-        <span className="w-10 h-10 rounded-lg bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">
-          <Icon size={20} className="text-[var(--color-text-muted)]" />
+        <span className="w-12 h-12 rounded-xl bg-[rgba(211,160,106,0.08)] border border-[rgba(211,160,106,0.18)] flex items-center justify-center">
+          <Icon size={20} className="text-[#d3a06a]" />
         </span>
       )}
-      <p className="text-sm font-medium text-[var(--color-text-secondary)]">
+      <p className="text-sm font-semibold text-[#f5f1ec]">
         {title}
       </p>
       {description && (
-        <p className="text-xs text-[var(--color-text-muted)] text-center max-w-xs">
+        <p className="text-xs text-[#a9a199] text-center max-w-xs leading-relaxed">
           {description}
         </p>
       )}

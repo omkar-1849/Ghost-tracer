@@ -4,11 +4,11 @@
    ============================================================ */
 
 const variants = {
-  base: "bg-[var(--color-surface-2)] border border-[var(--color-border-default)] shadow-[var(--shadow-1)]",
+  base: "bg-[rgba(18,16,14,0.38)] backdrop-blur-[24px] saturate-[120%] border border-[rgba(211,160,106,0.12)] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.06),0_16px_40px_-8px_rgba(0,0,0,0.45)]",
   elevated:
-    "bg-[var(--color-surface-3)] border border-[var(--color-border-default)] shadow-[var(--shadow-2)]",
+    "bg-[rgba(20,18,16,0.50)] backdrop-blur-[28px] saturate-[125%] border border-[rgba(211,160,106,0.18)] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.08),0_24px_56px_-12px_rgba(0,0,0,0.55)]",
   interactive:
-    "bg-[var(--color-surface-2)] border border-[var(--color-border-default)] shadow-[var(--shadow-1)] hover:border-[var(--color-border-strong)] hover:-translate-y-px transition-all duration-150",
+    "bg-[rgba(18,16,14,0.38)] backdrop-blur-[24px] saturate-[120%] border border-[rgba(211,160,106,0.12)] shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.06),0_16px_40px_-8px_rgba(0,0,0,0.45)] hover:border-[rgba(227,185,133,0.35)] hover:shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.10),0_20px_48px_-8px_rgba(0,0,0,0.55)] transition-all duration-150 cursor-pointer",
 };
 
 export default function Card({
@@ -21,7 +21,7 @@ export default function Card({
   return (
     <div
       className={`
-        rounded-lg
+        rounded-[20px] text-[#f5f1ec]
         ${variants[variant] || variants.base}
         ${padding ? "p-5" : ""}
         ${className}
@@ -38,11 +38,11 @@ Card.Header = function CardHeader({ title, subtitle, actions, className = "" }) 
   return (
     <div className={`flex items-start justify-between gap-3 ${className}`}>
       <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-[var(--color-text-primary)] tracking-tight">
+        <h3 className="text-sm font-semibold text-[#f5f1ec] tracking-tight">
           {title}
         </h3>
         {subtitle && (
-          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{subtitle}</p>
+          <p className="text-xs text-[#a9a199] mt-0.5">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>}

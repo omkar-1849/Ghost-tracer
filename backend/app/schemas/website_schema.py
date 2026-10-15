@@ -7,6 +7,7 @@ class WebsiteBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     url: str = Field(..., max_length=255)
     description: Optional[str] = None
+    exposure: str = Field("public", pattern="^(public|internal)$")
     environment: str = Field(
         "Production",
         pattern="^(Production|Staging|Development)$"
@@ -44,6 +45,7 @@ class WebsiteUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     url: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
+    exposure: Optional[str] = Field(None, pattern="^(public|internal)$")
     environment: Optional[str] = Field(
         None,
         pattern="^(Production|Staging|Development)$"
@@ -87,6 +89,12 @@ class WebsiteResponse(WebsiteBase):
     created_at: datetime
     updated_at: datetime
     deleted_at: Optional[datetime] = None
+    archived_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    monitoring_status: Optional[str] = "not_connected"
+    collectors_total: int = 0
+    collectors_online: int = 0
+    last_telemetry_at: Optional[datetime] = None
+    scan_authorization: Optional[str] = "unverified"
+
+    model_config = ConfigDict(from_attributes=True)

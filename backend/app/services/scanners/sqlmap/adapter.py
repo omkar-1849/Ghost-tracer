@@ -21,7 +21,14 @@ class SQLMapScanner(BaseScanner, ScannerJobMixin):
                 self.fail_job(db, scan, self.missing_binary_error("sqlmap"))
                 return
 
-            cmd = [binary, "-u", scan.target, "--batch", "--flush-session"]
+            cmd = [
+                binary, "-u", scan.target,
+                "--batch", "--flush-session",
+                "--forms", "--crawl=2",
+                "--level=1", "--risk=1",
+                "--technique=B",
+                "--smart",
+            ]
             self.set_command(db, scan, " ".join(cmd))
 
             result = run_subprocess(cmd, timeout=1800, cancelled=lambda: self.is_cancelled(db, scan))

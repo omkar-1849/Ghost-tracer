@@ -26,20 +26,20 @@ function ActionBadge({ action }) {
     const act = String(action || "").toUpperCase();
     if (act.includes("LOGIN") || act.includes("REGISTER") || act.includes("CREATE")) {
         return (
-            <span className="px-2.5 py-1 rounded text-[11px] font-mono bg-[rgba(255,255,255,0.08)] text-white border border-[rgba(255,255,255,0.2)] font-medium">
+            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-[rgba(211,160,106,0.14)] text-[#E3B985] border border-[rgba(211,160,106,0.3)] font-semibold">
                 {act}
             </span>
         );
     }
     if (act.includes("DELETE") || act.includes("REVOKE") || act.includes("DROP")) {
         return (
-            <span className="px-2.5 py-1 rounded text-[11px] font-mono bg-[rgba(230,57,70,0.15)] text-[var(--color-critical)] border border-[rgba(230,57,70,0.3)] font-medium">
+            <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-[rgba(230,120,104,0.14)] text-[#E67868] border border-[rgba(230,120,104,0.3)] font-semibold">
                 {act}
             </span>
         );
     }
     return (
-        <span className="px-2.5 py-1 rounded text-[11px] font-mono bg-[rgba(255,255,255,0.05)] text-[var(--color-text-secondary)] border border-[var(--color-border-default)] font-medium">
+        <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-mono bg-[rgba(255,248,238,0.06)] text-[#D6CFC7] border border-[rgba(255,248,238,0.1)] font-medium">
             {act}
         </span>
     );
@@ -94,15 +94,15 @@ function AuditLogs() {
     }, [logs, search]);
 
     return (
-        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-                        <FileText size={24} className="text-white" />
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC] flex items-center gap-2.5">
+                        <FileText size={24} className="text-[#D3A06A]" />
                         <span>Enterprise Audit Trail</span>
                     </h1>
-                    <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                    <p className="text-xs font-mono text-[#A9A199] mt-1">
                         Immutable record of authentication, resource modifications, and security actions
                     </p>
                 </div>
@@ -110,24 +110,24 @@ function AuditLogs() {
                     <button
                         type="button"
                         onClick={fetchLogs}
-                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs font-medium text-white transition-all shadow-sm"
+                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[rgba(20,18,16,0.55)] border border-[rgba(255,248,238,0.08)] hover:border-[rgba(211,160,106,0.3)] text-xs font-mono text-[#D6CFC7] hover:text-[#F5F1EC] transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                     >
-                        <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                        <RefreshCw size={13} className={loading ? "animate-spin text-[#D3A06A]" : "text-[#A9A199]"} />
                         <span>Refresh Trail</span>
                     </button>
                 )}
             </div>
 
             {!isAuthed ? (
-                <div className="frosted-card p-10 text-center space-y-4 max-w-lg mx-auto">
-                    <Shield size={32} className="mx-auto text-[var(--color-text-muted)]" />
-                    <h3 className="text-lg font-semibold text-white">Authentication Required</h3>
-                    <p className="text-sm text-[var(--color-text-muted)]">
+                <div className="sentinel-glass p-10 text-center space-y-4 max-w-lg mx-auto rounded-2xl">
+                    <Shield size={32} className="mx-auto text-[#D3A06A]" />
+                    <h3 className="text-lg font-semibold text-[#F5F1EC]">Authentication Required</h3>
+                    <p className="text-xs font-mono text-[#A9A199]">
                         Organization audit trails are protected by enterprise RBAC. Please authenticate to view audit logs.
                     </p>
                     <Link
                         to="/login?redirect=/audit-logs"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white text-black font-semibold text-sm hover:bg-neutral-200"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d3a06a] to-[#e3b985] text-[#0d0c0a] font-bold text-xs hover:brightness-105 transition-all shadow-[0_2px_12px_rgba(211,160,106,0.25)]"
                     >
                         Sign In to Access
                     </Link>
@@ -135,31 +135,31 @@ function AuditLogs() {
             ) : (
                 <>
                     {/* Search Bar */}
-                    <div className="frosted-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="sentinel-glass p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="relative w-full sm:w-96">
                             <Search
-                                size={16}
-                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                                size={15}
+                                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B837B] pointer-events-none"
                             />
                             <input
                                 type="text"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search by action, user, IP, resource..."
-                                className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
+                                className="w-full bg-[rgba(14,12,10,0.55)] border border-[rgba(255,248,238,0.08)] rounded-xl pl-10 pr-3 py-2 text-xs text-[#F5F1EC] placeholder:text-[#8B837B] focus:outline-none focus:border-[rgba(211,160,106,0.5)] focus:ring-1 focus:ring-[rgba(211,160,106,0.3)] transition-all"
                             />
                         </div>
-                        <span className="text-xs font-mono text-[var(--color-text-muted)]">
+                        <span className="text-xs font-mono text-[#A9A199]">
                             Showing {filtered.length} audit entries
                         </span>
                     </div>
 
                     {/* Controlled Scrollable Table Viewport */}
-                    <div className="frosted-card overflow-hidden">
+                    <div className="sentinel-glass rounded-2xl overflow-hidden">
                         <div className="max-h-[620px] overflow-y-auto custom-scrollbar">
                             <table className="w-full text-left border-collapse text-[13.5px]">
-                                <thead className="sticky top-0 z-10 bg-[var(--color-surface-2)] shadow-sm">
-                                    <tr className="border-b border-[var(--color-border-default)] text-[11px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
+                                <thead className="sticky top-0 z-10 bg-[#141210]/95 backdrop-blur-xl border-b border-[rgba(255,248,238,0.06)] text-[11px] font-mono text-[#8B837B] uppercase tracking-wider">
+                                    <tr>
                                         <th className="py-3.5 px-4 font-medium">Timestamp</th>
                                         <th className="py-3.5 px-4 font-medium">Action</th>
                                         <th className="py-3.5 px-4 font-medium">Resource</th>
@@ -168,22 +168,22 @@ function AuditLogs() {
                                         <th className="py-3.5 px-4 font-medium text-right">Details</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                                <tbody className="divide-y divide-[rgba(255,248,238,0.04)]">
                                     {loading ? (
                                         <tr>
-                                            <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                            <td colSpan="6" className="py-12 text-center text-xs font-mono text-[#A9A199]">
                                                 Loading audit trail…
                                             </td>
                                         </tr>
                                     ) : error ? (
                                         <tr>
-                                            <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-critical)]">
+                                            <td colSpan="6" className="py-12 text-center text-xs font-mono text-[#E67868]">
                                                 {error}
                                             </td>
                                         </tr>
                                     ) : filtered.length === 0 ? (
                                         <tr>
-                                            <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                            <td colSpan="6" className="py-12 text-center text-xs font-mono text-[#A9A199]">
                                                 No audit entries found matching the filter.
                                             </td>
                                         </tr>
@@ -192,69 +192,69 @@ function AuditLogs() {
                                             const rowId = item.id || idx;
                                             const isExpanded = expandedRowId === rowId;
                                             return (
-                                                <tr key={rowId} className="group hover:bg-[rgba(255,255,255,0.025)] transition-colors">
+                                                <tr key={rowId} className="group hover:bg-[rgba(211,160,106,0.04)] transition-colors duration-150">
                                                     <td colSpan="6" className="p-0">
                                                         <div
                                                             onClick={() => toggleRow(rowId)}
                                                             className="grid grid-cols-12 items-center px-4 py-3.5 cursor-pointer"
                                                         >
-                                                            <div className="col-span-3 font-mono text-xs text-[var(--color-text-muted)]">
+                                                            <div className="col-span-3 font-mono text-xs text-[#A9A199]">
                                                                 {formatTimestamp(item.created_at)}
                                                             </div>
                                                             <div className="col-span-2">
                                                                 <ActionBadge action={item.action} />
                                                             </div>
-                                                            <div className="col-span-2 font-mono text-xs text-[var(--color-text-secondary)] truncate">
+                                                            <div className="col-span-2 font-mono text-xs text-[#D6CFC7] truncate">
                                                                 {item.resource_type || "—"} {item.resource_id ? `#${item.resource_id}` : ""}
                                                             </div>
-                                                            <div className="col-span-3 font-medium text-white text-sm truncate pr-2">
+                                                            <div className="col-span-3 font-medium text-[#F5F1EC] text-sm truncate pr-2">
                                                                 {item.description || "Security audit entry"}
                                                             </div>
-                                                            <div className="col-span-1 font-mono text-xs text-[var(--color-text-secondary)] truncate">
+                                                            <div className="col-span-1 font-mono text-xs text-[#A9A199] truncate">
                                                                 User #{item.user_id || "System"}
                                                             </div>
                                                             <div className="col-span-1 text-right">
                                                                 <button
                                                                     type="button"
-                                                                    className="p-1 rounded text-[var(--color-text-muted)] hover:text-white"
+                                                                    className="p-1 rounded-lg text-[#A9A199] hover:text-[#F5F1EC]"
                                                                 >
-                                                                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                                                    {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                                                                 </button>
                                                             </div>
                                                         </div>
 
                                                         {/* Expanded Detail Panel */}
                                                         {isExpanded && (
-                                                            <div className="px-6 pb-5 pt-2 bg-[var(--color-surface-inset)] border-t border-[var(--color-border-subtle)] space-y-3 animate-fade-in">
+                                                            <div className="px-6 pb-5 pt-3 bg-[rgba(14,12,10,0.65)] border-t border-[rgba(255,248,238,0.06)] space-y-3 animate-fade-in">
                                                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
                                                                     <div>
-                                                                        <span className="text-[var(--color-text-muted)] block">Event ID:</span>
-                                                                        <span className="text-white font-semibold">{item.id || "LOG-00"}</span>
+                                                                        <span className="text-[#8B837B] block">Event ID:</span>
+                                                                        <span className="text-[#D3A06A] font-semibold">{item.id || "LOG-00"}</span>
                                                                     </div>
                                                                     <div>
-                                                                        <span className="text-[var(--color-text-muted)] block">Actor User ID:</span>
-                                                                        <span className="text-white">{item.user_id || "System Default"}</span>
+                                                                        <span className="text-[#8B837B] block">Actor User ID:</span>
+                                                                        <span className="text-[#F5F1EC]">{item.user_id || "System Default"}</span>
                                                                     </div>
                                                                     <div>
-                                                                        <span className="text-[var(--color-text-muted)] block">Origin IP:</span>
-                                                                        <span className="text-white">{item.ip_address || "127.0.0.1"}</span>
+                                                                        <span className="text-[#8B837B] block">Origin IP:</span>
+                                                                        <span className="text-[#F5F1EC]">{item.ip_address || "127.0.0.1"}</span>
                                                                     </div>
                                                                     <div>
-                                                                        <span className="text-[var(--color-text-muted)] block">Organization:</span>
-                                                                        <span className="text-white">Org #{item.organization_id || "Unknown"}</span>
+                                                                        <span className="text-[#8B837B] block">Organization:</span>
+                                                                        <span className="text-[#F5F1EC]">Org #{item.organization_id || "Unknown"}</span>
                                                                     </div>
                                                                 </div>
 
                                                                 {item.user_agent && (
                                                                     <div className="text-xs font-mono">
-                                                                        <span className="text-[var(--color-text-muted)] block">Client User Agent:</span>
-                                                                        <span className="text-[var(--color-text-secondary)] break-all">{item.user_agent}</span>
+                                                                        <span className="text-[#8B837B] block">Client User Agent:</span>
+                                                                        <span className="text-[#A9A199] break-all">{item.user_agent}</span>
                                                                     </div>
                                                                 )}
 
-                                                                <div className="text-xs font-mono p-3 rounded bg-[var(--color-surface-1)] border border-[var(--color-border-subtle)] text-[var(--color-text-secondary)]">
-                                                                    <span className="text-[var(--color-text-muted)] block mb-1">Raw Description & Context:</span>
-                                                                    <p className="text-white">{item.description}</p>
+                                                                <div className="text-xs font-mono p-3.5 rounded-xl bg-[rgba(20,18,16,0.6)] border border-[rgba(255,248,238,0.06)] text-[#D6CFC7]">
+                                                                    <span className="text-[#8B837B] block mb-1">Raw Description & Context:</span>
+                                                                    <p className="text-[#F5F1EC]">{item.description}</p>
                                                                 </div>
                                                             </div>
                                                         )}

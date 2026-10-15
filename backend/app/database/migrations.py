@@ -14,28 +14,31 @@ from pathlib import Path
 
 from sqlalchemy import (
     Boolean, Column, DateTime, Integer, MetaData, Table, create_engine,
-    inspect, select, update,
+    func, inspect, select, update,
 )
 from sqlalchemy.schema import AddConstraint
 
 from app.database.base import Base
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 7
 MODEL_MODULES = (
     "user", "organization", "organization_member", "session", "password_reset_token",
-    "website", "integration", "event", "log", "alert", "incident", "scan",
+    "website", "enrollment_token", "integration", "event", "log", "alert", "incident", "scan",
     "settings", "response_action", "incident_evidence", "incident_note",
-    "incident_timeline", "scan_result", "audit_log",
+    "incident_timeline", "scan_result", "audit_log", "ai_analysis_job",
+    "scanner_finding", "scanner_finding_observation", "investigation", "investigation_job",
 )
 ROOTS = {
-    "website": "websites", "log": "logs", "alert": "alerts",
+    "website": "websites", "enrollment_token": "enrollment_tokens", "log": "logs", "alert": "alerts",
     "incident": "incidents", "settings": "settings",
 }
 TENANT_TABLES = (
-    "websites", "integrations", "events", "logs", "alerts", "incidents", "scans",
+    "websites", "enrollment_tokens", "integrations", "events", "logs", "alerts", "incidents", "scans",
     "settings", "response_actions", "incident_evidence", "incident_notes",
-    "incident_timeline", "scan_results",
+    "incident_timeline", "scan_results", "ai_analysis_jobs",
+    "scanner_findings", "scanner_finding_observations", "investigations", "investigation_jobs",
 )
+
 _version_metadata = MetaData()
 _versions = Table(
     "sentinel_schema_versions", _version_metadata,
@@ -175,7 +178,7 @@ def _ownership_plan(conn, tables, mapping):
 
 
 def _safe_default(column):
-    # Only known scalar numeric/boolean defaults are backfilled. In particular,
+    # Only known scalar numeric/boolean/string defaults are backfilled. In particular,
     # never fabricate historical timestamps, secrets, users, or tenant IDs.
     if column.name == "organization_id" or column.foreign_keys:
         return None
@@ -184,6 +187,20 @@ def _safe_default(column):
             value = column.default.arg
             if isinstance(value, (bool, int)):
                 return str(int(value))
+    if column.server_default is not None:
+        arg = column.server_default.arg
+        if hasattr(arg, "text"):
+            arg = arg.text
+        if isinstance(arg, str):
+            if (arg.startswith("'") and arg.endswith("'")) or (arg.startswith('"') and arg.endswith('"')):
+                return arg
+            return f"'{arg}'"
+    if column.default is not None and column.default.is_scalar:
+        value = column.default.arg
+        if isinstance(value, str):
+            if (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+                return value
+            return f"'{value}'"
     return None
 
 
@@ -328,7 +345,74 @@ def migrate(engine, ownership_mapping=None):
                 if column.name not in names:
                     _add_column(conn, table, column)
                     added.append(f"{table.name}.{column.name}")
+            if table.name == "websites":
+                w_indexes = {idx["name"]: idx for idx in inspect(conn).get_indexes(table.name)}
+                if "ix_websites_url" in w_indexes and w_indexes["ix_websites_url"].get("unique"):
+                    if conn.dialect.name == "sqlite":
+                        conn.exec_driver_sql("DROP INDEX IF EXISTS ix_websites_url")
+                    elif conn.dialect.name == "mysql":
+                        conn.exec_driver_sql("DROP INDEX ix_websites_url ON websites")
+            if table.name == "integrations":
+                i_indexes = {idx["name"]: idx for idx in inspect(conn).get_indexes(table.name)}
+                if "ix_integrations_website_id" in i_indexes and i_indexes["ix_integrations_website_id"].get("unique"):
+                    if conn.dialect.name == "sqlite":
+                        conn.exec_driver_sql("DROP INDEX IF EXISTS ix_integrations_website_id")
+                    elif conn.dialect.name == "mysql":
+                        conn.exec_driver_sql("DROP INDEX ix_integrations_website_id ON integrations")
+                conn.execute(
+                    update(table).where(
+                        table.c.name.is_(None)
+                    ).values(name="Legacy integration")
+                )
+            if table.name == "enrollment_tokens":
+                col_info = {c["name"]: c for c in inspect(conn).get_columns(table.name)}
+                if "website_id" in col_info and not col_info["website_id"]["nullable"]:
+                    if conn.dialect.name == "sqlite":
+                        conn.exec_driver_sql("PRAGMA foreign_keys = OFF")
+                        conn.exec_driver_sql("""
+                            CREATE TABLE enrollment_tokens_temp (
+                                id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                                website_id INTEGER,
+                                token_hash VARCHAR(64) NOT NULL,
+                                token_prefix VARCHAR(16) NOT NULL,
+                                label VARCHAR(100),
+                                created_by_user_id INTEGER,
+                                expires_at DATETIME NOT NULL,
+                                max_uses INTEGER NOT NULL,
+                                used_count INTEGER NOT NULL,
+                                revoked_at DATETIME,
+                                last_used_at DATETIME,
+                                created_at DATETIME NOT NULL,
+                                organization_id INTEGER,
+                                CONSTRAINT ck_enrollment_tokens_max_uses CHECK (max_uses >= 1 AND max_uses <= 50),
+                                CONSTRAINT ck_enrollment_tokens_used_count CHECK (used_count >= 0 AND used_count <= max_uses),
+                                FOREIGN KEY(website_id) REFERENCES websites (id) ON DELETE CASCADE,
+                                FOREIGN KEY(created_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+                                FOREIGN KEY(organization_id) REFERENCES organizations (id) ON DELETE RESTRICT
+                            )
+                        """)
+                        conn.exec_driver_sql("""
+                            INSERT INTO enrollment_tokens_temp (
+                                id, website_id, token_hash, token_prefix, label,
+                                created_by_user_id, expires_at, max_uses, used_count,
+                                revoked_at, last_used_at, created_at, organization_id
+                            )
+                            SELECT id, website_id, token_hash, token_prefix, label,
+                                   created_by_user_id, expires_at, max_uses, used_count,
+                                   revoked_at, last_used_at, created_at, organization_id
+                            FROM enrollment_tokens
+                        """)
+                        conn.exec_driver_sql("DROP TABLE enrollment_tokens")
+                        conn.exec_driver_sql("ALTER TABLE enrollment_tokens_temp RENAME TO enrollment_tokens")
+                        conn.exec_driver_sql("CREATE UNIQUE INDEX ix_enrollment_tokens_token_hash ON enrollment_tokens (token_hash)")
+                        conn.exec_driver_sql("CREATE INDEX ix_enrollment_tokens_organization_id ON enrollment_tokens (organization_id)")
+                        conn.exec_driver_sql("CREATE INDEX ix_enrollment_tokens_id ON enrollment_tokens (id)")
+                        conn.exec_driver_sql("CREATE INDEX ix_enrollment_tokens_website_id ON enrollment_tokens (website_id)")
+                        conn.exec_driver_sql("PRAGMA foreign_keys = ON")
+                    elif conn.dialect.name == "mysql":
+                        conn.exec_driver_sql("ALTER TABLE enrollment_tokens MODIFY COLUMN website_id INT NULL")
             names = {index["name"] for index in inspect(conn).get_indexes(table.name)}
+
             for index in sorted(table.indexes, key=lambda item: item.name):
                 if index.name not in names:
                     index.create(conn)
@@ -346,16 +430,135 @@ def migrate(engine, ownership_mapping=None):
                 table.c.id == row_id, table.c.organization_id.is_(None)
             ).values(**values))
         _versions.create(conn, checkfirst=True)
-        if conn.execute(select(_versions.c.version).where(
-            _versions.c.version == SCHEMA_VERSION
-        )).first() is None:
+        existing_versions = set(conn.execute(select(_versions.c.version)).scalars())
+        if not existing_versions:
             conn.execute(_versions.insert().values(version=SCHEMA_VERSION, applied_at=datetime.utcnow()))
+        else:
+            for v in range(max(existing_versions) + 1, SCHEMA_VERSION + 1):
+                conn.execute(_versions.insert().values(version=v, applied_at=datetime.utcnow()))
         notes = _legacy_constraint_notes(conn, tables)
     return {
         "version": SCHEMA_VERSION, "added_columns": added,
         "ownership_assignments": len(assignments), "quarantined": quarantined,
         "legacy_constraints": notes,
     }
+
+
+def downgrade_phase1(engine):
+    """Downgrade schema from Phase 1 to Phase 0.
+
+    Re-adds global uniqueness on websites.url. Refuses if duplicate URLs exist.
+    """
+    with engine.begin() as conn:
+        inspector = inspect(conn)
+        if "websites" not in inspector.get_table_names():
+            return
+        w_table = [t for t in _tables() if t.name == "websites"][0]
+        duplicates = conn.execute(
+            select(w_table.c.url)
+            .group_by(w_table.c.url)
+            .having(func.count(w_table.c.url) > 1)
+        ).scalars().all()
+        if duplicates:
+            raise SchemaMismatchError(
+                f"Cannot downgrade: duplicate URLs exist across organizations: {', '.join(duplicates)}"
+            )
+        if conn.dialect.name == "sqlite":
+            conn.exec_driver_sql("DROP INDEX IF EXISTS ix_websites_org_url_active")
+            conn.exec_driver_sql("DROP INDEX IF EXISTS ix_websites_url")
+            conn.exec_driver_sql("CREATE UNIQUE INDEX ix_websites_url ON websites (url)")
+        elif conn.dialect.name == "mysql":
+            w_indexes = {idx["name"]: idx for idx in inspector.get_indexes("websites")}
+            if "ix_websites_org_url_active" in w_indexes:
+                conn.exec_driver_sql("DROP INDEX ix_websites_org_url_active ON websites")
+            if "ix_websites_url" in w_indexes:
+                conn.exec_driver_sql("DROP INDEX ix_websites_url ON websites")
+            conn.exec_driver_sql("CREATE UNIQUE INDEX ix_websites_url ON websites (url)")
+        if _versions.name in inspector.get_table_names():
+            conn.execute(_versions.delete().where(_versions.c.version >= 2))
+
+
+def downgrade_phase2(engine):
+    """Downgrade schema from Phase 2 to Phase 1.
+
+    Re-adds uniqueness on integrations.website_id. Refuses if any website has >1 integration.
+    """
+    with engine.begin() as conn:
+        inspector = inspect(conn)
+        if "integrations" not in inspector.get_table_names():
+            return
+        i_table = [t for t in _tables() if t.name == "integrations"][0]
+        duplicates = conn.execute(
+            select(i_table.c.website_id)
+            .group_by(i_table.c.website_id)
+            .having(func.count(i_table.c.website_id) > 1)
+        ).scalars().all()
+        if duplicates:
+            raise SchemaMismatchError(
+                f"Cannot downgrade: websites have multiple integrations: {', '.join(str(d) for d in duplicates)}"
+            )
+        if conn.dialect.name == "sqlite":
+            conn.exec_driver_sql("DROP INDEX IF EXISTS ix_integrations_website_id")
+            conn.exec_driver_sql("CREATE UNIQUE INDEX ix_integrations_website_id ON integrations (website_id)")
+        elif conn.dialect.name == "mysql":
+            i_indexes = {idx["name"]: idx for idx in inspector.get_indexes("integrations")}
+            if "ix_integrations_website_id" in i_indexes:
+                conn.exec_driver_sql("DROP INDEX ix_integrations_website_id ON integrations")
+            conn.exec_driver_sql("CREATE UNIQUE INDEX ix_integrations_website_id ON integrations (website_id)")
+        if _versions.name in inspector.get_table_names():
+            conn.execute(_versions.delete().where(_versions.c.version >= 3))
+
+
+def downgrade_phase3(engine):
+    """Downgrade schema from Phase 3 to Phase 2.
+
+    Refuses if any non-legacy collectors exist.
+    """
+    with engine.begin() as conn:
+        inspector = inspect(conn)
+        if "integrations" in inspector.get_table_names():
+            i_table = [t for t in _tables() if t.name == "integrations"][0]
+            non_legacy = conn.execute(
+                select(i_table.c.id)
+                .where(i_table.c.kind != "legacy")
+            ).scalars().all()
+            if non_legacy:
+                raise SchemaMismatchError(
+                    f"Cannot downgrade: non-legacy collectors exist: {', '.join(str(i) for i in non_legacy)}"
+                )
+        if "enrollment_tokens" in inspector.get_table_names():
+            if conn.dialect.name == "sqlite":
+                conn.exec_driver_sql("DROP TABLE IF EXISTS enrollment_tokens")
+            elif conn.dialect.name == "mysql":
+                conn.exec_driver_sql("DROP TABLE IF EXISTS enrollment_tokens")
+        if _versions.name in inspector.get_table_names():
+            conn.execute(_versions.delete().where(_versions.c.version >= 4))
+
+
+def downgrade_phase4(engine):
+    """Downgrade schema from Phase 4 to Phase 3 (v6/v5 -> v4).
+
+    Drops ai_analysis_jobs table and client_event_id unique index.
+    """
+    with engine.begin() as conn:
+        inspector = inspect(conn)
+        if "ai_analysis_jobs" in inspector.get_table_names():
+            if conn.dialect.name == "sqlite":
+                conn.exec_driver_sql("DROP TABLE IF EXISTS ai_analysis_jobs")
+            elif conn.dialect.name == "mysql":
+                conn.exec_driver_sql("DROP TABLE IF EXISTS ai_analysis_jobs")
+        if "events" in inspector.get_table_names():
+            e_indexes = {idx["name"]: idx for idx in inspector.get_indexes("events")}
+            if "ix_events_org_integration_client_event_id" in e_indexes:
+                if conn.dialect.name == "sqlite":
+                    conn.exec_driver_sql("DROP INDEX IF EXISTS ix_events_org_integration_client_event_id")
+                elif conn.dialect.name == "mysql":
+                    conn.exec_driver_sql("DROP INDEX ix_events_org_integration_client_event_id ON events")
+        if _versions.name in inspector.get_table_names():
+            conn.execute(_versions.delete().where(_versions.c.version >= 5))
+
+
+
 
 
 def _unique_object(pairs):
@@ -368,10 +571,15 @@ def _unique_object(pairs):
 
 
 def main(argv=None):
-    from app.config.runtime import _load_dotenv_if_present
+    from app.config.runtime import _load_dotenv_if_present, get_runtime_config
     _load_dotenv_if_present()
+    default_url = None
+    try:
+        default_url = get_runtime_config().database_url
+    except Exception:
+        default_url = os.environ.get("DATABASE_URL")
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--database-url", default=os.environ.get("DATABASE_URL"))
+    parser.add_argument("--database-url", default=default_url)
     parser.add_argument("--ownership-map", type=Path)
     parser.add_argument("--backup-confirmed", action="store_true",
                         help="I verified an external backup and stopped writers; this tool creates NO backup")

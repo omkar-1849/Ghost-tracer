@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Check } from "lucide-react";
 
 /**
- * Accessible dark-glass dropdown.
+ * Accessible dark-glass dropdown — liquid glass control material.
  * Keyboard: ArrowUp/Down to navigate, Enter to select, Escape to close.
- * Used by WebsiteFilters, AddWebsiteModal and WebsiteTable (rows-per-page).
+ * Used by filters, AddWebsiteModal, and pagination.
  */
 export default function CustomSelect({ value, onChange, options, id, className = "" }) {
     const [open, setOpen] = useState(false);
@@ -16,7 +16,6 @@ export default function CustomSelect({ value, onChange, options, id, className =
         setHighlighted(0);
     };
 
-    // Close on outside click / Escape
     useEffect(() => {
         if (!open) return;
         const handlePointerDown = (e) => {
@@ -41,26 +40,19 @@ export default function CustomSelect({ value, onChange, options, id, className =
     const handleKeyDown = (e) => {
         if (e.key === "ArrowDown") {
             e.preventDefault();
-            if (!open) {
-                setOpen(true);
-                setHighlighted(0);
-            } else {
-                setHighlighted(h => Math.min(h + 1, options.length - 1));
-            }
+            if (!open) { setOpen(true); setHighlighted(0); }
+            else setHighlighted((h) => Math.min(h + 1, options.length - 1));
         } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setHighlighted(h => Math.max(h - 1, 0));
+            setHighlighted((h) => Math.max(h - 1, 0));
         } else if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            if (!open) {
-                setOpen(true);
-            } else {
-                selectOption(options[highlighted].value);
-            }
+            if (!open) setOpen(true);
+            else selectOption(options[highlighted].value);
         }
     };
 
-    const active = options.find(o => o.value === value);
+    const active = options.find((o) => o.value === value);
 
     return (
         <div ref={rootRef} className={`relative ${className}`}>
@@ -69,24 +61,34 @@ export default function CustomSelect({ value, onChange, options, id, className =
                 id={id}
                 aria-haspopup="listbox"
                 aria-expanded={open}
-                onClick={() => setOpen(o => !o)}
+                onClick={() => setOpen((o) => !o)}
                 onKeyDown={handleKeyDown}
-                className={`flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] rounded-md cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-signal)] ${
-                    open ? "bg-[var(--color-surface-3)] text-[var(--color-text-primary)]" : "hover:bg-[var(--color-surface-2)]"
-                }`}
+                className="flex items-center gap-2 px-3 py-1.5 text-[13px] rounded-[10px] cursor-pointer transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+                style={{
+                    color: open ? "#F4F6F7" : "#858E97",
+                    background: open ? "rgba(255,255,255,0.08)" : "transparent",
+                    border: open ? "1px solid rgba(255,255,255,0.14)" : "1px solid transparent",
+                }}
             >
                 <span className="truncate font-semibold">{active ? active.label : value}</span>
                 <ChevronDown
-                    size={14}
-                    className={`text-[var(--color-text-muted)] transition-transform duration-150 ${open ? "rotate-180 text-[var(--color-signal)]" : ""}`}
+                    size={13}
+                    className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+                    style={{ color: open ? "#F4F6F7" : "#626B74" }}
                 />
             </button>
-
             {open && (
                 <ul
                     role="listbox"
                     aria-labelledby={id}
-                    className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[180px] py-1.5 rounded-lg bg-[var(--color-surface-3)] border border-[var(--color-border-default)] shadow-[var(--shadow-modal)] origin-top-right animate-fade-in"
+                    className="absolute right-0 top-[calc(100%+6px)] z-50 min-w-[180px] py-1.5 rounded-xl origin-top-right animate-fade-in overflow-hidden"
+                    style={{
+                        background: "rgba(11,14,18,0.92)",
+                        backdropFilter: "blur(18px) saturate(112%)",
+                        WebkitBackdropFilter: "blur(18px) saturate(112%)",
+                        border: "1px solid rgba(255,255,255,0.085)",
+                        boxShadow: "0 18px 48px rgba(0,0,0,0.45)",
+                    }}
                 >
                     {options.map((opt, idx) => {
                         const selected = opt.value === value;
@@ -97,14 +99,14 @@ export default function CustomSelect({ value, onChange, options, id, className =
                                     type="button"
                                     onMouseEnter={() => setHighlighted(idx)}
                                     onClick={() => selectOption(opt.value)}
-                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-xs text-left transition-colors duration-100 ${
+                                    className={`w-full flex items-center justify-between gap-3 px-3.5 py-2 text-[12px] text-left transition-colors duration-100 ${
                                         isHighlighted || selected
-                                            ? "bg-[rgba(255,255,255,0.08)] text-white font-medium"
-                                            : "text-[var(--color-text-secondary)] hover:text-white"
+                                            ? "bg-[rgba(255,255,255,0.08)] text-[#F4F6F7] font-medium"
+                                            : "text-[#B7BEC5] hover:text-[#F4F6F7]"
                                     }`}
                                 >
                                     <span>{opt.label}</span>
-                                    {selected && <Check size={13} className="text-white shrink-0" />}
+                                    {selected && <Check size={13} className="text-[#F4F6F7] shrink-0" />}
                                 </button>
                             </li>
                         );

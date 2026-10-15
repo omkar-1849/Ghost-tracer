@@ -1,0 +1,342 @@
+/* ============================================================
+   SENTINEL AI — AI Analyst Redesign Stylesheet
+   Specification: SENTINEL_AI_ANALYST_FILTER_TOOLBAR_SPEC.md
+   Tokens: SENTINEL_AI_ANALYST_FILTER_TOOLBAR_TOKENS.json
+   Visual Language: Neutral Graphite Glass (NO yellow/amber/gold/bronze/orange)
+   ============================================================ */
+
+:root {
+  /* Surfaces & Atmosphere */
+  --ai-bg-base: #090A0B;
+  --ai-bg-deep: #060708;
+  --ai-bg-overlay: rgba(5, 6, 7, 0.42);
+  --ai-bg-vignette: rgba(0, 0, 0, 0.32);
+
+  /* Typography */
+  --ai-text-primary: #F0F0EE;
+  --ai-text-secondary: #C0C0BD;
+  --ai-text-muted: #969794;
+  --ai-text-placeholder: #8B8D8A;
+  --ai-text-disabled: #626461;
+
+  /* Filter Toolbar Neutral Glass Tokens */
+  --tb-surface-base: rgba(22, 23, 24, 0.72);
+  --tb-surface-hover: rgba(34, 35, 36, 0.78);
+  --tb-surface-open-menu: rgba(16, 17, 18, 0.96);
+  --tb-surface-selected: rgba(235, 236, 238, 0.07);
+
+  --tb-border-default: rgba(225, 227, 229, 0.14);
+  --tb-border-hover: rgba(235, 237, 239, 0.23);
+  --tb-border-focus: rgba(235, 237, 239, 0.48);
+  --tb-border-menu: rgba(225, 227, 229, 0.16);
+
+  --tb-icon-default: #B9BBB8;
+  --tb-icon-muted: #8F918E;
+  --tb-icon-focus: #E5E6E3;
+
+  --tb-shadow-outer: 0 8px 22px rgba(0, 0, 0, 0.22);
+  --tb-shadow-inner-top: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --tb-shadow-focus: 0 0 0 2px rgba(225, 227, 229, 0.08);
+  --tb-shadow-menu: 0 12px 28px rgba(0, 0, 0, 0.3);
+
+  /* Page Separators & Accents */
+  --ai-divider: rgba(232, 232, 226, 0.16);
+  --ai-divider-subtle: rgba(232, 232, 226, 0.09);
+  --ai-divider-rule: rgba(232, 232, 226, 0.11);
+  --ai-amber: #D3A16A;
+}
+
+/* Base Page Environment: Continuous, immersive, card-free */
+.ai-analyst-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 86px 30px 32px;
+  color: var(--ai-text-primary);
+  background: transparent;
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+}
+
+@media (max-width: 1279px) {
+  .ai-analyst-page {
+    padding: 86px 22px 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .ai-analyst-page {
+    padding: 82px 16px 24px;
+  }
+}
+
+/* Atmospheric Overlay for maximum text legibility */
+.ai-analyst-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(5,6,7,0.42), rgba(5,6,7,0.24) 58%, rgba(5,6,7,0.46));
+  z-index: 0;
+}
+
+/* Page Typography */
+.ai-page-title {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: var(--ai-text-primary);
+}
+
+@media (max-width: 767px) {
+  .ai-page-title {
+    font-size: 30px;
+    letter-spacing: -0.03em;
+  }
+}
+
+.ai-page-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ai-text-secondary);
+  font-weight: 400;
+}
+
+/* Governance Strip */
+.ai-governance-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ai-amber);
+  font-family: var(--font-mono, monospace);
+}
+
+.ai-governance-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ai-text-secondary);
+}
+
+/* ============================================================
+   Filter Toolbar: Neutral Graphite Glass Controls
+   Strict: No yellow, amber, gold, bronze, or orange tint
+   ============================================================ */
+
+/* Search Input */
+.ai-search-input {
+  height: 46px;
+  background: var(--tb-surface-base);
+  backdrop-filter: blur(12px) saturate(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(102%);
+  border: 1px solid var(--tb-border-default);
+  border-radius: 13px;
+  color: var(--ai-text-primary);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  box-shadow: var(--tb-shadow-outer), var(--tb-shadow-inner-top);
+  transition: border-color 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 160ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              background 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.ai-search-input:hover {
+  background: var(--tb-surface-hover);
+  border-color: var(--tb-border-hover);
+}
+
+.ai-search-input:focus {
+  outline: none;
+  background: rgba(34, 35, 36, 0.85);
+  border-color: var(--tb-border-focus);
+  box-shadow: var(--tb-shadow-outer),
+              var(--tb-shadow-focus),
+              var(--tb-shadow-inner-top);
+}
+
+.ai-search-input::placeholder {
+  color: var(--ai-text-placeholder);
+  font-size: 14px;
+}
+
+/* Neutral Graphite Glass Dropdown Trigger Button */
+.ai-glass-dropdown-btn {
+  background: var(--tb-surface-base);
+  backdrop-filter: blur(12px) saturate(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(102%);
+  border: 1px solid var(--tb-border-default);
+  color: var(--ai-text-secondary);
+  font-family: var(--font-sans, "IBM Plex Sans", sans-serif);
+  box-shadow: var(--tb-shadow-outer), var(--tb-shadow-inner-top);
+  transition: all 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.ai-glass-dropdown-btn:hover {
+  background: var(--tb-surface-hover);
+  border-color: var(--tb-border-hover);
+  color: var(--ai-text-primary);
+}
+
+.ai-glass-dropdown-btn:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+.ai-glass-dropdown-btn.is-open {
+  background: rgba(34, 35, 36, 0.88);
+  border-color: var(--tb-border-focus);
+  box-shadow: var(--tb-shadow-outer),
+              var(--tb-shadow-focus),
+              var(--tb-shadow-inner-top);
+}
+
+/* Neutral Graphite Glass Dropdown Popup Menu */
+.ai-glass-dropdown-menu {
+  background: var(--tb-surface-open-menu);
+  backdrop-filter: blur(12px) saturate(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(102%);
+  border: 1px solid var(--tb-border-menu);
+  border-radius: 11px;
+  box-shadow: var(--tb-shadow-menu), var(--tb-shadow-inner-top);
+  padding: 5px;
+}
+
+/* Dropdown Menu Option */
+.ai-dropdown-option {
+  border-radius: 7px;
+  color: var(--ai-text-secondary);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.4;
+  padding: 8px 12px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.ai-dropdown-option:hover {
+  background: rgba(235, 236, 238, 0.05);
+  color: var(--ai-text-primary);
+}
+
+.ai-dropdown-option.is-selected {
+  background: var(--tb-surface-selected);
+  color: var(--ai-text-primary);
+  font-weight: 550;
+}
+
+/* Header Action buttons */
+.ai-action-btn {
+  background: var(--tb-surface-base);
+  backdrop-filter: blur(12px) saturate(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(102%);
+  border: 1px solid var(--tb-border-default);
+  border-radius: 11px;
+  color: var(--ai-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 15px;
+  box-shadow: var(--tb-shadow-outer), var(--tb-shadow-inner-top);
+  transition: all 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.ai-action-btn:hover {
+  background: var(--tb-surface-hover);
+  color: var(--ai-text-primary);
+  border-color: var(--tb-border-hover);
+}
+
+.ai-action-btn:focus-visible {
+  outline: 2px solid var(--tb-border-focus);
+  outline-offset: 1px;
+}
+
+/* Highlighted Action button (Response Queue) */
+.ai-action-btn-highlight {
+  background: rgba(211, 161, 106, 0.14);
+  backdrop-filter: blur(12px) saturate(102%);
+  -webkit-backdrop-filter: blur(12px) saturate(102%);
+  border: 1px solid rgba(211, 161, 106, 0.32);
+  border-radius: 11px;
+  color: var(--ai-text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 16px;
+  transition: all 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.ai-action-btn-highlight:hover {
+  background: rgba(211, 161, 106, 0.22);
+  border-color: rgba(211, 161, 106, 0.48);
+}
+
+.ai-action-btn-highlight:focus-visible {
+  outline: 2px solid var(--ai-amber);
+  outline-offset: 1px;
+}
+
+/* Liquid-Glass Telemetry Rail Container */
+.ai-telemetry-rail-container {
+  position: relative;
+  background: rgba(18, 16, 14, 0.38);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(211, 160, 106, 0.15);
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.25),
+    0 16px 40px -8px rgba(0, 0, 0, 0.45);
+}
+
+/* Stream table continuous layout */
+.ai-stream-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: transparent;
+}
+
+.ai-stream-table th {
+  padding: 12px 14px;
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ai-text-muted);
+  border-bottom: 1px solid var(--ai-divider-rule);
+  background: transparent;
+}
+
+.ai-stream-table td {
+  padding: 13px 14px;
+  font-size: 13px;
+  color: var(--ai-text-secondary);
+  border-bottom: 1px solid var(--ai-divider-subtle);
+  background: transparent;
+}
+
+.ai-stream-row {
+  transition: background-color 140ms ease;
+  cursor: pointer;
+}
+
+.ai-stream-row:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.ai-stream-row.is-selected {
+  background-color: rgba(211, 161, 106, 0.08);
+}
+
+/* Accessibility: Respect user motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .ai-stream-row,
+  .ai-glass-dropdown-btn,
+  .ai-dropdown-option,
+  .ai-action-btn,
+  .ai-search-input {
+    transition: none !important;
+  }
+}

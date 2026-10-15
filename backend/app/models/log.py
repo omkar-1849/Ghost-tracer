@@ -19,6 +19,13 @@ class Log(TenantOwned, Base):
         index=True,
     )
 
+    integration_id = Column(
+        Integer,
+        ForeignKey("integrations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     ip_address = Column(String(50))
     method = Column(String(10))
     url = Column(String(255))
@@ -36,3 +43,5 @@ class Log(TenantOwned, Base):
     )
 
     website = relationship("Website", foreign_keys=[website_id])
+    integration = relationship("Integration", foreign_keys=[integration_id])
+

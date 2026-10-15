@@ -1,5 +1,5 @@
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import backref, relationship
 from datetime import datetime
 
 from app.database.base import Base, TenantOwned
@@ -23,6 +23,18 @@ class Incident(TenantOwned, Base):
     alert_id = Column(
         Integer,
         ForeignKey("alerts.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    investigation_id = Column(
+        Integer,
+        ForeignKey("investigations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    finding_id = Column(
+        Integer,
+        ForeignKey("scanner_findings.id", ondelete="SET NULL"),
         nullable=True,
         index=True,
     )
@@ -64,4 +76,6 @@ class Incident(TenantOwned, Base):
     resolved_at = Column(DateTime, nullable=True)
 
     website = relationship("Website", foreign_keys=[website_id])
-    alert = relationship("Alert", foreign_keys=[alert_id])
+    alert = relationship("Alert", foreign_keys=[alert_id], backref=backref("incident", uselist=False))
+    investigation = relationship("Investigation", foreign_keys=[investigation_id])
+    finding = relationship("ScannerFinding", foreign_keys=[finding_id])

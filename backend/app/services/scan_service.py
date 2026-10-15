@@ -42,7 +42,7 @@ def _log_scan_event(db: Session, scan: Scan, action: str) -> None:
     )
 
 
-def create_scan(db: Session, website_id: int, engine: str) -> Scan:
+def create_scan(db: Session, website_id: int, engine: str, profile: str | None = None) -> Scan:
     """Create a Pending scan for a verified website in the request tenant.
 
     The request session is tenant-scoped; the write validator enforces that the
@@ -55,7 +55,7 @@ def create_scan(db: Session, website_id: int, engine: str) -> Scan:
         .first()
     )
 
-    if website is None:
+    if website is None or website.archived_at is not None:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Website not found.")
 
@@ -64,6 +64,28 @@ def create_scan(db: Session, website_id: int, engine: str) -> Scan:
         raise HTTPException(
             status_code=403,
             detail="Website ownership has not been verified.",
+        )
+
+    if website.exposure == "internal":
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=403,
+            detail="Scanning is not available for internal assets.",
+        )
+
+    active_scan = (
+        db.query(Scan)
+        .filter(
+            Scan.website_id == website.id,
+            Scan.status.in_(("Pending", "Running")),
+        )
+        .first()
+    )
+    if active_scan:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=409,
+            detail="Another scan is already running or pending on this website.",
         )
 
     from app.utils.destination import validate_destination
@@ -82,6 +104,7 @@ def create_scan(db: Session, website_id: int, engine: str) -> Scan:
         organization_id=website.organization_id,
         website_id=website.id,
         engine=engine,
+        profile=profile,
         target=website.url,
         status="Pending",
         findings=0,

@@ -56,6 +56,7 @@ class EventCreate(BaseModel):
     ip_address: str | None = Field(default=None, max_length=50)
     user_agent: str | None = Field(default=None, max_length=500)
     event_metadata: dict[str, Any] = Field(default_factory=dict)
+    event_id: str | None = Field(default=None, max_length=128, pattern=r"^[A-Za-z0-9._:-]{1,128}$")
 
     @model_validator(mode="before")
     @classmethod
@@ -76,6 +77,7 @@ class EventResponse(BaseModel):
     id: int
     website_id: int
     integration_id: int
+    client_event_id: str | None = None
     event_type: str
     severity: str
     source: str
@@ -92,6 +94,8 @@ class EventResponse(BaseModel):
     analyst_result: dict[str, Any] | None = None
     normalization_version: int | None = None
     processed_at: datetime | None = None
+    ai_status: str | None = None
+    ai_completed_at: datetime | None = None
 
 
 class CanonicalSecurityEvent(BaseModel):

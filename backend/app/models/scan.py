@@ -51,6 +51,9 @@ class Scan(TenantOwned, Base):
 
     scheduled = Column(Boolean, default=False)
 
+    profile = Column(String(50), nullable=True, default="default")
+    normalization_status = Column(String(20), nullable=True, default="PENDING")
+
     # Scan worker coordination (UTC semantics)
     worker_id = Column(String(64), nullable=True)
     heartbeat_at = Column(DateTime, nullable=True)

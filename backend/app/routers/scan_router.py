@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 from app.database.database import get_db
 from app.models.scan import Scan
 from app.models.website import Website
+from app.schemas.investigation_schema import InvestigationResponse
 from app.schemas.scan_schema import ScanRequest, ScanResponse
+from app.schemas.scanner_finding_schema import ScannerFindingResponse
 from app.services.scan_service import (
     create_scan,
     delete_scan,
@@ -25,13 +27,14 @@ router = APIRouter(
 
 _READ_ROLES = ("owner", "admin", "analyst", "viewer")
 _LAUNCH_ROLES = ("owner", "admin", "analyst")
-_ADMIN_ONLY = ("admin",)
+_ADMIN_ONLY = ("owner", "admin")
 
 
 def _tenant_query(db: Session, context: TenantContext):
     return db.query(Scan).filter(Scan.organization_id == context.organization_id)
 
 
+@router.post("", response_model=ScanResponse, include_in_schema=False)
 @router.post("/", response_model=ScanResponse)
 def start_scan(
     request: ScanRequest,
@@ -47,7 +50,7 @@ def start_scan(
         )
 
     try:
-        scan = create_scan(db, request.website_id, engine)
+        scan = create_scan(db, request.website_id, engine, profile=request.profile)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from None
 
@@ -133,6 +136,118 @@ def remove_scan(
     if not deleted:
         raise HTTPException(status_code=404, detail="Scan not found")
     return {"deleted": True, "id": scan_id}
+
+
+@router.get("/{scan_id}/findings", response_model=list[ScannerFindingResponse])
+def scan_findings(
+    scan_id: int,
+    db: Session = Depends(get_db),
+    context: TenantContext = Depends(require_roles(*_READ_ROLES)),
+):
+    """List findings associated with this specific scan."""
+    scan = _tenant_query(db, context).filter(Scan.id == scan_id).first()
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    from app.models.scanner_finding import ScannerFinding
+    from app.models.scanner_finding_observation import ScannerFindingObservation
+
+    finding_ids = (
+        db.query(ScannerFindingObservation.finding_id)
+        .filter(
+            ScannerFindingObservation.scan_id == scan.id,
+            ScannerFindingObservation.organization_id == context.organization_id,
+        )
+        .distinct()
+        .all()
+    )
+    ids = [fid[0] for fid in finding_ids]
+    if not ids:
+        return []
+
+    return (
+        db.query(ScannerFinding)
+        .filter(
+            ScannerFinding.id.in_(ids),
+            ScannerFinding.organization_id == context.organization_id,
+        )
+        .order_by(ScannerFinding.severity.desc())
+        .all()
+    )
+
+
+@router.get("/{scan_id}/investigation", response_model=InvestigationResponse)
+def scan_investigation(
+    scan_id: int,
+    db: Session = Depends(get_db),
+    context: TenantContext = Depends(require_roles(*_READ_ROLES)),
+):
+    """Get the latest investigation and report for this scan."""
+    scan = _tenant_query(db, context).filter(Scan.id == scan_id).first()
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    from app.models.investigation import Investigation
+
+    investigation = (
+        db.query(Investigation)
+        .filter(
+            Investigation.trigger_scan_id == scan.id,
+            Investigation.organization_id == context.organization_id,
+        )
+        .order_by(Investigation.created_at.desc())
+        .first()
+    )
+    if investigation is None:
+        raise HTTPException(status_code=404, detail="No investigation found for this scan")
+    return investigation
+
+
+@router.post("/{scan_id}/investigate", response_model=InvestigationResponse)
+def trigger_scan_investigation(
+    scan_id: int,
+    db: Session = Depends(get_db),
+    context: TenantContext = Depends(require_roles(*_LAUNCH_ROLES)),
+):
+    """Trigger or re-run investigation for a completed scan (idempotent if running)."""
+    scan = _tenant_query(db, context).filter(Scan.id == scan_id).first()
+    if scan is None:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    if scan.status not in ("Completed", "Failed"):
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot investigate a scan that is still in progress",
+        )
+
+    from app.models.investigation import Investigation
+    from app.services.finding_normalization_service import process_completed_scan
+
+    existing = (
+        db.query(Investigation)
+        .filter(
+            Investigation.trigger_scan_id == scan.id,
+            Investigation.organization_id == context.organization_id,
+            Investigation.status.in_(["PENDING", "PROCESSING"]),
+        )
+        .first()
+    )
+    if existing:
+        return existing
+
+    inv_id = process_completed_scan(scan.id)
+    if not inv_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Could not trigger investigation for this scan",
+        )
+
+    investigation = (
+        db.query(Investigation)
+        .filter(Investigation.id == inv_id)
+        .first()
+    )
+    return investigation
 
 
 @router.put("/{scan_id}/status", deprecated=True)

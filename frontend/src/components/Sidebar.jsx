@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutGrid,
@@ -18,6 +18,7 @@ import {
   User,
   LogOut,
   MoreHorizontal,
+  Brain,
 } from "lucide-react";
 
 import { getOrganization, logout, switchOrganization } from "../services/authClient";
@@ -92,6 +93,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }) {
           icon: Box,
           children: [
             { to: "/alerts", label: "Threats", icon: Bell },
+            { to: "/analyst", label: "AI Analyst", icon: Brain },
             { to: "/incidents", label: "Incidents", icon: TriangleAlert },
             { to: "/response-actions", label: "Response", icon: Zap },
             { to: "/activity", label: "Activity", icon: Activity },
@@ -196,6 +198,165 @@ export function Sidebar({ mobileOpen = false, onMobileClose }) {
     }
   };
 
+  const navRef = useRef(null);
+  const prevRouteRef = useRef(currentPath);
+  const prevTopRef = useRef(0);
+
+  // iOS-style moving active glass capsule state
+  const [indicator, setIndicator] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+    visible: false,
+    direction: null,
+    motionKey: 0,
+    isInitial: true,
+  });
+
+  // Track and update the moving active glass capsule
+  useEffect(() => {
+    const routeChanged = prevRouteRef.current !== currentPath;
+    prevRouteRef.current = currentPath;
+
+    const nav = navRef.current;
+    if (!nav) return;
+
+    let frameId;
+    let timerId;
+    let startTime = null;
+    const TRACK_DURATION = 280;
+
+    const measureActive = (isFirstPass = false) => {
+      const activeEl = nav.querySelector('[data-sb-active="true"]');
+      if (!activeEl) {
+        setIndicator((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+        return;
+      }
+
+      const navRect = nav.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      if (elRect.width === 0 || elRect.height === 0) return;
+
+      const targetTop = elRect.top - navRect.top + nav.scrollTop;
+      const targetLeft = elRect.left - navRect.left;
+      const targetWidth = elRect.width;
+      const targetHeight = elRect.height;
+
+      setIndicator((prev) => {
+        if (
+          prev.visible &&
+          Math.abs(prev.top - targetTop) < 0.5 &&
+          Math.abs(prev.left - targetLeft) < 0.5 &&
+          Math.abs(prev.width - targetWidth) < 0.5 &&
+          Math.abs(prev.height - targetHeight) < 0.5
+        ) {
+          return prev;
+        }
+
+        if (prev.isInitial) {
+          prevTopRef.current = targetTop;
+          return {
+            top: targetTop,
+            left: targetLeft,
+            width: targetWidth,
+            height: targetHeight,
+            visible: true,
+            direction: null,
+            motionKey: prev.motionKey,
+            isInitial: false,
+          };
+        }
+
+        const deltaY = targetTop - prevTopRef.current;
+        const newDirection =
+          isFirstPass && routeChanged && Math.abs(deltaY) > 4
+            ? deltaY > 0
+              ? "down"
+              : "up"
+            : prev.direction;
+
+        prevTopRef.current = targetTop;
+
+        return {
+          top: targetTop,
+          left: targetLeft,
+          width: targetWidth,
+          height: targetHeight,
+          visible: true,
+          direction: newDirection,
+          motionKey: isFirstPass && routeChanged ? prev.motionKey + 1 : prev.motionKey,
+          isInitial: false,
+        };
+      });
+    };
+
+    // First measurement immediately
+    measureActive(true);
+
+    // Frame tracking for smooth accordion transitions
+    const trackLoop = (time) => {
+      if (!startTime) startTime = time;
+      measureActive(false);
+      if (time - startTime < TRACK_DURATION) {
+        frameId = requestAnimationFrame(trackLoop);
+      }
+    };
+    frameId = requestAnimationFrame(trackLoop);
+
+    // Settle animation class after 420ms
+    timerId = setTimeout(() => {
+      setIndicator((prev) => (prev.direction ? { ...prev, direction: null } : prev));
+    }, 420);
+
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [currentPath, isCollapsed, userToggledGroups]);
+
+  // Window resize observer to keep capsule aligned
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+
+    const ro = new ResizeObserver(() => {
+      const activeEl = nav.querySelector('[data-sb-active="true"]');
+      if (!activeEl) return;
+      const navRect = nav.getBoundingClientRect();
+      const elRect = activeEl.getBoundingClientRect();
+      if (elRect.width === 0 || elRect.height === 0) return;
+
+      const tt = elRect.top - navRect.top + nav.scrollTop;
+      const tl = elRect.left - navRect.left;
+      const tw = elRect.width;
+      const th = elRect.height;
+
+      setIndicator((prev) => {
+        if (
+          Math.abs(prev.top - tt) < 0.5 &&
+          Math.abs(prev.left - tl) < 0.5 &&
+          Math.abs(prev.width - tw) < 0.5 &&
+          Math.abs(prev.height - th) < 0.5
+        ) {
+          return prev;
+        }
+        prevTopRef.current = tt;
+        return {
+          ...prev,
+          top: tt,
+          left: tl,
+          width: tw,
+          height: th,
+          visible: true,
+        };
+      });
+    });
+
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, []);
+
   // §8.4: Get the display name and first letter for the avatar
   const displayName = org?.name || "Sentinel SOC";
   const displayRole = org?.current_user_role || "Analyst";
@@ -287,11 +448,31 @@ export function Sidebar({ mobileOpen = false, onMobileClose }) {
 
           {/* 2. Nav Tree Scroll Area */}
           <nav
+            ref={navRef}
             className={`sb-nav-scroll sb-nav-scroll-mask ${
               isCollapsed ? "is-collapsed" : ""
             }`}
             aria-label="Navigation Tree"
           >
+            {/* The iOS-Style Moving Active Glass Surface */}
+            <div
+              className={`sb-active-indicator ${
+                indicator.direction ? `is-moving-${indicator.direction}` : ""
+              }`}
+              style={{
+                transform: `translate3d(${indicator.left}px, ${indicator.top}px, 0)`,
+                width: `${indicator.width}px`,
+                height: `${indicator.height}px`,
+                opacity: indicator.visible ? 1 : 0,
+              }}
+              aria-hidden="true"
+            >
+              <div key={indicator.motionKey} className="sb-active-indicator-body">
+                <div className="sb-active-indicator-highlight" />
+                <div className="sb-active-indicator-tint" />
+              </div>
+            </div>
+
             {/* Top-Level Leaf: Dashboard — §8.2: icon LayoutGrid, no chevron */}
             <NavLeaf
               item={navTree.leafTop}
@@ -316,10 +497,10 @@ export function Sidebar({ mobileOpen = false, onMobileClose }) {
 
           {/* §8.4: Defense Grid banner REMOVED per spec — reference has none */}
 
-          {/* Footer Divider — §8.4: 1px solid rgba(255,255,255,0.10), inset 16px */}
+          {/* Footer Divider — §8.4: 1px subtle bronze hairline, inset 16px */}
           <div className="sb-footer-divider" aria-hidden="true" />
 
-          {/* 4. Footer User Card — §8.4: 68px */}
+          {/* 4. Footer User Card — §8.4: 64px */}
           <div className="sb-footer">
             <div className="relative w-full">
               {/* §8.4: User row is ONE button that opens the existing user menu */}
@@ -328,14 +509,21 @@ export function Sidebar({ mobileOpen = false, onMobileClose }) {
                 onClick={() => setFooterMenuOpen((prev) => !prev)}
                 aria-expanded={footerMenuOpen}
                 aria-label="User Account Menu"
-                className="w-full flex items-center gap-2.5 rounded-lg text-left transition-colors sb-focusable"
+                className="sb-user-btn sb-focusable"
                 style={{
-                  padding: isCollapsed ? "0" : "4px",
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  borderRadius: "12px",
+                  textAlign: "left",
+                  padding: isCollapsed ? "4px" : "6px 8px",
                   justifyContent: isCollapsed ? "center" : "flex-start",
-                  background: footerMenuOpen ? "rgba(255,255,255,0.08)" : "transparent",
+                  background: footerMenuOpen ? "rgba(211, 160, 106, 0.08)" : undefined,
+                  borderColor: footerMenuOpen ? "rgba(211, 160, 106, 0.20)" : undefined,
                 }}
               >
-                {/* §8.4: Avatar — 34px circle, initial letter */}
+                {/* §8.4: Avatar — 32px circle, initial letter */}
                 <div className="sb-avatar">
                   {displayName ? avatarLetter : <User size={14} />}
                 </div>

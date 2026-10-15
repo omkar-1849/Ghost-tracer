@@ -60,14 +60,17 @@ def get_request_limiter() -> RequestLimiter:
     return RequestLimiter(key, _integer("AUTH_RATE_MAX_BUCKETS", 10000, 100000))
 
 
+from app.utils.client_ip import get_client_ip
+
+
 def check_rate_limit(request: Request, subject_email: str | None = None) -> bool:
-    """Use socket peer only; forwarded headers are not trusted as client identity."""
+    """Evaluate rate limit using genuine client IP resolved with trusted proxy support."""
     action = request.url.path
     recovery = action == "/auth/forgot-password"
     ip_limit = _integer("AUTH_RATE_IP_LIMIT", 30, 1000)
     email_limit = _integer("AUTH_RATE_EMAIL_LIMIT", 5, 100)
     window = _integer("AUTH_RATE_WINDOW_SECONDS", 900, 3600)
-    allowed = get_request_limiter().allow(action, request.client.host if request.client else "unknown",
+    allowed = get_request_limiter().allow(action, get_client_ip(request),
                                           subject_email, ip_limit, email_limit, window)
     if not allowed and not recovery:
         raise HTTPException(429, "Too many requests. Please try again later.",

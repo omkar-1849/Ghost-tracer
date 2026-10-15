@@ -32,7 +32,9 @@ class LogResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     website_id: int | None = None
+    integration_id: int | None = None
     ip_address: str | None = None
+
     method: str | None = None
     url: str | None = None
     status_code: int | None = None

@@ -9,6 +9,7 @@ from app.config.runtime import get_runtime_config
 from app.database.database import engine
 
 # Models
+import app.models
 from app.models.log import Log
 from app.models.alert import Alert
 from app.models.scan_result import ScanResult
@@ -19,6 +20,7 @@ from app.models.incident_note import IncidentNote
 from app.models.settings import Settings
 from app.models.website import Website
 from app.models.integration import Integration
+from app.models.enrollment_token import EnrollmentToken
 from app.models.user import User
 from app.models.scan import Scan
 from app.models.password_reset_token import PasswordResetToken
@@ -47,9 +49,18 @@ from app.routers.audit_log_router import router as audit_log_router
 from app.routers.organization_router import router as organization_router
 from app.routers.scan_router import router as scan_router
 from app.routers.response_action_router import router as response_action_router
+from app.routers.collector_router import router as collector_router
+from app.routers.collector_admin_router import (
+    router as collector_admin_router,
+    tenant_enrollment_router,
+)
+from app.routers.finding_router import router as finding_router
+from app.routers.investigation_router import router as investigation_router
+
 
 from app.middleware.http_security import SecurityMiddleware
 from app.services.scanner_worker import start_scan_workers, stop_scan_workers
+from app.services.ai_worker import start_ai_workers, stop_ai_workers
 
 config = get_runtime_config()
 
@@ -74,10 +85,16 @@ def start_background_services():
     check_schema(engine)
     if config.environment != "test":
         start_scan_workers()
+        start_ai_workers()
+        from app.services.investigation_worker import start_investigation_workers
+        start_investigation_workers()
 
 
 @app.on_event("shutdown")
 def stop_background_services():
+    from app.services.investigation_worker import stop_investigation_workers
+    stop_investigation_workers()
+    stop_ai_workers()
     stop_scan_workers()
 
 
@@ -87,7 +104,7 @@ app.add_middleware(
     allow_origins=config.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Organization-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key", "X-Organization-ID", "X-Enrollment-Token"],
 )
 
 
@@ -105,13 +122,19 @@ app.include_router(incident_note_router)
 app.include_router(settings_router)
 app.include_router(website_router)
 app.include_router(integration_router)
+app.include_router(collector_admin_router)
+app.include_router(tenant_enrollment_router)
+app.include_router(collector_router)
 app.include_router(event_router)
+
 
 app.include_router(organization_router)
 app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(session_router)
 app.include_router(scan_router)
+app.include_router(finding_router)
+app.include_router(investigation_router)
 app.include_router(audit_log_router)
 
 app.include_router(response_action_router)

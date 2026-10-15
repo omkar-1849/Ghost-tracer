@@ -69,15 +69,15 @@ function Alerts() {
     }, [alerts, search, severity]);
 
     return (
-        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-                        <ShieldAlert size={24} className="text-white" />
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC] flex items-center gap-2.5">
+                        <ShieldAlert size={24} className="text-[#D3A06A]" />
                         <span>Threats & Alerts</span>
                     </h1>
-                    <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                    <p className="text-xs font-mono text-[#A9A199] mt-1">
                         SOC alert queue streaming from detection engines
                     </p>
                 </div>
@@ -86,14 +86,14 @@ function Alerts() {
                     <button
                         type="button"
                         onClick={loadAlertsData}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs text-white transition-all shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[rgba(20,18,16,0.55)] border border-[rgba(255,248,238,0.08)] hover:border-[rgba(211,160,106,0.3)] text-xs text-[#D6CFC7] hover:text-[#F5F1EC] transition-all shadow-[0_2px_8px_rgba(0,0,0,0.3)]"
                     >
-                        <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                        <RefreshCw size={14} className={loading ? "animate-spin text-[#D3A06A]" : "text-[#A9A199]"} />
                         <span>Sync Alerts</span>
                     </button>
                     <Link
                         to="/incidents"
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-colors shadow-sm"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#d3a06a] to-[#e3b985] text-[#0d0c0a] font-semibold text-xs hover:brightness-105 transition-all shadow-[0_2px_12px_rgba(211,160,106,0.25)]"
                     >
                         <span>Incident Workspace</span>
                         <ArrowUpRight size={14} />
@@ -103,64 +103,64 @@ function Alerts() {
 
             {/* Severity KPI Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="frosted-card p-5">
+                <div className="sentinel-glass p-5 rounded-2xl relative overflow-hidden group">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Critical Alerts</span>
-                        <Flame size={18} className="text-[var(--color-critical)]" />
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#A9A199]">Critical Alerts</span>
+                        <Flame size={18} className="text-[#E67868]" />
                     </div>
-                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                    <div className="text-3xl font-bold text-[#F5F1EC] font-mono mt-3 tabular-nums">
                         {stats.critical_alerts || 0}
                     </div>
-                    <p className="text-xs text-[var(--color-critical)] mt-1">Requires immediate triage</p>
+                    <p className="text-xs font-mono text-[#E67868] mt-1">Requires immediate triage</p>
                 </div>
 
-                <div className="frosted-card p-5">
+                <div className="sentinel-glass p-5 rounded-2xl relative overflow-hidden group">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">High Severity</span>
-                        <TriangleAlert size={18} className="text-[var(--color-high)]" />
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#A9A199]">High Severity</span>
+                        <TriangleAlert size={18} className="text-[#D3A06A]" />
                     </div>
-                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                    <div className="text-3xl font-bold text-[#F5F1EC] font-mono mt-3 tabular-nums">
                         {stats.high_alerts || 0}
                     </div>
-                    <p className="text-xs text-[var(--color-high)] mt-1">Elevated threat level</p>
+                    <p className="text-xs font-mono text-[#D3A06A] mt-1">Elevated threat level</p>
                 </div>
 
-                <div className="frosted-card p-5">
+                <div className="sentinel-glass p-5 rounded-2xl relative overflow-hidden group">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Total Alerts</span>
-                        <ShieldAlert size={18} className="text-white" />
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#A9A199]">Total Alerts</span>
+                        <ShieldAlert size={18} className="text-[#D6CFC7]" />
                     </div>
-                    <div className="text-3xl font-bold text-white font-mono mt-3">
+                    <div className="text-3xl font-bold text-[#F5F1EC] font-mono mt-3 tabular-nums">
                         {stats.total_alerts || alerts.length || 0}
                     </div>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">24h threat volume</p>
+                    <p className="text-xs font-mono text-[#A9A199] mt-1">24h threat volume</p>
                 </div>
 
-                <div className="frosted-card p-5">
+                <div className="sentinel-glass p-5 rounded-2xl relative overflow-hidden group">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono text-[var(--color-text-muted)] uppercase">Defense Mode</span>
-                        <CheckCircle2 size={18} className="text-[var(--color-success)]" />
+                        <span className="text-[11px] font-mono uppercase tracking-wider text-[#A9A199]">Defense Mode</span>
+                        <CheckCircle2 size={18} className="text-[#77C79A]" />
                     </div>
-                    <div className="text-3xl font-bold text-[var(--color-success)] font-mono mt-3">
+                    <div className="text-3xl font-bold text-[#77C79A] font-mono mt-3">
                         ACTIVE
                     </div>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">All sensors nominal</p>
+                    <p className="text-xs font-mono text-[#A9A199] mt-1">All sensors nominal</p>
                 </div>
             </div>
 
             {/* Filter Bar */}
-            <div className="frosted-card p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="sentinel-glass p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-96">
                     <Search
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                        size={15}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B837B] pointer-events-none"
                     />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search alerts by title, source IP..."
-                        className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
+                        className="w-full bg-[rgba(14,12,10,0.55)] border border-[rgba(255,248,238,0.08)] rounded-xl pl-10 pr-3 py-2 text-xs text-[#F5F1EC] placeholder:text-[#8B837B] focus:outline-none focus:border-[rgba(211,160,106,0.5)] focus:ring-1 focus:ring-[rgba(211,160,106,0.3)] transition-all"
                     />
                 </div>
 
@@ -170,10 +170,10 @@ function Alerts() {
                             key={sev}
                             type="button"
                             onClick={() => setSeverity(sev)}
-                            className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-medium transition-all ${
                                 severity === sev
-                                    ? "bg-white text-black font-semibold shadow-sm"
-                                    : "bg-[var(--color-surface-1)] text-[var(--color-text-secondary)] hover:text-white border border-[var(--color-border-default)]"
+                                    ? "bg-gradient-to-r from-[#d3a06a] to-[#e3b985] text-[#0d0c0a] font-bold shadow-[0_2px_10px_rgba(211,160,106,0.25)]"
+                                    : "bg-[rgba(20,18,16,0.45)] text-[#A9A199] hover:text-[#F5F1EC] hover:bg-[rgba(30,26,22,0.6)] border border-[rgba(255,248,238,0.06)]"
                             }`}
                         >
                             {sev}
@@ -183,11 +183,11 @@ function Alerts() {
             </div>
 
             {/* Alerts List Table */}
-            <div className="frosted-card p-5 overflow-hidden">
+            <div className="sentinel-glass p-5 rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse text-[13.5px]">
                         <thead>
-                            <tr className="border-b border-[var(--color-border-default)] text-[11px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
+                            <tr className="border-b border-[rgba(255,248,238,0.06)] text-[11px] font-mono text-[#8B837B] uppercase tracking-wider">
                                 <th className="pb-3.5 font-medium">Alert ID</th>
                                 <th className="pb-3.5 font-medium">Severity</th>
                                 <th className="pb-3.5 font-medium">Threat Description</th>
@@ -196,16 +196,16 @@ function Alerts() {
                                 <th className="pb-3.5 font-medium text-right">Action</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                        <tbody className="divide-y divide-[rgba(255,248,238,0.04)]">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                    <td colSpan="6" className="py-12 text-center text-xs font-mono text-[#A9A199]">
                                         Loading SOC alerts…
                                     </td>
                                 </tr>
                             ) : filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                    <td colSpan="6" className="py-12 text-center text-xs font-mono text-[#A9A199]">
                                         No active alerts matching criteria.
                                     </td>
                                 </tr>
@@ -218,37 +218,41 @@ function Alerts() {
                                     return (
                                         <tr
                                             key={a.id || idx}
-                                            className="group hover:bg-[rgba(255,255,255,0.03)] transition-colors duration-100"
+                                            className="group hover:bg-[rgba(211,160,106,0.04)] transition-colors duration-150"
                                         >
-                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#A9A199] whitespace-nowrap">
                                                 {alertId}
                                             </td>
                                             <td className="py-3.5 whitespace-nowrap">
                                                 <span
-                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded text-[10.5px] font-mono font-semibold ${
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-semibold ${
                                                         sev === "CRITICAL"
-                                                            ? "bg-[rgba(230,57,70,0.15)] text-[var(--color-critical)] border border-[rgba(230,57,70,0.3)]"
+                                                            ? "bg-[rgba(230,120,104,0.14)] text-[#E67868] border border-[rgba(230,120,104,0.3)]"
                                                             : sev === "HIGH"
-                                                            ? "bg-[rgba(245,158,11,0.15)] text-[var(--color-high)] border border-[rgba(245,158,11,0.3)]"
-                                                            : "bg-[rgba(255,255,255,0.06)] text-white border border-[rgba(255,255,255,0.12)]"
+                                                            ? "bg-[rgba(211,160,106,0.14)] text-[#E3B985] border border-[rgba(211,160,106,0.3)]"
+                                                            : "bg-[rgba(255,248,238,0.06)] text-[#D6CFC7] border border-[rgba(255,248,238,0.1)]"
                                                     }`}
                                                 >
                                                     {sev}
                                                 </span>
                                             </td>
-                                            <td className="py-3.5 font-medium text-white max-w-md truncate text-sm">
+                                            <td className="py-3.5 font-medium text-[#F5F1EC] max-w-md truncate text-sm">
                                                 {a.message || a.title || "Unauthorized attack vector pattern detected"}
                                             </td>
-                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-secondary)] whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#D6CFC7] whitespace-nowrap">
                                                 {ip}
                                             </td>
-                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#A9A199] whitespace-nowrap">
                                                 {formatTimestamp(a.timestamp || a.created_at)}
                                             </td>
                                             <td className="py-3.5 text-right whitespace-nowrap">
                                                 <Link
-                                                    to={`/incidents`}
-                                                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--color-text-secondary)] hover:text-white transition-colors"
+                                                    to={
+                                                        (a.incident_id || a.incidentId)
+                                                            ? `/incidents?id=${a.incident_id || a.incidentId}`
+                                                            : (ip ? `/incidents?search=${encodeURIComponent(ip)}` : `/incidents`)
+                                                    }
+                                                    className="inline-flex items-center gap-1 text-xs font-mono text-[#D3A06A] hover:text-[#E3B985] transition-colors"
                                                 >
                                                     <span>Investigate</span>
                                                     <ArrowUpRight size={13} />

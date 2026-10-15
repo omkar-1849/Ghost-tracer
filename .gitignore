@@ -8,11 +8,16 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Databases
+# Databases & Database Backups
 *.sqlite
 *.sqlite3
 *.db
-*.db-journal
+*.db-*
+*.db.*
+*.backup*
+*.bak*
+*_bak*
+*corrupt*
 
 # Virtual Environments
 venv/
@@ -20,6 +25,7 @@ venv/
 env/
 ENV/
 backend/venv/
+analyst/.venv311/
 
 # Environment Variables & Secrets
 .env
@@ -31,6 +37,16 @@ frontend/.env.*.local
 !.env.example
 !backend/.env.example
 !frontend/.env.example
+
+# Collector Credentials, Checkpoints & Certificates
+*.key
+*.checkpoint
+*.pem
+*.crt
+collector/*.key
+collector/*.checkpoint
+collector/qa_zerodha.*
+collector/zerodha_collector.*
 
 # Logs & Diagnostics
 *.log
@@ -66,7 +82,7 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Test Artifacts & Temporary Files
+# Test Artifacts, Scratch & Temporary Files
 gui-test-screenshots/
 screenshots/
 artifacts/

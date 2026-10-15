@@ -155,6 +155,41 @@ class EventPipelineTests(unittest.TestCase):
         with self.assertRaises(HTTPException):
             create_event(self.db, self.integration, self.payload())
 
+    @patch("app.services.event_service.get_runtime_config")
+    @patch("app.services.event_service.analyze_security_event")
+    def test_gt_beta_integration_zero_response_actions(self, mock_analyze, mock_get_config):
+        from unittest.mock import MagicMock
+        from app.schemas.ai_analyst_schema import AIAnalystResponse
+        mock_get_config.return_value = MagicMock(ai_analyst_enabled=False)
+        # Mock GT-Beta returning a severe RESPOND action
+        mock_analyze.return_value = AIAnalystResponse(
+            decision="RESPOND",
+            action_type="BLOCK_IP",
+            target="203.0.113.5",
+            confidence=0.99,
+            threat_level="CRITICAL",
+            reason="Confirmed GT-Beta malicious event",
+            recommended_actions=["Block it instantly"],
+            requires_approval=True,
+            source_ip_trusted=False,
+            engine="gt-beta-http",
+            attack_type="SQLi",
+            evidence=["' OR 1=1"]
+        )
+        
+        result = create_event(self.db, self.integration, self.payload(title="union select", metadata={"url": "/admin"}))
+        
+        # Verify event was processed correctly
+        self.assertGreaterEqual(result.risk_score, 50)
+        
+        # Verify the AI Analyst payload survived into the JSON column
+        self.assertEqual(result.analyst_result["engine"], "gt-beta-http")
+        self.assertEqual(result.analyst_result["attack_type"], "SQLi")
+        self.assertEqual(result.analyst_result["evidence"], ["' OR 1=1"])
+        
+        # Security constraints: ensure NO ResponseAction was created automatically
+        self.assertEqual(self.db.query(ResponseAction).count(), 0)
+
     def test_sdk_emits_canonical_alias(self):
         from sdk.sentinel import Sentinel
         with patch("sdk.sentinel.requests.post") as post:

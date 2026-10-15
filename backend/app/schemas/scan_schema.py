@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 class ScanRequest(BaseModel):
     website_id: int
     engine: str = "nmap"
+    profile: str = "default"
 
 
 class ScanResponse(BaseModel):
@@ -15,6 +16,8 @@ class ScanResponse(BaseModel):
     engine: str
     target: str
     status: str
+    profile: str | None = "default"
+    normalization_status: str | None = "PENDING"
 
     findings: int
     risk_score: int

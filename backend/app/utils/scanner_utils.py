@@ -85,7 +85,7 @@ def _scanner_env(cwd):
     env = {'HOME': cwd, 'USERPROFILE': cwd, 'TMP': cwd, 'TEMP': cwd,
            'TMPDIR': cwd, 'LANG': 'C.UTF-8', 'NO_PROXY': '*'}
     if os.name == 'nt':
-        for key in ('SystemRoot', 'WINDIR'):
+        for key in ('SystemRoot', 'WINDIR', 'PATH', 'PATHEXT'):
             if os.getenv(key):
                 env[key] = os.environ[key]
     return env

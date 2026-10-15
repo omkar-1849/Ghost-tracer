@@ -41,6 +41,25 @@ def _public(address: str) -> bool:
                       or ip in ipaddress.ip_network('64:ff9b:1::/48'))))
 
 
+def get_configured_protected_target() -> tuple[str, str, int] | None:
+    """Returns (scheme, hostname, port) of the configured protected target, or None."""
+    raw = os.getenv("SENTINEL_PROTECTED_APP_URL", "").strip()
+    if not raw:
+        env = os.getenv("ENVIRONMENT", "").strip().lower()
+        if env in ("development", "test"):
+            raw = "http://localhost:3000"
+        else:
+            return None
+    try:
+        parts = urlsplit(raw)
+        if parts.scheme in ("http", "https") and parts.hostname:
+            port = parts.port or (443 if parts.scheme == "https" else 80)
+            return parts.scheme, parts.hostname.lower(), port
+    except Exception:
+        pass
+    return None
+
+
 def validate_destination(url: str) -> Destination:
     if (not isinstance(url, str) or not url or len(url) > 2048
             or re.search(r'[\x00-\x20\x7f\\]', url)):
@@ -56,24 +75,57 @@ def validate_destination(url: str) -> Destination:
             raise ValueError()
         hostname = hostname.encode('idna').decode('ascii').lower()
         port = parts.port or (443 if parts.scheme == 'https' else 80)
-        allowed = {int(p.strip()) for p in os.getenv('SENTINEL_ALLOWED_DESTINATION_PORTS', '80,443').split(',')}
-        if not allowed or any(p < 1 or p > 65535 for p in allowed) or port not in allowed:
-            raise ValueError()
-        try:
-            literal = ipaddress.ip_address(hostname)
-        except ValueError:
-            literal = None
-        if literal is None:
-            if ('.' not in hostname or hostname.endswith(('.localhost', '.local', '.internal', '.test', '.invalid'))
-                    or len(hostname) > 253 or any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label)
-                                               for label in hostname.split('.'))):
-                raise ValueError()
-            answers = socket.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
-            addresses = tuple(dict.fromkeys(row[4][0] for row in answers))
+
+        # Check if this destination explicitly matches the configured protected application target
+        protected_target = get_configured_protected_target()
+        is_protected_match = False
+        if protected_target:
+            prot_scheme, prot_host, prot_port = protected_target
+            if parts.scheme == prot_scheme and port == prot_port:
+                if prot_host in ("localhost", "127.0.0.1", "::1") and hostname in ("localhost", "127.0.0.1", "::1"):
+                    is_protected_match = True
+                elif hostname == prot_host:
+                    is_protected_match = True
+
+        # In non-production, permit local loopback targets (e.g. 127.0.0.1:8001) or allowed dev hosts
+        is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+        is_loopback = hostname in ("localhost", "127.0.0.1", "::1")
+        allowed_hosts_raw = os.getenv("SENTINEL_ALLOWED_TARGET_HOSTS", "").strip()
+        allowed_hosts = {h.strip().lower() for h in allowed_hosts_raw.split(",") if h.strip()}
+        is_allowed_host = bool(
+            allowed_hosts and (
+                "*" in allowed_hosts
+                or hostname in allowed_hosts
+                or f"{hostname}:{port}" in allowed_hosts
+            )
+        )
+        is_local_dev = (not is_production) and (is_loopback or is_allowed_host) and (1 <= port <= 65535)
+
+        if is_protected_match or is_local_dev:
+            if hostname in ("localhost", "127.0.0.1", "::1"):
+                addresses = ("127.0.0.1",)
+            else:
+                answers = socket.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
+                addresses = tuple(dict.fromkeys(row[4][0] for row in answers))
         else:
-            addresses = (str(literal),)
-        if not addresses or any(not _public(address) for address in addresses):
-            raise ValueError()
+            allowed = {int(p.strip()) for p in os.getenv('SENTINEL_ALLOWED_DESTINATION_PORTS', '80,443').split(',')}
+            if not allowed or any(p < 1 or p > 65535 for p in allowed) or port not in allowed:
+                raise ValueError()
+            try:
+                literal = ipaddress.ip_address(hostname)
+            except ValueError:
+                literal = None
+            if literal is None:
+                if ('.' not in hostname or hostname.endswith(('.localhost', '.local', '.internal', '.test', '.invalid'))
+                        or len(hostname) > 253 or any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label)
+                                                   for label in hostname.split('.'))):
+                    raise ValueError()
+                answers = socket.getaddrinfo(hostname, port, type=socket.SOCK_STREAM)
+                addresses = tuple(dict.fromkeys(row[4][0] for row in answers))
+            else:
+                addresses = (str(literal),)
+            if not addresses or any(not _public(address) for address in addresses):
+                raise ValueError()
         host = f'[{hostname}]' if ':' in hostname else hostname
         if port != (443 if parts.scheme == 'https' else 80):
             host += f':{port}'

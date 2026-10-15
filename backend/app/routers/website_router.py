@@ -94,12 +94,13 @@ def get_verification_token(
 
     scoped_get(db, Website, website_id, ctx)
     website = website_service.get_website(db, website_id)
+    token = website_service.get_or_create_verification_token(db, website)
 
     return {
         "website_id": website.id,
         "verified": website.verified,
         "verification_method": website.verification_method,
-        "verification_token": website.verification_token,
+        "verification_token": token,
     }
 
 

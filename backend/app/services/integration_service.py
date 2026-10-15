@@ -32,7 +32,7 @@ def create_integration(
 
     existing = (
         db.query(Integration)
-        .filter(Integration.website_id == website_id)
+        .filter(Integration.website_id == website_id, Integration.kind == "legacy")
         .first()
     )
 
@@ -45,6 +45,8 @@ def create_integration(
         integration = Integration(
             organization_id=organization_id or website.organization_id,
             website_id=website_id,
+            name="Legacy integration",
+            kind="legacy",
             api_key_hash=_hash(api_key),
             api_secret_hash=_hash(api_secret),
             status="Connected",
@@ -69,7 +71,7 @@ def create_integration(
 
         return integration, api_key, api_secret
 
-    if existing.status == "Revoked":
+    if existing.status in ("Revoked", "Disabled"):
         api_key = f"sk_{secrets.token_urlsafe(24)}"
         api_secret = secrets.token_urlsafe(48)
 
@@ -77,6 +79,7 @@ def create_integration(
         existing.api_key_hash = _hash(api_key)
         existing.api_secret_hash = _hash(api_secret)
         existing.status = "Connected"
+        existing.revoked_at = None
         existing.updated_at = datetime.utcnow()
 
         db.flush()
@@ -106,9 +109,10 @@ def get_integration(
 ):
     return (
         db.query(Integration)
-        .filter(Integration.website_id == website_id)
+        .filter(Integration.website_id == website_id, Integration.kind == "legacy")
         .first()
     )
+
 
 
 def regenerate_keys(
@@ -133,6 +137,8 @@ def regenerate_keys(
 
     integration.api_key_hash = _hash(api_key)
     integration.api_secret_hash = _hash(api_secret)
+    integration.previous_key_hash = None
+    integration.previous_key_expires_at = None
     integration.updated_at = datetime.utcnow()
 
     db.flush()
@@ -161,12 +167,9 @@ def revoke_integration(
     ip_address: str | None = None,
     user_agent: str | None = None,
 ):
-    integration = (
-        db.query(Integration)
-        .filter(
-            Integration.website_id == website_id
-        )
-        .first()
+    integration = get_integration(
+        db,
+        website_id,
     )
 
     if integration is None:
@@ -179,10 +182,14 @@ def revoke_integration(
     organization_id = resolve_audit_organization_id(db, user_id)
 
     integration.status = "Revoked"
+    integration.revoked_at = datetime.utcnow()
+    integration.previous_key_hash = None
+    integration.previous_key_expires_at = None
     integration.updated_at = datetime.utcnow()
 
     db.flush()
     db.refresh(integration)
+
 
     if user_id is not None and organization_id is not None:
         create_audit_log(

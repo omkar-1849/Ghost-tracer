@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
@@ -41,10 +41,12 @@ def _get_tenant_scan(db: Session, scan_id: int, context: TenantContext) -> Scan:
 @router.post("/run", response_model=ScanResponse, deprecated=True)
 def run_scan(
     request: ScanRequest,
+    response: Response,
     db: Session = Depends(get_db),
     context: TenantContext = Depends(require_roles("owner", "admin", "analyst")),
 ):
     """Start a manual scan for a verified website (legacy alias of POST /scans)."""
+    response.headers["Deprecation"] = "true"
     engine = request.engine.lower()
     if engine not in VALID_ENGINES:
         raise HTTPException(

@@ -8,13 +8,13 @@ import { Loader2 } from "lucide-react";
 
 const variants = {
   primary:
-    "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] font-semibold shadow-[var(--shadow-1)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)]",
+    "bg-gradient-to-r from-[#d3a06a] to-[#e3b985] text-[#0d0c0a] font-semibold shadow-[0_2px_12px_rgba(211,160,106,0.25)] hover:from-[#e3b985] hover:to-[#f5deb3] active:from-[#b98248] active:to-[#d3a06a]",
   secondary:
-    "bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)]",
+    "bg-[rgba(255,255,255,0.03)] text-[#f5f1ec] border border-[rgba(211,160,106,0.18)] hover:bg-[rgba(211,160,106,0.08)] hover:border-[rgba(211,160,106,0.32)] hover:text-white",
   ghost:
-    "bg-transparent text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]",
+    "bg-transparent text-[#d6cfc7] hover:bg-[rgba(211,160,106,0.06)] hover:text-[#f5f1ec]",
   danger:
-    "bg-[rgba(223,91,91,0.12)] text-[var(--color-critical)] border border-[rgba(223,91,91,0.25)] hover:bg-[rgba(223,91,91,0.20)]",
+    "bg-[rgba(230,120,104,0.12)] text-[#e67868] border border-[rgba(230,120,104,0.25)] hover:bg-[rgba(230,120,104,0.20)]",
 };
 
 const sizes = {
@@ -39,9 +39,9 @@ export default function Button({
       type="button"
       disabled={isDisabled}
       className={`
-        inline-flex items-center justify-center font-medium rounded-md
-        transition-colors duration-150
-        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-signal)]
+        inline-flex items-center justify-center font-medium rounded-xl
+        transition-all duration-150
+        focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e3b985]
         ${variants[variant] || variants.primary}
         ${sizes[size] || sizes.md}
         ${isDisabled ? "opacity-50 pointer-events-none" : "cursor-pointer"}

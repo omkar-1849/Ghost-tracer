@@ -22,7 +22,12 @@ class NucleiScanner(BaseScanner, ScannerJobMixin):
                 self.fail_job(db, scan, self.missing_binary_error("nuclei"))
                 return
 
-            cmd = [binary, "-u", scan.target, "-jsonl", "-silent", "-nc"]
+            cmd = [
+                binary, "-u", scan.target,
+                "-jsonl", "-silent", "-nc",
+                "-rl", "150", "-c", "25",
+                "-timeout", "5", "-no-interactsh",
+            ]
             self.set_command(db, scan, " ".join(cmd))
 
             result = run_subprocess(cmd, timeout=300, cancelled=lambda: self.is_cancelled(db, scan))

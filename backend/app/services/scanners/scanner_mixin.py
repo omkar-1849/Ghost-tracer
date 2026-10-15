@@ -36,7 +36,8 @@ class ScannerJobMixin:
             return None, None
         try:
             website = db.query(Website).filter(Website.id == scan.website_id).first()
-            if (not website or not website.verified or website.url != scan.target
+            if (not website or website.archived_at is not None or website.exposure != 'public'
+                    or not website.verified or website.url != scan.target
                     or website.verified_target != scan.target):
                 raise ValueError('Verified website target no longer matches the job.')
             destination = validate_destination(scan.target)
@@ -77,6 +78,14 @@ class ScannerJobMixin:
             'completed_at': datetime.utcnow(), 'heartbeat_at': None, 'version': Scan.version + 1,
         }, synchronize_session=False)
         db.commit()
+
+        # Trigger post-commit scanner intelligence pipeline (finding normalization & investigation creation)
+        try:
+            from app.services.finding_normalization_service import process_completed_scan
+            process_completed_scan(scan.id)
+        except Exception as hook_exc:
+            import logging
+            logging.getLogger(__name__).warning("Post-commit finding normalization hook failed for scan %s: %s", scan.id, hook_exc)
 
     def fail_job(self, db, scan, error, *, raw_output=None, truncated=False, parsed_output=None):
         db.rollback()

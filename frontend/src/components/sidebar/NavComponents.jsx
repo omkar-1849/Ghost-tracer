@@ -16,28 +16,29 @@ export const NavLeaf = React.memo(function NavLeaf({
   currentPath,
 }) {
   const Icon = item.icon;
-  const isActive = currentPath === item.to;
+  const isActive = currentPath === item.to || (item.to === "/" && currentPath === "/dashboard");
 
   return (
     <div className="sb-dashboard-leaf">
       <NavLink
         to={item.to}
         end={item.end}
+        data-sb-active={isActive ? "true" : undefined}
         aria-current={isActive ? "page" : undefined}
         title={item.label}
         className={`sb-row-parent sb-focusable ${isActive ? "is-active" : ""}`}
         style={isCollapsed ? { width: 40, height: 40, padding: 0, justifyContent: "center", borderRadius: 12 } : undefined}
       >
         <Icon
-          size={isCollapsed ? 18 : 18}
+          size={isCollapsed ? 19 : 19}
           strokeWidth={isActive ? 1.75 : 1.6}
-          style={{ color: isActive ? "#ffe9cc" : "#d6cfc7", position: "relative", zIndex: 1 }}
+          style={{ color: isActive ? "#ffe9cc" : "#d6cfc7", position: "relative", zIndex: 2 }}
         />
 
         {!isCollapsed && (
           <span
-            className="truncate flex-1 text-left"
-            style={{ position: "relative", zIndex: 1 }}
+            className="truncate flex-1 text-left sb-nav-label"
+            style={{ position: "relative", zIndex: 2 }}
             title={item.label}
           >
             {item.label}
@@ -45,7 +46,7 @@ export const NavLeaf = React.memo(function NavLeaf({
         )}
 
         {!isCollapsed && item.badgeCount > 0 && (
-          <span className="sb-badge" style={{ position: "relative", zIndex: 1 }}>
+          <span className="sb-badge" style={{ position: "relative", zIndex: 2 }}>
             {item.badgeCount}
           </span>
         )}
@@ -79,6 +80,7 @@ export const NavGroup = React.memo(function NavGroup({
     (c) => c.to === currentPath || (c.to !== "/" && currentPath.startsWith(c.to))
   );
   const isGroupActive = activeChildIndex >= 0;
+  const isParentActive = isCollapsed ? isGroupActive : (!isOpen && isGroupActive);
 
   // Aggregate badges if any
   const totalBadges = group.children.reduce(
@@ -120,26 +122,27 @@ export const NavGroup = React.memo(function NavGroup({
             onToggle(group.id);
           }
         }}
+        data-sb-active={isParentActive ? "true" : undefined}
         aria-expanded={isOpen}
         aria-controls={`sb-group-${group.id}`}
         aria-label={group.title}
         title={isCollapsed ? group.title : undefined}
         className={`sb-row-parent sb-focusable ${
-          isGroupActive ? "is-active" : ""
-        }`}
+          isGroupActive ? "is-group-active" : ""
+        } ${isParentActive ? "is-active" : ""}`}
         style={isCollapsed ? { width: 40, height: 40, padding: 0, justifyContent: "center", borderRadius: 12, position: "relative" } : undefined}
       >
         <Icon
-          size={isCollapsed ? 18 : 18}
+          size={isCollapsed ? 19 : 19}
           strokeWidth={isGroupActive ? 1.75 : 1.6}
-          style={{ color: isGroupActive ? "#ffe9cc" : "#d6cfc7", position: "relative", zIndex: 1 }}
+          style={{ color: isGroupActive ? "#ffe9cc" : "#d6cfc7", position: "relative", zIndex: 2 }}
         />
 
         {!isCollapsed && (
           <>
             <span
-              className="truncate flex-1 text-left"
-              style={{ position: "relative", zIndex: 1 }}
+              className="truncate flex-1 text-left sb-nav-label"
+              style={{ position: "relative", zIndex: 2 }}
               title={group.title}
             >
               {group.title}
@@ -147,7 +150,7 @@ export const NavGroup = React.memo(function NavGroup({
 
             {/* If closed, show aggregate badge if exists */}
             {!isOpen && totalBadges > 0 && (
-              <span className="sb-badge" style={{ position: "relative", zIndex: 1, marginRight: 4 }}>
+              <span className="sb-badge" style={{ position: "relative", zIndex: 2, marginRight: 4 }}>
                 {totalBadges}
               </span>
             )}
@@ -160,7 +163,7 @@ export const NavGroup = React.memo(function NavGroup({
                 transition: "transform 180ms ease",
                 transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                 position: "relative",
-                zIndex: 1,
+                zIndex: 2,
               }}
             />
           </>
@@ -201,7 +204,7 @@ export const NavGroup = React.memo(function NavGroup({
               />
 
               {/* Children Links */}
-              <ul className="list-none p-0 m-0" style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+              <ul className="list-none p-0 m-0" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {group.children.map((child, index) => {
                   const ChildIcon = child.icon;
                   const isChildActive = index === activeChildIndex;
@@ -209,6 +212,7 @@ export const NavGroup = React.memo(function NavGroup({
                     <li key={child.to}>
                       <NavLink
                         to={child.to}
+                        data-sb-active={!isCollapsed && isOpen && isChildActive ? "true" : undefined}
                         aria-current={isChildActive ? "page" : undefined}
                         onMouseEnter={() => setHoveredChildIndex(index)}
                         onMouseLeave={() => setHoveredChildIndex(-1)}
@@ -217,20 +221,27 @@ export const NavGroup = React.memo(function NavGroup({
                         }`}
                         title={child.label}
                       >
-                        {/* Child icon — 16px, stroke 1.5 */}
+                        {/* Child icon — 16px, stroke 1.5 (active 1.75) */}
                         {ChildIcon && (
                           <ChildIcon
                             size={16}
-                            strokeWidth={1.5}
+                            strokeWidth={isChildActive ? 1.75 : 1.5}
                             style={{
                               color: isChildActive ? "#e3b985" : "#a9a199",
+                              position: "relative",
+                              zIndex: 2,
                               flexShrink: 0,
                             }}
                           />
                         )}
-                        <span className="truncate flex-1">{child.label}</span>
+                        <span
+                          className="truncate flex-1 sb-nav-label"
+                          style={{ position: "relative", zIndex: 2 }}
+                        >
+                          {child.label}
+                        </span>
                         {child.badgeCount > 0 && (
-                          <span className="sb-badge">
+                          <span className="sb-badge" style={{ position: "relative", zIndex: 2 }}>
                             {child.badgeCount}
                           </span>
                         )}

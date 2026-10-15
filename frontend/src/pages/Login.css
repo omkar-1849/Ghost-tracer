@@ -1,0 +1,853 @@
+/* ============================================================
+   SENTINEL AI — Final Login Redesign Stylesheet
+   Floating Liquid-Glass Material & Large Translucent Console Panel
+   ============================================================ */
+
+:root {
+  /* Colors - Background */
+  --snl-bg-canvas: #080909;
+  --snl-bg-deep: #101112;
+  --snl-bg-scrim: rgba(8, 9, 9, 0.45);
+  --snl-bg-surface-glass: linear-gradient(145deg, rgba(28, 30, 33, 0.55) 0%, rgba(16, 17, 19, 0.42) 100%);
+  --snl-bg-field: rgba(18, 19, 21, 0.65);
+  --snl-bg-field-hover: rgba(24, 25, 28, 0.75);
+  --snl-bg-field-focus: rgba(22, 23, 26, 0.85);
+  --snl-bg-feature: rgba(28, 29, 31, 0.65);
+  --snl-bg-feature-hover: rgba(36, 37, 40, 0.78);
+
+  /* Colors - Text */
+  --snl-text-primary: #F0F0ED;
+  --snl-text-secondary: #AAA9A5;
+  --snl-text-muted: #777875;
+  --snl-text-on-accent: #F0F0ED;
+
+  /* Colors - Neutral Accents & Graphite Button */
+  --snl-accent-neutral: #B8B8B2;
+  --snl-accent-neutral-hover: #D4D3CE;
+  --snl-btn-bg: linear-gradient(180deg, #383A40 0%, #28292E 100%);
+  --snl-btn-bg-hover: linear-gradient(180deg, #44474E 0%, #32343A 100%);
+  --snl-btn-bg-active: linear-gradient(180deg, #242529 0%, #1E1F22 100%);
+
+  /* Colors - Borders & Highlights */
+  --snl-border-subtle: rgba(215, 217, 218, 0.12);
+  --snl-border-panel: rgba(220, 224, 228, 0.16);
+  --snl-border-field: rgba(215, 217, 218, 0.16);
+  --snl-border-field-hover: rgba(215, 217, 218, 0.28);
+  --snl-border-focus: rgba(215, 217, 218, 0.45);
+  --snl-glass-highlight: rgba(245, 246, 246, 0.14);
+  --snl-border-error: #E18D83;
+
+  /* State */
+  --snl-state-success: #8EB49B;
+  --snl-state-error-surface: rgba(177, 69, 59, 0.14);
+
+  /* Radius Scale */
+  --snl-radius-panel: 28px;
+  --snl-radius-control: 12px;
+  --snl-radius-feature: 14px;
+  --snl-radius-icon: 10px;
+  --snl-radius-checkbox: 5px;
+
+  /* Dimensions - Viewport-Balanced (Prevents Taskbar Clipping) */
+  --snl-input-height: 50px;
+  --snl-btn-height: 50px;
+  --snl-panel-max-width: 520px;
+  --snl-content-max-width: 84rem;
+
+  /* Shadows */
+  --snl-shadow-panel: 0 28px 72px rgba(0, 0, 0, 0.55);
+  --snl-shadow-feature-hover: 0 8px 22px rgba(0, 0, 0, 0.32);
+  --snl-shadow-btn: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --snl-shadow-btn-hover: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --snl-shadow-focus: 0 0 0 3px rgba(215, 217, 218, 0.12);
+
+  /* Materials & Timing */
+  --snl-glass-blur: 20px;
+  --snl-transition-smooth: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --snl-transition-fast: 140ms ease;
+
+  /* Layout Spacing */
+  --snl-page-gutter: clamp(1rem, 2vh, 2rem);
+  --snl-column-gap: clamp(2rem, 4vw, 4.5rem);
+}
+
+/* ============================================================
+   Page Shell & Background Layers
+   ============================================================ */
+
+.sentinel-login-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  background-color: var(--snl-bg-canvas);
+  color: var(--snl-text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--snl-page-gutter);
+  box-sizing: border-box;
+}
+
+/* Layer 1: Dedicated Background Layer with loginback.png */
+.sentinel-login-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-color: var(--snl-bg-canvas);
+  background-image: url('/loginback.png');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+/* Layer 2: Restrained Neutral-Black Readability Scrim */
+.sentinel-login-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 30% 50%, rgba(8, 9, 9, 0.65) 0%, rgba(8, 9, 9, 0.45) 60%, rgba(8, 9, 9, 0.2) 100%);
+}
+
+.sentinel-login-scrim::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8, 9, 9, 0.65) 0%, rgba(8, 9, 9, 0.35) 45%, rgba(8, 9, 9, 0.15) 100%);
+  pointer-events: none;
+}
+
+/* Layer 3: Interactive Foreground Layout */
+.sentinel-login-foreground {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--snl-content-max-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr minmax(420px, var(--snl-panel-max-width));
+  grid-template-areas:
+    "hero panel"
+    "features panel"
+    "footer panel";
+  column-gap: var(--snl-column-gap);
+  row-gap: 1.75rem;
+  align-items: center;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================================
+   Left Column: Hero & Branding
+   ============================================================ */
+
+.sentinel-login-hero-section {
+  grid-area: hero;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sentinel-login-brand-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.sentinel-brand-mark-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(30, 31, 33, 0.75);
+  border: 1px solid var(--snl-border-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.sentinel-login-brand-wordmark {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--snl-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sentinel-login-brand-wordmark .accent {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--snl-accent-neutral);
+  font-weight: 600;
+}
+
+.sentinel-login-headline {
+  margin: 0;
+  font-size: clamp(2.1rem, 3.8vw, 3.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--snl-text-primary);
+  text-transform: uppercase;
+}
+
+.sentinel-login-headline-line1 {
+  display: block;
+  color: var(--snl-text-primary);
+}
+
+.sentinel-login-headline-line2 {
+  display: block;
+  color: #D2D1CC;
+}
+
+.sentinel-login-supporting {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--snl-text-secondary);
+  max-width: 32rem;
+}
+
+/* ============================================================
+   Left Column: Feature Items with Refined Hover Animation
+   ============================================================ */
+
+.sentinel-login-features {
+  grid-area: features;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: 32rem;
+  width: 100%;
+}
+
+.sentinel-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--snl-bg-feature);
+  border: 1px solid var(--snl-border-subtle);
+  border-radius: var(--snl-radius-feature);
+  padding: 0.8rem 1rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: transform var(--snl-transition-smooth),
+              background var(--snl-transition-smooth),
+              border-color var(--snl-transition-smooth),
+              box-shadow var(--snl-transition-smooth);
+  cursor: default;
+  user-select: none;
+}
+
+.sentinel-feature-row:hover {
+  transform: translateY(-2px);
+  background: var(--snl-bg-feature-hover);
+  border-color: rgba(215, 217, 218, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
+              var(--snl-shadow-feature-hover);
+}
+
+.sentinel-feature-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--snl-radius-icon);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--snl-border-subtle);
+  color: var(--snl-accent-neutral);
+  flex-shrink: 0;
+  transition: background var(--snl-transition-smooth),
+              border-color var(--snl-transition-smooth),
+              color var(--snl-transition-smooth),
+              transform var(--snl-transition-smooth);
+}
+
+.sentinel-feature-row:hover .sentinel-feature-icon-box {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(215, 217, 218, 0.24);
+  color: #FFFFFF;
+  transform: scale(1.03);
+}
+
+.sentinel-feature-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--snl-text-primary);
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Left Column: Footer
+   ============================================================ */
+
+.sentinel-login-footer {
+  grid-area: footer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.sentinel-login-footer-meta {
+  font-size: 0.75rem;
+  color: var(--snl-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.sentinel-login-footer-copyright {
+  font-size: 0.7rem;
+  color: #686966;
+  margin: 0;
+}
+
+/* ============================================================
+   Right Column: Large Floating Liquid-Glass Login Panel
+   ============================================================ */
+
+.sentinel-login-panel-container {
+  grid-area: panel;
+  display: flex;
+  justify-content: flex-end;
+  align-self: center;
+  width: 100%;
+}
+
+.sentinel-login-panel {
+  width: 100%;
+  max-width: var(--snl-panel-max-width);
+  background: var(--snl-bg-surface-glass);
+  backdrop-filter: blur(var(--snl-glass-blur)) saturate(125%);
+  -webkit-backdrop-filter: blur(var(--snl-glass-blur)) saturate(125%);
+  border: 1px solid var(--snl-border-panel);
+  border-radius: var(--snl-radius-panel);
+  box-shadow: var(--snl-shadow-panel),
+              inset 0 1px 0 var(--snl-glass-highlight),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  padding: clamp(1.4rem, 2.4vw, 1.85rem) clamp(1.5rem, 3vw, 2.25rem);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  position: relative;
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .sentinel-login-panel {
+    background: rgba(22, 23, 25, 0.88);
+  }
+}
+
+/* Branding Inside Panel Header */
+.sentinel-panel-brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 0.1rem;
+}
+
+.sentinel-panel-brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.sentinel-panel-brand-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sentinel-panel-brand-name {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--snl-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  line-height: 1.2;
+}
+
+.sentinel-panel-brand-name .accent {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--snl-accent-neutral);
+  font-weight: 600;
+}
+
+.sentinel-panel-brand-soc {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  color: #8A8B88;
+  text-transform: uppercase;
+}
+
+/* Panel Typography Hierarchy */
+.sentinel-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sentinel-panel-title {
+  margin: 0;
+  font-size: clamp(1.55rem, 2.2vw, 1.8rem);
+  font-weight: 600;
+  color: var(--snl-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.sentinel-panel-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--snl-text-secondary);
+  line-height: 1.45;
+}
+
+/* Alerts */
+.sentinel-alert-status {
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--snl-radius-control);
+  background: rgba(142, 180, 155, 0.12);
+  border: 1px solid rgba(142, 180, 155, 0.3);
+  color: var(--snl-state-success);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.sentinel-alert-error {
+  padding: 0.75rem 0.95rem;
+  border-radius: var(--snl-radius-control);
+  background: var(--snl-state-error-surface);
+  border: 1px solid var(--snl-border-error);
+  color: #FFA59C;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Form */
+.sentinel-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sentinel-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sentinel-field-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #D2D1CD;
+  letter-spacing: 0.01em;
+}
+
+.sentinel-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sentinel-input-icon {
+  position: absolute;
+  left: 1.05rem;
+  color: #8A8B88;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--snl-transition-fast);
+}
+
+/* Input Fields - Dark Translucent Graphite Glass (50px Height) */
+.sentinel-input {
+  width: 100%;
+  height: var(--snl-input-height);
+  background: var(--snl-bg-field);
+  border: 1px solid var(--snl-border-field);
+  border-radius: var(--snl-radius-control);
+  padding: 0 1.25rem 0 3.1rem;
+  font-size: 15px;
+  color: var(--snl-text-primary);
+  box-sizing: border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition: border-color var(--snl-transition-fast),
+              background var(--snl-transition-fast),
+              box-shadow var(--snl-transition-fast);
+}
+
+.sentinel-input.with-toggle {
+  padding-right: 3.1rem;
+}
+
+.sentinel-input::placeholder {
+  color: #646562;
+}
+
+.sentinel-input:hover:not(:disabled):not(:focus) {
+  background: var(--snl-bg-field-hover);
+  border-color: var(--snl-border-field-hover);
+}
+
+.sentinel-input:focus {
+  outline: none;
+  border-color: var(--snl-border-focus);
+  box-shadow: var(--snl-shadow-focus);
+  background: var(--snl-bg-field-focus);
+}
+
+.sentinel-input-container:focus-within .sentinel-input-icon {
+  color: var(--snl-text-primary);
+}
+
+.sentinel-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Autofill Overrides - Eliminates browser pale blue background on both email and password fields */
+.sentinel-input:-webkit-autofill,
+.sentinel-input:-webkit-autofill:hover,
+.sentinel-input:-webkit-autofill:focus,
+.sentinel-input:-webkit-autofill:active,
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #121316 inset !important;
+  box-shadow: 0 0 0 1000px #121316 inset !important;
+  -webkit-text-fill-color: var(--snl-text-primary) !important;
+  caret-color: var(--snl-text-primary) !important;
+  border-color: var(--snl-border-field) !important;
+  transition: background-color 50000s ease-in-out 0s !important;
+}
+
+.sentinel-input:-webkit-autofill:focus {
+  border-color: var(--snl-border-focus) !important;
+  -webkit-box-shadow: 0 0 0 1000px #16171A inset, var(--snl-shadow-focus) !important;
+  box-shadow: 0 0 0 1000px #16171A inset, var(--snl-shadow-focus) !important;
+}
+
+.sentinel-input:autofill,
+.sentinel-input:autofill:hover,
+.sentinel-input:autofill:focus,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus {
+  background-color: #121316 !important;
+  filter: none !important;
+  color: var(--snl-text-primary) !important;
+}
+
+/* Password Visibility Toggle */
+.sentinel-toggle-visibility-btn {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #8A8B88;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--snl-transition-fast), background var(--snl-transition-fast);
+}
+
+.sentinel-toggle-visibility-btn:hover {
+  color: var(--snl-text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sentinel-toggle-visibility-btn:focus-visible {
+  outline: 2px solid var(--snl-border-focus);
+  outline-offset: 1px;
+}
+
+/* Options Row (Remember Me & Forgot Password) */
+.sentinel-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 13.5px;
+  margin-top: -0.1rem;
+  margin-bottom: 0.2rem;
+}
+
+.sentinel-remember-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sentinel-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1px solid rgba(215, 217, 218, 0.25);
+  border-radius: var(--snl-radius-checkbox);
+  background: rgba(18, 19, 21, 0.8);
+  cursor: pointer;
+  display: grid;
+  place-content: center;
+  transition: border-color var(--snl-transition-fast),
+              background-color var(--snl-transition-fast),
+              box-shadow var(--snl-transition-fast);
+  margin: 0;
+}
+
+.sentinel-checkbox:hover {
+  border-color: rgba(215, 217, 218, 0.45);
+  background: rgba(28, 29, 32, 0.9);
+}
+
+.sentinel-checkbox:focus-visible {
+  outline: none;
+  border-color: var(--snl-accent-neutral);
+  box-shadow: 0 0 0 2px rgba(215, 217, 218, 0.25);
+}
+
+.sentinel-checkbox:checked {
+  background-color: #DCD9D3;
+  border-color: #DCD9D3;
+}
+
+.sentinel-checkbox:checked::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.28rem;
+  border-left: 1.75px solid #101112;
+  border-bottom: 1.75px solid #101112;
+  transform: rotate(-45deg) translate(0.5px, -0.5px);
+}
+
+.sentinel-checkbox-label {
+  font-size: 13.5px;
+  color: var(--snl-text-secondary);
+  cursor: pointer;
+  transition: color var(--snl-transition-fast);
+}
+
+.sentinel-remember-container:hover .sentinel-checkbox-label {
+  color: var(--snl-text-primary);
+}
+
+/* Links */
+.sentinel-link {
+  color: var(--snl-text-secondary);
+  text-decoration: none;
+  font-size: 13.5px;
+  transition: color var(--snl-transition-fast);
+}
+
+.sentinel-link:hover {
+  color: var(--snl-text-primary);
+  text-decoration: underline;
+}
+
+.sentinel-link:focus-visible {
+  outline: 2px solid var(--snl-border-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.sentinel-link-accent {
+  color: #D2D1CD;
+  font-weight: 500;
+}
+
+.sentinel-link-accent:hover {
+  color: #FFFFFF;
+}
+
+/* Primary Authenticate Session Button (Graphite-Gray Console Surface) */
+.sentinel-primary-btn {
+  width: 100%;
+  height: var(--snl-btn-height);
+  padding: 0 1.5rem;
+  border-radius: var(--snl-radius-control);
+  background: var(--snl-btn-bg);
+  color: var(--snl-text-on-accent);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  box-shadow: var(--snl-shadow-btn),
+              inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  transition: background var(--snl-transition-smooth),
+              transform var(--snl-transition-smooth),
+              border-color var(--snl-transition-smooth),
+              box-shadow var(--snl-transition-smooth);
+  margin-top: 0.25rem;
+}
+
+.sentinel-primary-btn:hover:not(:disabled) {
+  background: var(--snl-btn-bg-hover);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow: var(--snl-shadow-btn-hover),
+              inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.sentinel-primary-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+  background: var(--snl-btn-bg-active);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.sentinel-primary-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.sentinel-primary-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.sentinel-btn-icon {
+  transition: transform var(--snl-transition-smooth);
+}
+
+.sentinel-primary-btn:hover:not(:disabled) .sentinel-btn-icon {
+  transform: translateX(3px);
+}
+
+/* Secondary Navigation */
+.sentinel-panel-alt-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  color: var(--snl-text-muted);
+  gap: 0.35rem;
+  text-align: center;
+  margin-top: 0.15rem;
+}
+
+/* Security Trust Note */
+.sentinel-trust-note {
+  border-top: 1px solid var(--snl-border-subtle);
+  padding-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--snl-text-muted);
+  text-align: center;
+}
+
+.sentinel-trust-icon {
+  color: var(--snl-state-success);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Responsive Layout
+   ============================================================ */
+
+@media (max-width: 1100px) {
+  .sentinel-login-foreground {
+    grid-template-columns: 1fr minmax(380px, 500px);
+    column-gap: 3rem;
+  }
+}
+
+@media (max-width: 48rem) { /* 768px */
+  .sentinel-login-foreground {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "panel"
+      "features"
+      "footer";
+    row-gap: 1.75rem;
+  }
+
+  .sentinel-login-panel-container {
+    justify-content: center;
+  }
+
+  .sentinel-login-panel {
+    max-width: 100%;
+    border-radius: 24px;
+    padding: 1.75rem 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .sentinel-input {
+    height: 52px;
+  }
+
+  .sentinel-primary-btn {
+    height: 52px;
+  }
+
+  .sentinel-panel-title {
+    font-size: 1.55rem;
+  }
+
+  .sentinel-login-headline {
+    font-size: 2.1rem;
+  }
+
+  .sentinel-login-features {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 32rem) { /* 512px */
+  .sentinel-options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .sentinel-login-panel {
+    padding: 1.5rem 1rem;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}

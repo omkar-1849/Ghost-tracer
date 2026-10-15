@@ -10,58 +10,61 @@
    - Monochromatic dual-wave telemetry curves
    ============================================================ */
 @theme {
-  /* Surfaces */
-  --color-canvas: #08080a;             /* Root app canvas */
-  --color-surface-1: #0e0f14;          /* Sidebar, search bar, header */
-  --color-surface-2: #12141a;          /* Dashboard cards, table headers */
-  --color-surface-3: #181a22;          /* Modals, drawers, popovers */
-  --color-surface-inset: #0a0b0f;      /* Code wells, mono chips */
-  --color-overlay: rgba(4, 5, 8, 0.75);/* Backdrop overlay */
+  /* Surfaces — Smoked Bronze Glass palette */
+  --color-canvas: #0d0c0a;             /* Root app canvas */
+  --color-surface-1: #141210;          /* Sidebar, search bar, header */
+  --color-surface-2: #12100e;          /* Dashboard cards, table headers */
+  --color-surface-3: #1c1917;          /* Modals, drawers, popovers */
+  --color-surface-inset: #0a0908;      /* Code wells, mono chips */
+  --color-overlay: rgba(4, 5, 8, 0.70);/* Backdrop overlay */
 
   /* Borders & Dividers */
-  --color-border-subtle: #1a1c24;      /* Hairline row dividers */
-  --color-border-default: #222530;     /* Card & panel borders */
-  --color-border-strong: #323746;      /* Hover borders, inputs */
-  --color-border-active: rgba(255, 255, 255, 0.35); /* Active / hover glow border */
+  --color-border-subtle: rgba(245, 241, 236, 0.05); /* Hairline row dividers */
+  --color-border-default: rgba(211, 160, 106, 0.14); /* Card & panel borders */
+  --color-border-strong: rgba(211, 160, 106, 0.28);  /* Hover borders, inputs */
+  --color-border-active: rgba(227, 185, 133, 0.48);  /* Active / hover glow border */
 
   /* Typography */
-  --color-text-primary: #ffffff;       /* Pure stark white */
-  --color-text-secondary: #9da3ae;     /* Slate silver */
-  --color-text-muted: #666d7a;         /* Captions, timestamps */
-  --color-text-disabled: #434854;      /* Disabled text */
+  --color-text-primary: #f5f1ec;       /* Warm linen / stark ivory */
+  --color-text-secondary: #d6cfc7;     /* Soft slate / warm gray */
+  --color-text-muted: #a9a199;         /* Tertiary labels, subtitles */
+  --color-text-subtle: #8b837b;        /* Captions, table headers */
+  --color-text-disabled: #68625b;      /* Disabled text */
 
   /* Primary Brand & Selection Accents */
-  --color-accent: #ffffff;
-  --color-accent-foreground: #08080a;  /* Stark obsidian/charcoal for accent button text */
-  --color-accent-hover: #e5e7eb;       /* Smooth off-white hover */
-  --color-accent-active: #d1d5db;      /* Active state */
-  --color-accent-subtle: rgba(255, 255, 255, 0.08);
-  --color-accent-glow: rgba(255, 255, 255, 0.15);
-  --color-signal: rgba(255, 255, 255, 0.8);
-  --color-signal-strong: #ffffff;
+  --color-accent: #d3a06a;             /* Primary warm bronze */
+  --color-accent-light: #e3b985;       /* Light warm bronze / highlights */
+  --color-accent-deep: #b98248;        /* Deep bronze / borders */
+  --color-accent-foreground: #0d0c0a;  /* Stark canvas for accent button text */
+  --color-accent-hover: #e3b985;       /* Smooth bronze hover */
+  --color-accent-active: #b98248;      /* Active state */
+  --color-accent-subtle: rgba(211, 160, 106, 0.12);
+  --color-accent-glow: rgba(211, 160, 106, 0.25);
+  --color-signal: rgba(227, 185, 133, 0.85);
+  --color-signal-strong: #e3b985;
   --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.5);
 
-  /* Semantic Severity */
-  --color-critical: #e63946;           /* Tactical crimson (threats/breaches) */
-  --color-critical-subtle: rgba(230, 57, 70, 0.15);
-  --color-high: #f59e0b;               /* Amber / High */
-  --color-high-subtle: rgba(245, 158, 11, 0.15);
-  --color-medium: #eab308;             /* Yellow / Medium */
-  --color-medium-subtle: rgba(234, 179, 8, 0.12);
-  --color-low: #64748b;                /* Slate / Low */
-  --color-low-subtle: rgba(100, 116, 139, 0.15);
-  --color-success: #10b981;            /* Emerald / Nominal / Cleared */
-  --color-success-subtle: rgba(16, 185, 129, 0.12);
-  --color-info: #94a3b8;               /* Info silver */
+  /* Semantic Severity & Status */
+  --color-critical: #e67868;           /* Tactical coral-crimson */
+  --color-critical-subtle: rgba(230, 120, 104, 0.15);
+  --color-high: #d3a06a;               /* Warm bronze / High */
+  --color-high-subtle: rgba(211, 160, 106, 0.15);
+  --color-medium: #e3b985;             /* Amber gold / Medium */
+  --color-medium-subtle: rgba(227, 185, 133, 0.12);
+  --color-low: #a9a199;                /* Slate warm silver / Low */
+  --color-low-subtle: rgba(169, 161, 153, 0.12);
+  --color-success: #77c79a;            /* Sage emerald / Nominal / Cleared */
+  --color-success-subtle: rgba(119, 199, 154, 0.15);
+  --color-info: #a9a199;               /* Info slate silver */
 
   /* Fonts */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Consolas, Menlo, monospace;
 
   /* Depth */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --shadow-hover: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(255, 255, 255, 0.08);
-  --shadow-modal: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 24px 56px -12px rgba(0, 0, 0, 0.55), 0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  --shadow-hover: 0 28px 64px -12px rgba(0, 0, 0, 0.65), 0 0 16px rgba(211, 160, 106, 0.12);
+  --shadow-modal: 0 24px 64px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(211, 160, 106, 0.16);
 }
 
 /* Base Styles */
@@ -69,8 +72,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  background-color: #08080a;
-  color: #9da3ae;
+  background-color: #0d0c0a;
+  color: #d6cfc7;
 }
 
 body {
@@ -90,36 +93,196 @@ body {
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background: rgba(211, 160, 106, 0.25);
+  color: #f5f1ec;
 }
 
 :focus-visible {
-  outline: 1.5px solid rgba(255, 255, 255, 0.6);
-  outline-offset: 1px;
+  outline: 2px solid var(--color-accent-light, #e3b985);
+  outline-offset: 2px;
 }
 
-/* Glass & Card Micro-Interactions */
+/* ============================================================
+   Global Atmospheric Application Shell (Photographic Atmosphere)
+   ============================================================ */
+.sentinel-app-shell {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: #0d0c0a;
+}
+
+.sentinel-app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-image: url('/back3.jpg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.sentinel-app-shell::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(10, 9, 8, 0.40);
+  pointer-events: none;
+}
+
+/* ============================================================
+   Sentinel Smoked Bronze Glass Material Primitives
+   ============================================================ */
+.sentinel-glass {
+  position: relative;
+  background: rgba(18, 16, 14, 0.38);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
+  border: none;
+  border-radius: 20px;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.30),
+    0 24px 56px -12px rgba(0, 0, 0, 0.55),
+    0 8px 24px -4px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.sentinel-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, transparent 40%, rgba(211, 160, 106, 0.015) 100%);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  z-index: 1;
+}
+
+.sentinel-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 45% at 50% 100%, rgba(0, 0, 0, 0.22), transparent 75%);
+  z-index: 1;
+}
+
+.sentinel-glass > * {
+  position: relative;
+  z-index: 2;
+}
+
+@supports not (backdrop-filter: blur(24px)) {
+  .sentinel-glass {
+    background: rgba(18, 16, 14, 0.94);
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Secondary / Compact Glass Panel */
+.sentinel-glass-card {
+  position: relative;
+  background: rgba(18, 16, 14, 0.38);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(211, 160, 106, 0.12);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 40px -8px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+/* Standardized Page Container across all routes */
+.sentinel-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 86px 32px 32px;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+}
+
+@media (max-width: 1099px) {
+  .sentinel-page {
+    padding: 86px 24px 24px;
+  }
+}
+
+@media (max-width: 699px) {
+  .sentinel-page {
+    padding: 82px 18px 18px;
+  }
+}
+
+/* Standardized Page Header */
+.sentinel-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.sentinel-page-header h1 {
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.sentinel-page-header .subtitle {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+@media (max-width: 699px) {
+  .sentinel-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}
+
+/* Glass & Card Micro-Interactions (Reconciled with Smoked Bronze) */
 .frosted-card {
-  background-color: var(--color-surface-2);
-  border: 1px solid var(--color-border-default);
-  border-radius: 12px;
-  box-shadow: var(--shadow-card);
+  background: rgba(18, 16, 14, 0.38);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
+  border: 1px solid rgba(211, 160, 106, 0.12);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08),
+    0 16px 40px -8px rgba(0, 0, 0, 0.45);
   transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+              box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .frosted-card:hover {
-  border-color: var(--color-border-active);
-  box-shadow: var(--shadow-hover);
+  border-color: rgba(227, 185, 133, 0.35);
+  box-shadow:
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.10),
+    0 20px 48px -8px rgba(0, 0, 0, 0.55);
 }
 
 .frosted-card-active {
-  background-color: var(--color-surface-2);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 12px;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.08), var(--shadow-card);
+  background: rgba(18, 16, 14, 0.45);
+  border: 1px solid rgba(227, 185, 133, 0.45);
+  border-radius: 16px;
+  box-shadow: 0 0 16px rgba(211, 160, 106, 0.12), var(--shadow-card);
 }
 
 /* Typography Utility Classes */

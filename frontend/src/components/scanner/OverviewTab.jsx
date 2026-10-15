@@ -110,19 +110,19 @@ export default function OverviewTab({
         <div className="space-y-6">
             {/* Console readout — one shared surface, divider-separated
                 values instead of six isolated KPI boxes */}
-            <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg shadow-[var(--shadow-1)] px-5 py-4">
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 sm:divide-x sm:divide-[var(--color-border-subtle)]">
+            <div className="sentinel-glass p-5 rounded-2xl">
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-y-4 sm:divide-x sm:divide-white/5">
                     {readouts.map((item, i) => (
                         <div key={item.label} className={`min-w-0 px-0 ${i > 0 ? "sm:px-4" : "sm:pr-4"}`}>
-                            <p className="flex items-center gap-1.5 section-label">
+                            <p className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase text-[#9E948A]">
                                 <item.icon
-                                    size={11}
-                                    style={{ color: item.tone || "var(--color-text-muted)" }}
+                                    size={12}
+                                    style={{ color: item.tone || "#D3A06A" }}
                                 />
                                 <span className="truncate">{item.label}</span>
                             </p>
                             <p
-                                className="metric-value text-xl mt-1.5 leading-none"
+                                className="metric-value font-mono text-2xl font-bold tracking-tight mt-2 leading-none text-[#F5F1EC]"
                                 style={item.tone ? { color: item.tone } : undefined}
                             >
                                 {item.value}
@@ -162,7 +162,7 @@ export default function OverviewTab({
                     /* One cohesive launchpad: engines share a single surface,
                        separated by 1px hairline gaps (the gap-px background)
                        instead of individual card outlines. */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--color-border-subtle)] border border-[var(--color-border-default)] rounded-lg shadow-[var(--shadow-1)] overflow-hidden">
+                    <div className="sentinel-glass rounded-2xl overflow-hidden border border-[rgba(255,248,238,0.08)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-white/5">
                         {engines.map((engineInfo) => {
                             const config = SCANNER_ENGINES.find((e) => e.engine === engineInfo.name);
                             if (!config) return null;
@@ -182,11 +182,11 @@ export default function OverviewTab({
                                     type="button"
                                     key={engineInfo.name}
                                     onClick={() => onTabChange(config.id)}
-                                    className="w-full min-w-0 text-left px-4 py-3.5 flex flex-col gap-2.5 bg-[var(--color-surface-2)] hover:bg-[var(--color-surface-1)] transition-colors cursor-pointer group"
+                                    className="w-full min-w-0 text-left px-4 py-3.5 flex flex-col gap-2.5 bg-[rgba(18,16,14,0.30)] hover:bg-[rgba(211,160,106,0.06)] transition-all cursor-pointer group"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <span className="w-8 h-8 rounded-md bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center shrink-0 group-hover:border-[var(--color-signal-strong)] transition-colors">
-                                            <Icon size={15} className="text-[var(--color-text-secondary)] group-hover:text-[var(--color-signal)] transition-colors" />
+                                        <span className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-[#D3A06A]/40 transition-colors">
+                                            <Icon size={15} className="text-[#D6CFC7] group-hover:text-[#D3A06A] transition-colors" />
                                         </span>
 
                                         <div className="min-w-0 flex-1">

@@ -29,7 +29,7 @@ function StatusBadge({ status }) {
     const s = String(status || "PENDING").toUpperCase();
     if (s === "SIMULATED" || s === "EXECUTED" || s === "COMPLETED") {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[rgba(16,185,129,0.12)] border border-[rgba(16,185,129,0.3)] text-[var(--color-success)] font-medium">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono bg-[rgba(119,199,154,0.12)] border border-[rgba(119,199,154,0.3)] text-[#77C79A] font-semibold">
                 <CheckCircle2 size={12} />
                 <span>SIMULATED</span>
             </span>
@@ -37,14 +37,14 @@ function StatusBadge({ status }) {
     }
     if (s === "FAILED" || s === "BLOCKED") {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[rgba(230,57,70,0.12)] border border-[rgba(230,57,70,0.3)] text-[var(--color-critical)] font-medium">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono bg-[rgba(223,91,91,0.12)] border border-[rgba(223,91,91,0.3)] text-[#FF8585] font-semibold">
                 <XCircle size={12} />
                 <span>{s}</span>
             </span>
         );
     }
     return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.3)] text-[var(--color-high)] font-medium">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono bg-[rgba(211,160,106,0.12)] border border-[rgba(211,160,106,0.3)] text-[#D3A06A] font-semibold">
             <Clock size={12} />
             <span>PENDING</span>
         </span>
@@ -88,7 +88,10 @@ function ResponseActions() {
             }
             if (incData.status === "fulfilled" && Array.isArray(incData.value)) {
                 setIncidents(incData.value);
-                if (incData.value.length > 0) setNewIncidentId((current) => current || incData.value[0].id);
+                if (incData.value.length > 0) {
+                    setNewIncidentId((current) => current || incData.value[0].id);
+                    setNewTarget((current) => current || incData.value[0].source_ip || "");
+                }
             }
         } catch (err) {
             console.error("Failed to load actions", err);
@@ -151,30 +154,31 @@ function ResponseActions() {
     });
 
     return (
-        <div className="p-8 space-y-6 max-w-[1600px] mx-auto animate-fade-in select-none">
-            {loadError && <p role="alert">{loadError}</p>}
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
+            {loadError && <p role="alert" className="text-xs text-[#FF8585]">{loadError}</p>}
             {/* Native Toast Feedback */}
             {toast && (
                 <div
-                    className={`fixed top-5 right-8 z-50 flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium shadow-[var(--shadow-modal)] animate-fade-in ${
+                    className={`fixed top-5 right-8 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-semibold shadow-[0_12px_32px_rgba(0,0,0,0.6)] animate-fade-in ${
                         toast.type === "error"
-                            ? "bg-[var(--color-surface-3)] border-[var(--color-critical)] text-[var(--color-critical)]"
-                            : "bg-[var(--color-surface-3)] border-white/40 text-white"
+                            ? "bg-[#12100E]/95 border-[#FF8585]/40 text-[#FF8585]"
+                            : "bg-[#12100E]/95 border-[#D3A06A]/40 text-[#F5F1EC]"
                     }`}
                 >
-                    {toast.type === "error" ? <AlertCircle size={16} /> : <CheckCircle2 size={16} />}
+                    {toast.type === "error" ? <AlertCircle size={16} /> : <CheckCircle2 size={16} className="text-[#77C79A]" />}
                     <span>{toast.message}</span>
                 </div>
             )}
 
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-                        <Zap size={24} className="text-white" />
+                    <p className="text-[11px] font-semibold tracking-wider uppercase text-[#D3A06A] mb-1.5">Defensive Orchestration</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC] flex items-center gap-2.5">
+                        <Zap size={22} className="text-[#D3A06A]" />
                         <span>Defensive Response Actions</span>
                     </h1>
-                    <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                    <p className="text-xs text-[#9E948A] mt-1">
                         Simulation queue only — actions do not enforce blocking or isolation
                     </p>
                 </div>
@@ -183,7 +187,7 @@ function ResponseActions() {
                     <button
                         type="button"
                         onClick={loadActions}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--color-surface-1)] border border-[var(--color-border-default)] hover:border-[var(--color-border-strong)] text-xs text-white transition-all shadow-sm"
+                        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-xs text-[#D6CFC7] hover:text-[#F5F1EC] transition-all shadow-sm"
                     >
                         <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
                         <span>Sync Queue</span>
@@ -191,7 +195,7 @@ function ResponseActions() {
                     <button
                         type="button"
                         onClick={() => setModalOpen(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-colors shadow-sm"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] font-semibold text-xs hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(211,160,106,0.25)]"
                     >
                         <Plus size={14} />
                         <span>Create Action</span>
@@ -200,18 +204,18 @@ function ResponseActions() {
             </div>
 
             {/* Filter Bar */}
-            <div className="frosted-card p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="sentinel-glass p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-96">
                     <Search
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] pointer-events-none"
+                        size={15}
+                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9E948A] pointer-events-none"
                     />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder="Search by action type, target IP, reason..."
-                        className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg pl-10 pr-3 py-2 text-sm text-white placeholder:text-[var(--color-text-disabled)] focus:outline-none focus:border-[rgba(255,255,255,0.4)]"
+                        className="w-full bg-[rgba(18,16,14,0.45)] border border-[rgba(255,248,238,0.08)] rounded-xl pl-10 pr-4 py-2 text-xs text-[#F5F1EC] placeholder:text-[#6E675F] focus:outline-none focus:border-[#D3A06A]/50 focus:ring-1 focus:ring-[#D3A06A]/30 transition-all"
                     />
                 </div>
 
@@ -223,8 +227,8 @@ function ResponseActions() {
                             onClick={() => setStatusFilter(st)}
                             className={`px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
                                 statusFilter === st
-                                    ? "bg-white text-black font-semibold shadow-sm"
-                                    : "bg-[var(--color-surface-1)] text-[var(--color-text-secondary)] hover:text-white border border-[var(--color-border-default)]"
+                                    ? "bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] font-semibold shadow-sm"
+                                    : "bg-white/5 text-[#D6CFC7] hover:text-[#F5F1EC] hover:bg-white/10 border border-white/10"
                             }`}
                         >
                             {st}
@@ -234,11 +238,11 @@ function ResponseActions() {
             </div>
 
             {/* Response Actions Table */}
-            <div className="frosted-card p-5 overflow-hidden">
+            <div className="sentinel-glass p-5 rounded-2xl overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-[13.5px]">
+                    <table className="w-full text-left border-collapse text-[13px]">
                         <thead>
-                            <tr className="border-b border-[var(--color-border-default)] text-[11px] font-mono text-[var(--color-text-muted)] uppercase tracking-wider">
+                            <tr className="border-b border-white/10 text-[10px] font-mono text-[#9E948A] uppercase tracking-wider">
                                 <th className="pb-3.5 font-medium">Action ID</th>
                                 <th className="pb-3.5 font-medium">Action Type</th>
                                 <th className="pb-3.5 font-medium">Target</th>
@@ -248,16 +252,16 @@ function ResponseActions() {
                                 <th className="pb-3.5 font-medium text-right">Simulate</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                        <tbody className="divide-y divide-white/5">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                    <td colSpan="7" className="py-12 text-center text-xs text-[#9E948A]">
                                         Loading defensive actions…
                                     </td>
                                 </tr>
                             ) : filtered.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="py-12 text-center text-sm text-[var(--color-text-muted)]">
+                                    <td colSpan="7" className="py-12 text-center text-xs text-[#9E948A]">
                                         No response actions in queue.
                                     </td>
                                 </tr>
@@ -270,24 +274,24 @@ function ResponseActions() {
                                     return (
                                         <tr
                                             key={act.id}
-                                            className="group hover:bg-[rgba(255,255,255,0.03)] transition-colors duration-100"
+                                            className="group hover:bg-white/[0.03] transition-colors duration-100"
                                         >
-                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#9E948A] whitespace-nowrap">
                                                 {actionId}
                                             </td>
-                                            <td className="py-3.5 font-mono font-semibold text-white whitespace-nowrap">
+                                            <td className="py-3.5 font-mono font-semibold text-[#F5F1EC] whitespace-nowrap">
                                                 {act.action_type || "BLOCK_IP"}
                                             </td>
-                                            <td className="py-3.5 font-mono text-xs text-white whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#D3A06A] whitespace-nowrap">
                                                 {act.target || "—"}
                                             </td>
                                             <td className="py-3.5 whitespace-nowrap">
                                                 <StatusBadge status={act.status} />
                                             </td>
-                                            <td className="py-3.5 font-medium text-[var(--color-text-secondary)] max-w-sm truncate text-sm">
+                                            <td className="py-3.5 font-medium text-[#D6CFC7] max-w-sm truncate text-xs">
                                                 {act.reason || "Automated anomaly mitigation"}
                                             </td>
-                                            <td className="py-3.5 font-mono text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+                                            <td className="py-3.5 font-mono text-xs text-[#9E948A] whitespace-nowrap">
                                                 {formatTimestamp(act.created_at)}
                                             </td>
                                             <td className="py-3.5 text-right whitespace-nowrap">
@@ -296,13 +300,13 @@ function ResponseActions() {
                                                         type="button"
                                                         disabled={isExecuting}
                                                         onClick={() => handleExecute(act.id)}
-                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded bg-white text-black font-semibold text-xs hover:bg-neutral-200 transition-colors shadow-sm disabled:opacity-50"
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[rgba(211,160,106,0.15)] border border-[rgba(211,160,106,0.30)] text-[#D3A06A] hover:bg-[rgba(211,160,106,0.25)] hover:text-[#F5F1EC] font-semibold text-xs transition-all shadow-sm disabled:opacity-50"
                                                     >
                                                         <Play size={11} fill="currentColor" />
                                                         <span>{isExecuting ? "Executing…" : "Dispatch"}</span>
                                                     </button>
                                                 ) : (
-                                                    <span className="text-xs font-mono text-[var(--color-text-muted)]">
+                                                    <span className="text-xs font-mono text-[#6E675F]">
                                                         Confirmed {act.status}
                                                     </span>
                                                 )}
@@ -318,58 +322,66 @@ function ResponseActions() {
 
             {/* Create Response Action Modal */}
             {modalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-                    <div className="w-full max-w-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-xl shadow-[var(--shadow-modal)] p-6 space-y-4">
-                        <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
-                            <h3 className="text-base font-bold text-white flex items-center gap-2">
-                                <Zap size={16} />
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0D0C0A]/80 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="w-full max-w-md bg-[#12100E]/95 backdrop-blur-2xl border border-[rgba(255,248,238,0.10)] rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.85)] p-6 space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                            <h3 className="text-base font-bold text-[#F5F1EC] flex items-center gap-2">
+                                <Zap size={16} className="text-[#D3A06A]" />
                                 <span>Create Countermeasure Action</span>
                             </h3>
                             <button
                                 type="button"
                                 onClick={() => setModalOpen(false)}
-                                className="text-[var(--color-text-secondary)] hover:text-white"
+                                className="text-[#9E948A] hover:text-[#F5F1EC] transition-colors"
                             >
                                 <X size={16} />
                             </button>
                         </div>
 
                         <form onSubmit={handleCreateAction} className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-mono text-[var(--color-text-muted)] uppercase mb-1">
-                                    Target Incident
-                                </label>
-                                <select
-                                    value={newIncidentId}
-                                    onChange={(e) => setNewIncidentId(e.target.value)}
-                                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
-                                >
-                                    {incidents.map((inc) => (
-                                        <option key={inc.id} value={inc.id}>
-                                            {inc.incident_code || `INC-${inc.id}`} · {inc.title}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            {incidents.length === 0 ? (
+                                <div className="p-3.5 rounded-xl bg-[rgba(245,158,11,0.1)] border border-[rgba(245,158,11,0.25)] text-xs text-[#E5B374] space-y-1">
+                                    <p className="font-semibold flex items-center gap-1.5"><AlertCircle size={14} /> No active incidents available</p>
+                                    <p className="text-[11px] text-[#D6CFC7]">Response actions are dispatched against correlated incidents created from High/Critical threats. Ingest high-risk telemetry or wait for threat detection to propose actions.</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-[11px] font-mono text-[#9E948A] uppercase tracking-wider mb-1">
+                                        Target Incident
+                                    </label>
+                                    <select
+                                        value={newIncidentId}
+                                        onChange={(e) => {
+                                             setNewIncidentId(e.target.value);
+                                             const matched = incidents.find(i => String(i.id) === String(e.target.value));
+                                             if (matched?.source_ip) setNewTarget(matched.source_ip);
+                                        }}
+                                        className="w-full bg-[rgba(18,16,14,0.60)] border border-[rgba(255,248,238,0.08)] rounded-xl px-3 py-2 text-xs text-[#F5F1EC] focus:outline-none focus:border-[#D3A06A]/50 transition-all"
+                                    >
+                                        {incidents.map((inc) => (
+                                            <option key={inc.id} value={inc.id} className="bg-[#12100E] text-[#F5F1EC]">
+                                                {inc.incident_code || `INC-${inc.id}`} · {inc.title} ({inc.source_ip || "Unknown IP"})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div>
-                                <label className="block text-xs font-mono text-[var(--color-text-muted)] uppercase mb-1">
+                                <label className="block text-[11px] font-mono text-[#9E948A] uppercase tracking-wider mb-1">
                                     Action Type
                                 </label>
                                 <select
                                     value={newActionType}
                                     onChange={(e) => setNewActionType(e.target.value)}
-                                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3 py-2 text-xs text-white focus:outline-none"
+                                    className="w-full bg-[rgba(18,16,14,0.60)] border border-[rgba(255,248,238,0.08)] rounded-xl px-3 py-2 text-xs text-[#F5F1EC] focus:outline-none focus:border-[#D3A06A]/50 transition-all"
                                 >
-                                    <option value="BLOCK_IP">BLOCK_IP (Firewall drop)</option>
-                                    <option value="BLOCK_SESSION">BLOCK_SESSION (Terminate JWT)</option>
-                                    <option value="DISABLE_USER">DISABLE_USER (Account Lockout)</option>
-                                    <option value="ISOLATE_ASSET">ISOLATE_ASSET (Network Quarantine)</option>
+                                    <option value="BLOCK_IP" className="bg-[#12100E] text-[#F5F1EC]">BLOCK_IP (Simulated Firewall Drop)</option>
                                 </select>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-mono text-[var(--color-text-muted)] uppercase mb-1">
+                                <label className="block text-[11px] font-mono text-[#9E948A] uppercase tracking-wider mb-1">
                                     Target IP / Host / Identifier
                                 </label>
                                 <input
@@ -378,12 +390,12 @@ function ResponseActions() {
                                     onChange={(e) => setNewTarget(e.target.value)}
                                     placeholder="e.g. 192.168.1.101"
                                     required
-                                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none"
+                                    className="w-full bg-[rgba(18,16,14,0.60)] border border-[rgba(255,248,238,0.08)] rounded-xl px-3.5 py-2 text-xs text-[#F5F1EC] placeholder:text-[#6E675F] focus:outline-none focus:border-[#D3A06A]/50 transition-all"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-mono text-[var(--color-text-muted)] uppercase mb-1">
+                                <label className="block text-[11px] font-mono text-[#9E948A] uppercase tracking-wider mb-1">
                                     Reason / Authorization
                                 </label>
                                 <input
@@ -391,22 +403,22 @@ function ResponseActions() {
                                     value={newReason}
                                     onChange={(e) => setNewReason(e.target.value)}
                                     placeholder="e.g. Hostile brute-force activity"
-                                    className="w-full bg-[var(--color-surface-1)] border border-[var(--color-border-default)] rounded-lg px-3.5 py-2 text-xs text-white focus:outline-none"
+                                    className="w-full bg-[rgba(18,16,14,0.60)] border border-[rgba(255,248,238,0.08)] rounded-xl px-3.5 py-2 text-xs text-[#F5F1EC] placeholder:text-[#6E675F] focus:outline-none focus:border-[#D3A06A]/50 transition-all"
                                 />
                             </div>
 
-                            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
+                            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-white/10">
                                 <button
                                     type="button"
                                     onClick={() => setModalOpen(false)}
-                                    className="px-3.5 py-2 rounded-lg bg-[var(--color-surface-3)] text-white text-xs"
+                                    className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[#D6CFC7] hover:bg-white/10 hover:text-[#F5F1EC] text-xs font-medium transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={submitting || !newTarget.trim()}
-                                    className="px-4 py-2 rounded-lg bg-white text-black font-semibold text-xs hover:bg-neutral-200 disabled:opacity-50"
+                                    disabled={submitting || !newTarget.trim() || incidents.length === 0}
+                                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] font-semibold text-xs hover:brightness-105 active:scale-[0.98] transition-all shadow-[0_4px_16px_rgba(211,160,106,0.25)] disabled:opacity-50"
                                 >
                                     {submitting ? "Creating…" : "Register Action"}
                                 </button>

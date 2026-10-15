@@ -45,7 +45,7 @@ export default function ScanHistoryTable({
     const canExpand = extraScans.length > 0;
 
     return (
-        <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+        <div className="sentinel-glass p-5 rounded-2xl">
             <div className="flex items-start justify-between flex-wrap gap-4 mb-4">
                 <div className="flex items-center gap-3">
                     <span className="w-8 h-8 rounded-md bg-[var(--color-surface-3)] border border-[var(--color-border-default)] flex items-center justify-center">

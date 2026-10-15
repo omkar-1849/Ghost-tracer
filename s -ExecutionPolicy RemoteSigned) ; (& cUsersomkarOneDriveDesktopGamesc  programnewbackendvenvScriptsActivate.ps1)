@@ -1,0 +1,479 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/config/runtime.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/database/migrations.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/routers/auth_router.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/routers/event_router.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/routers/log_router.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/routers/scanner_router.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/schemas/alert_schema.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/event_service.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/risk_service.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/services/scanners/scanner_mixin.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/utils/destination.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/utils/rate_limit.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/utils/scanner_utils.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_event_pipeline.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/tests/test_migrations.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/Navbar.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/Sidebar.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/scanner/EngineTab.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/scanner/ScanHistoryTable.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/scanner/ScannerLayout.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/sidebar/BranchConnector.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/sidebar/NavComponents.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/sidebar/sidebar.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Badge.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Button.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Card.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Drawer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/EmptyState.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Input.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Modal.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/SeverityBadge.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/Skeleton.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/StatusBadge.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/ui/severity.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/AddWebsiteModal.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/CustomSelect.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/DeleteWebsiteDialog.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/EmptyState.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/Toast.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/WebsiteDetailsDrawer.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/WebsiteFilters.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/WebsiteLayout.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/websites/WebsiteSearch.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Activity.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/AiAnalyst.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Analytics.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Dashboard.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Incidents.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Login.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/Websites.jsx', LF will be replaced by CRLF the next time Git touches it
+README.md:231: trailing whitespace.
+[32m+[m[32m* **API Documentation:** `http://127.0.0.1:8000/docs`[m[41m  [m
+backend/app/models/integration.py:1: trailing whitespace.
+[32m+[m[32mfrom datetime import datetime[m[41m[m
+backend/app/models/integration.py:2: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:3: trailing whitespace.
+[32m+[m[32mfrom sqlalchemy import ([m[41m[m
+backend/app/models/integration.py:4: trailing whitespace.
+[32m+[m[32m    CheckConstraint,[m[41m[m
+backend/app/models/integration.py:5: trailing whitespace.
+[32m+[m[32m    Column,[m[41m[m
+backend/app/models/integration.py:6: trailing whitespace.
+[32m+[m[32m    DateTime,[m[41m[m
+backend/app/models/integration.py:7: trailing whitespace.
+[32m+[m[32m    ForeignKey,[m[41m[m
+backend/app/models/integration.py:8: trailing whitespace.
+[32m+[m[32m    Index,[m[41m[m
+backend/app/models/integration.py:9: trailing whitespace.
+[32m+[m[32m    Integer,[m[41m[m
+backend/app/models/integration.py:10: trailing whitespace.
+[32m+[m[32m    String,[m[41m[m
+backend/app/models/integration.py:11: trailing whitespace.
+[32m+[m[32m)[m[41m[m
+backend/app/models/integration.py:12: trailing whitespace.
+[32m+[m[32mfrom sqlalchemy.orm import relationship[m[41m[m
+backend/app/models/integration.py:13: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:14: trailing whitespace.
+[32m+[m[32mfrom app.database.base import Base, TenantOwned[m[41m[m
+backend/app/models/integration.py:15: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:16: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:17: trailing whitespace.
+[32m+[m[32mclass Integration(TenantOwned, Base):[m[41m[m
+backend/app/models/integration.py:18: trailing whitespace.
+[32m+[m[32m    __tablename__ = "integrations"[m[41m[m
+backend/app/models/integration.py:19: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:20: trailing whitespace.
+[32m+[m[32m    id = Column(Integer, primary_key=True, index=True)[m[41m[m
+backend/app/models/integration.py:21: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:22: trailing whitespace.
+[32m+[m[32m    website_id = Column([m[41m[m
+backend/app/models/integration.py:23: trailing whitespace.
+[32m+[m[32m        Integer,[m[41m[m
+backend/app/models/integration.py:24: trailing whitespace.
+[32m+[m[32m        ForeignKey([m[41m[m
+backend/app/models/integration.py:25: trailing whitespace.
+[32m+[m[32m            "websites.id",[m[41m[m
+backend/app/models/integration.py:26: trailing whitespace.
+[32m+[m[32m            ondelete="CASCADE",[m[41m[m
+backend/app/models/integration.py:27: trailing whitespace.
+[32m+[m[32m        ),[m[41m[m
+backend/app/models/integration.py:28: trailing whitespace.
+[32m+[m[32m        nullable=False,[m[41m[m
+backend/app/models/integration.py:29: trailing whitespace.
+[32m+[m[32m        index=True,[m[41m[m
+backend/app/models/integration.py:30: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:31: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:32: trailing whitespace.
+[32m+[m[32m    name = Column(String(100), nullable=True)[m[41m[m
+backend/app/models/integration.py:33: trailing whitespace.
+[32m+[m[32m    kind = Column(String(20), nullable=False, server_default="legacy", default="legacy")[m[41m[m
+backend/app/models/integration.py:34: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:35: trailing whitespace.
+[32m+[m[32m    api_key_hash = Column(String(255), nullable=False)[m[41m[m
+backend/app/models/integration.py:36: trailing whitespace.
+[32m+[m[32m    api_secret_hash = Column(String(255), nullable=True)[m[41m[m
+backend/app/models/integration.py:37: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:38: trailing whitespace.
+[32m+[m[32m    key_prefix = Column(String(16), nullable=True)[m[41m[m
+backend/app/models/integration.py:39: trailing whitespace.
+[32m+[m[32m    previous_key_hash = Column(String(64), nullable=True, index=True)[m[41m[m
+backend/app/models/integration.py:40: trailing whitespace.
+[32m+[m[32m    previous_key_expires_at = Column(DateTime, nullable=True)[m[41m[m
+backend/app/models/integration.py:41: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:42: trailing whitespace.
+[32m+[m[32m    enrollment_token_id = Column([m[41m[m
+backend/app/models/integration.py:43: trailing whitespace.
+[32m+[m[32m        Integer,[m[41m[m
+backend/app/models/integration.py:44: trailing whitespace.
+[32m+[m[32m        ForeignKey("enrollment_tokens.id", ondelete="SET NULL"),[m[41m[m
+backend/app/models/integration.py:45: trailing whitespace.
+[32m+[m[32m        nullable=True,[m[41m[m
+backend/app/models/integration.py:46: trailing whitespace.
+[32m+[m[32m        index=True,[m[41m[m
+backend/app/models/integration.py:47: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:48: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:49: trailing whitespace.
+[32m+[m[32m    version = Column(String(50), nullable=True)[m[41m[m
+backend/app/models/integration.py:50: trailing whitespace.
+[32m+[m[32m    hostname = Column(String(255), nullable=True)[m[41m[m
+backend/app/models/integration.py:51: trailing whitespace.
+[32m+[m[32m    last_heartbeat_at = Column(DateTime, nullable=True)[m[41m[m
+backend/app/models/integration.py:52: trailing whitespace.
+[32m+[m[32m    last_seen_ip = Column(String(45), nullable=True)[m[41m[m
+backend/app/models/integration.py:53: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:54: trailing whitespace.
+[32m+[m[32m    status = Column([m[41m[m
+backend/app/models/integration.py:55: trailing whitespace.
+[32m+[m[32m        String(20),[m[41m[m
+backend/app/models/integration.py:56: trailing whitespace.
+[32m+[m[32m        default="Connected",[m[41m[m
+backend/app/models/integration.py:57: trailing whitespace.
+[32m+[m[32m        nullable=False,[m[41m[m
+backend/app/models/integration.py:58: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:59: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:60: trailing whitespace.
+[32m+[m[32m    revoked_at = Column([m[41m[m
+backend/app/models/integration.py:61: trailing whitespace.
+[32m+[m[32m        DateTime,[m[41m[m
+backend/app/models/integration.py:62: trailing whitespace.
+[32m+[m[32m        nullable=True,[m[41m[m
+backend/app/models/integration.py:63: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:64: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:65: trailing whitespace.
+[32m+[m[32m    created_at = Column([m[41m[m
+backend/app/models/integration.py:66: trailing whitespace.
+[32m+[m[32m        DateTime(timezone=True),[m[41m[m
+backend/app/models/integration.py:67: trailing whitespace.
+[32m+[m[32m        default=datetime.utcnow,[m[41m[m
+backend/app/models/integration.py:68: trailing whitespace.
+[32m+[m[32m        nullable=False,[m[41m[m
+backend/app/models/integration.py:69: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:70: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:71: trailing whitespace.
+[32m+[m[32m    updated_at = Column([m[41m[m
+backend/app/models/integration.py:72: trailing whitespace.
+[32m+[m[32m        DateTime(timezone=True),[m[41m[m
+backend/app/models/integration.py:73: trailing whitespace.
+[32m+[m[32m        default=datetime.utcnow,[m[41m[m
+backend/app/models/integration.py:74: trailing whitespace.
+[32m+[m[32m        onupdate=datetime.utcnow,[m[41m[m
+backend/app/models/integration.py:75: trailing whitespace.
+[32m+[m[32m        nullable=False,[m[41m[m
+backend/app/models/integration.py:76: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:77: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:78: trailing whitespace.
+[32m+[m[32m    last_used = Column([m[41m[m
+backend/app/models/integration.py:79: trailing whitespace.
+[32m+[m[32m        DateTime(timezone=True),[m[41m[m
+backend/app/models/integration.py:80: trailing whitespace.
+[32m+[m[32m        nullable=True,[m[41m[m
+backend/app/models/integration.py:81: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:82: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:83: trailing whitespace.
+[32m+[m[32m    website = relationship([m[41m[m
+backend/app/models/integration.py:84: trailing whitespace.
+[32m+[m[32m        "Website",[m[41m[m
+backend/app/models/integration.py:85: trailing whitespace.
+[32m+[m[32m        back_populates="integrations",[m[41m[m
+backend/app/models/integration.py:86: trailing whitespace.
+[32m+[m[32m        passive_deletes=True,[m[41m[m
+backend/app/models/integration.py:87: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:88: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:89: trailing whitespace.
+[32m+[m[32m    enrollment_token = relationship([m[41m[m
+backend/app/models/integration.py:90: trailing whitespace.
+[32m+[m[32m        "EnrollmentToken",[m[41m[m
+backend/app/models/integration.py:91: trailing whitespace.
+[32m+[m[32m        foreign_keys=[enrollment_token_id],[m[41m[m
+backend/app/models/integration.py:92: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:93: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:94: trailing whitespace.
+[32m+[m[32m    __table_args__ = ([m[41m[m
+backend/app/models/integration.py:95: trailing whitespace.
+[32m+[m[32m        CheckConstraint("status IN ('Connected', 'Revoked', 'Disabled')", name="ck_integrations_status"),[m[41m[m
+backend/app/models/integration.py:96: trailing whitespace.
+[32m+[m[32m        CheckConstraint("kind IN ('legacy', 'daemon', 'nginx', 'sdk')", name="ck_integrations_kind"),[m[41m[m
+backend/app/models/integration.py:97: trailing whitespace.
+[32m+[m[32m        Index("ix_integrations_api_key_hash", "api_key_hash", unique=True),[m[41m[m
+backend/app/models/integration.py:98: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/models/integration.py:99: trailing whitespace.
+[32m+[m[41m[m
+backend/app/models/integration.py:99: new blank line at EOF.
+backend/app/models/log.py:47: new blank line at EOF.
+backend/app/models/website.py:97: new blank line at EOF.
+backend/app/schemas/website_schema.py:1: trailing whitespace.
+[32m+[m[32mfrom typing import Optional[m[41m[m
+backend/app/schemas/website_schema.py:2: trailing whitespace.
+[32m+[m[32mfrom datetime import datetime[m[41m[m
+backend/app/schemas/website_schema.py:3: trailing whitespace.
+[32m+[m[32mfrom pydantic import BaseModel, Field, field_validator, ConfigDict[m[41m[m
+backend/app/schemas/website_schema.py:4: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:5: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:6: trailing whitespace.
+[32m+[m[32mclass WebsiteBase(BaseModel):[m[41m[m
+backend/app/schemas/website_schema.py:7: trailing whitespace.
+[32m+[m[32m    name: str = Field(..., min_length=1, max_length=100)[m[41m[m
+backend/app/schemas/website_schema.py:8: trailing whitespace.
+[32m+[m[32m    url: str = Field(..., max_length=255)[m[41m[m
+backend/app/schemas/website_schema.py:9: trailing whitespace.
+[32m+[m[32m    description: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:10: trailing whitespace.
+[32m+[m[32m    exposure: str = Field("public", pattern="^(public|internal)$")[m[41m[m
+backend/app/schemas/website_schema.py:11: trailing whitespace.
+[32m+[m[32m    environment: str = Field([m[41m[m
+backend/app/schemas/website_schema.py:12: trailing whitespace.
+[32m+[m[32m        "Production",[m[41m[m
+backend/app/schemas/website_schema.py:13: trailing whitespace.
+[32m+[m[32m        pattern="^(Production|Staging|Development)$"[m[41m[m
+backend/app/schemas/website_schema.py:14: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:15: trailing whitespace.
+[32m+[m[32m    status: str = Field([m[41m[m
+backend/app/schemas/website_schema.py:16: trailing whitespace.
+[32m+[m[32m        "Active",[m[41m[m
+backend/app/schemas/website_schema.py:17: trailing whitespace.
+[32m+[m[32m        pattern="^(Active|Inactive|Archived)$"[m[41m[m
+backend/app/schemas/website_schema.py:18: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:19: trailing whitespace.
+[32m+[m[32m    owner: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:20: trailing whitespace.
+[32m+[m[32m    favicon_url: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:21: trailing whitespace.
+[32m+[m[32m    monitoring_enabled: bool = True[m[41m[m
+backend/app/schemas/website_schema.py:22: trailing whitespace.
+[32m+[m[32m    tags: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:23: trailing whitespace.
+[32m+[m[32m    notes: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:24: trailing whitespace.
+[32m+[m[32m    health_status: str = Field([m[41m[m
+backend/app/schemas/website_schema.py:25: trailing whitespace.
+[32m+[m[32m        "Unknown",[m[41m[m
+backend/app/schemas/website_schema.py:26: trailing whitespace.
+[32m+[m[32m        pattern="^(Healthy|Warning|Critical|Unknown)$"[m[41m[m
+backend/app/schemas/website_schema.py:27: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:28: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:29: trailing whitespace.
+[32m+[m[32m    @field_validator("url")[m[41m[m
+backend/app/schemas/website_schema.py:30: trailing whitespace.
+[32m+[m[32m    @classmethod[m[41m[m
+backend/app/schemas/website_schema.py:31: trailing whitespace.
+[32m+[m[32m    def validate_url(cls, v: str) -> str:[m[41m[m
+backend/app/schemas/website_schema.py:32: trailing whitespace.
+[32m+[m[32m        if not v.startswith(("http://", "https://")):[m[41m[m
+backend/app/schemas/website_schema.py:33: trailing whitespace.
+[32m+[m[32m            raise ValueError([m[41m[m
+backend/app/schemas/website_schema.py:34: trailing whitespace.
+[32m+[m[32m                "URL must start with http:// or https://"[m[41m[m
+backend/app/schemas/website_schema.py:35: trailing whitespace.
+[32m+[m[32m            )[m[41m[m
+backend/app/schemas/website_schema.py:36: trailing whitespace.
+[32m+[m[32m        return v[m[41m[m
+backend/app/schemas/website_schema.py:37: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:38: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:39: trailing whitespace.
+[32m+[m[32mclass WebsiteCreate(WebsiteBase):[m[41m[m
+backend/app/schemas/website_schema.py:40: trailing whitespace.
+[32m+[m[32m    model_config = ConfigDict(extra="forbid")[m[41m[m
+backend/app/schemas/website_schema.py:41: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:42: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:43: trailing whitespace.
+[32m+[m[32mclass WebsiteUpdate(BaseModel):[m[41m[m
+backend/app/schemas/website_schema.py:44: trailing whitespace.
+[32m+[m[32m    model_config = ConfigDict(extra="forbid")[m[41m[m
+backend/app/schemas/website_schema.py:45: trailing whitespace.
+[32m+[m[32m    name: Optional[str] = Field(None, min_length=1, max_length=100)[m[41m[m
+backend/app/schemas/website_schema.py:46: trailing whitespace.
+[32m+[m[32m    url: Optional[str] = Field(None, max_length=255)[m[41m[m
+backend/app/schemas/website_schema.py:47: trailing whitespace.
+[32m+[m[32m    description: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:48: trailing whitespace.
+[32m+[m[32m    exposure: Optional[str] = Field(None, pattern="^(public|internal)$")[m[41m[m
+backend/app/schemas/website_schema.py:49: trailing whitespace.
+[32m+[m[32m    environment: Optional[str] = Field([m[41m[m
+backend/app/schemas/website_schema.py:50: trailing whitespace.
+[32m+[m[32m        None,[m[41m[m
+backend/app/schemas/website_schema.py:51: trailing whitespace.
+[32m+[m[32m        pattern="^(Production|Staging|Development)$"[m[41m[m
+backend/app/schemas/website_schema.py:52: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:53: trailing whitespace.
+[32m+[m[32m    status: Optional[str] = Field([m[41m[m
+backend/app/schemas/website_schema.py:54: trailing whitespace.
+[32m+[m[32m        None,[m[41m[m
+backend/app/schemas/website_schema.py:55: trailing whitespace.
+[32m+[m[32m        pattern="^(Active|Inactive|Archived)$"[m[41m[m
+backend/app/schemas/website_schema.py:56: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:57: trailing whitespace.
+[32m+[m[32m    owner: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:58: trailing whitespace.
+[32m+[m[32m    favicon_url: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:59: trailing whitespace.
+[32m+[m[32m    monitoring_enabled: Optional[bool] = None[m[41m[m
+backend/app/schemas/website_schema.py:60: trailing whitespace.
+[32m+[m[32m    tags: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:61: trailing whitespace.
+[32m+[m[32m    notes: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:62: trailing whitespace.
+[32m+[m[32m    health_status: Optional[str] = Field([m[41m[m
+backend/app/schemas/website_schema.py:63: trailing whitespace.
+[32m+[m[32m        None,[m[41m[m
+backend/app/schemas/website_schema.py:64: trailing whitespace.
+[32m+[m[32m        pattern="^(Healthy|Warning|Critical|Unknown)$"[m[41m[m
+backend/app/schemas/website_schema.py:65: trailing whitespace.
+[32m+[m[32m    )[m[41m[m
+backend/app/schemas/website_schema.py:66: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:67: trailing whitespace.
+[32m+[m[32m    @field_validator("url")[m[41m[m
+backend/app/schemas/website_schema.py:68: trailing whitespace.
+[32m+[m[32m    @classmethod[m[41m[m
+backend/app/schemas/website_schema.py:69: trailing whitespace.
+[32m+[m[32m    def validate_url(cls, v: Optional[str]) -> Optional[str]:[m[41m[m
+backend/app/schemas/website_schema.py:70: trailing whitespace.
+[32m+[m[32m        if v is not None and not v.startswith(("http://", "https://")):[m[41m[m
+backend/app/schemas/website_schema.py:71: trailing whitespace.
+[32m+[m[32m            raise ValueError([m[41m[m
+backend/app/schemas/website_schema.py:72: trailing whitespace.
+[32m+[m[32m                "URL must start with http:// or https://"[m[41m[m
+backend/app/schemas/website_schema.py:73: trailing whitespace.
+[32m+[m[32m            )[m[41m[m
+backend/app/schemas/website_schema.py:74: trailing whitespace.
+[32m+[m[32m        return v[m[41m[m
+backend/app/schemas/website_schema.py:75: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:76: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:77: trailing whitespace.
+[32m+[m[32mclass WebsiteResponse(WebsiteBase):[m[41m[m
+backend/app/schemas/website_schema.py:78: trailing whitespace.
+[32m+[m[32m    id: int[m[41m[m
+backend/app/schemas/website_schema.py:79: trailing whitespace.
+[32m+[m[32m    domain: str[m[41m[m
+backend/app/schemas/website_schema.py:80: trailing whitespace.
+[32m+[m[32m    ip_address: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:81: trailing whitespace.
+[32m+[m[32m    security_score: Optional[int] = None[m[41m[m
+backend/app/schemas/website_schema.py:82: trailing whitespace.
+[32m+[m[32m    last_scan: Optional[datetime] = None[m[41m[m
+backend/app/schemas/website_schema.py:83: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:84: trailing whitespace.
+[32m+[m[32m    verified: bool[m[41m[m
+backend/app/schemas/website_schema.py:85: trailing whitespace.
+[32m+[m[32m    verification_method: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:86: trailing whitespace.
+[32m+[m[32m    verification_token: Optional[str] = None[m[41m[m
+backend/app/schemas/website_schema.py:87: trailing whitespace.
+[32m+[m[32m    verified_at: Optional[datetime] = None[m[41m[m
+backend/app/schemas/website_schema.py:88: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:89: trailing whitespace.
+[32m+[m[32m    created_at: datetime[m[41m[m
+backend/app/schemas/website_schema.py:90: trailing whitespace.
+[32m+[m[32m    updated_at: datetime[m[41m[m
+backend/app/schemas/website_schema.py:91: trailing whitespace.
+[32m+[m[32m    deleted_at: Optional[datetime] = None[m[41m[m
+backend/app/schemas/website_schema.py:92: trailing whitespace.
+[32m+[m[32m    archived_at: Optional[datetime] = None[m[41m[m
+backend/app/schemas/website_schema.py:93: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:94: trailing whitespace.
+[32m+[m[32m    monitoring_status: Optional[str] = "not_connected"[m[41m[m
+backend/app/schemas/website_schema.py:95: trailing whitespace.
+[32m+[m[32m    collectors_total: int = 0[m[41m[m
+backend/app/schemas/website_schema.py:96: trailing whitespace.
+[32m+[m[32m    collectors_online: int = 0[m[41m[m
+backend/app/schemas/website_schema.py:97: trailing whitespace.
+[32m+[m[32m    last_telemetry_at: Optional[datetime] = None[m[41m[m
+backend/app/schemas/website_schema.py:98: trailing whitespace.
+[32m+[m[32m    scan_authorization: Optional[str] = "unverified"[m[41m[m
+backend/app/schemas/website_schema.py:99: trailing whitespace.
+[32m+[m[41m[m
+backend/app/schemas/website_schema.py:100: trailing whitespace.
+[32m+[m[32m    model_config = ConfigDict(from_attributes=True)[m[41m[m
+backend/app/services/ai_analyst_service.py:25: trailing whitespace.
+[32m+[m[41m    [m
+backend/app/services/ai_analyst_service.py:28: trailing whitespace.
+[32m+[m[41m        [m
+backend/app/services/ai_analyst_service.py:32: trailing whitespace.
+[32m+[m[41m        [m
+backend/app/services/ai_analyst_service.py:37: trailing whitespace.
+[32m+[m[41m            [m
+backend/tests/test_event_pipeline.py:179: trailing whitespace.
+[32m+[m[41m        [m
+backend/tests/test_event_pipeline.py:181: trailing whitespace.
+[32m+[m[41m        [m
+backend/tests/test_event_pipeline.py:184: trailing whitespace.
+[32m+[m[41m        [m
+backend/tests/test_event_pipeline.py:189: trailing whitespace.
+[32m+[m[41m        [m
+frontend/src/components/websites/DeleteWebsiteDialog.jsx:22: trailing whitespace.
+[32m+[m[41m                [m
+frontend/src/components/websites/WebsiteDetailsDrawer.jsx:238: trailing whitespace.
+[32m+[m[41m                [m
+frontend/src/services/websiteApi.js:272: new blank line at EOF.

@@ -71,6 +71,16 @@ export async function getRecentAlerts() {
     return response.json();
 }
 
+export async function getEvents(websiteId = null, limit = 200) {
+    const params = new URLSearchParams();
+    if (websiteId) params.set("website_id", String(websiteId));
+    if (limit) params.set("limit", String(limit));
+    const qs = params.toString() ? `?${params.toString()}` : "";
+    const response = await authFetch(`${BASE_URL}/events${qs}`);
+    if (!response.ok) throw new Error("Failed to fetch events");
+    return response.json();
+}
+
 export async function getEventsByWebsite(websiteId) {
     const response = await authFetch(`${BASE_URL}/events/${websiteId}`);
     if (!response.ok) throw new Error(`Failed to fetch events for website ${websiteId}`);

@@ -28,7 +28,8 @@ class NiktoScanner(BaseScanner, ScannerJobMixin):
             result = run_subprocess(cmd, timeout=300, cancelled=lambda: self.is_cancelled(db, scan))
             raw_output = clean_output(result["stdout"])
 
-            if not result["success"]:
+            # If process crashed/timed out without stdout or binary failed to start
+            if not raw_output and not result["success"]:
                 self.fail_job(db, scan, result["error"],
                               raw_output=clean_output(result["stderr"]),
                               truncated=result["stdout_truncated"] or result["stderr_truncated"])
@@ -38,18 +39,17 @@ class NiktoScanner(BaseScanner, ScannerJobMixin):
             if parsed.get("parse_error"):
                 self.fail_job(db, scan, "Scanner output could not be parsed.", raw_output=raw_output)
                 return
+
+            # Nonzero exit with incomplete/truncated output: fail safely
+            if result["returncode"] != 0 and result["stdout_truncated"]:
+                self.fail_job(db, scan,
+                              f"nikto exited with code {result['returncode']} and output was incomplete.",
+                              raw_output=raw_output,
+                              truncated=result["stdout_truncated"])
+                return
+
             report = self.generate_report(parsed)
             findings_list = parsed.get("findings", [])
-
-            # Nonzero exit with partial output: record parse_error and fail
-            # rather than presenting truncated data as a clean result.
-            if not result["success"] and result["returncode"] != 0:
-                if parsed.get("parse_error") or result["stdout_truncated"]:
-                    self.fail_job(db, scan,
-                                  f"nikto exited with code {result['returncode']} and output was incomplete.",
-                                  raw_output=raw_output,
-                                  truncated=result["stdout_truncated"])
-                    return
 
             self.complete_job(
                 db, scan,

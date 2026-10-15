@@ -16,8 +16,8 @@ from sqlalchemy.dialects import mysql
 
 from app.database.base import Base, TenantOwned
 from app.database.migrations import (
-    OwnershipMappingError, SchemaMismatchError, _tables, _unique_object,
-    check_schema, main, migrate,
+    OwnershipMappingError, SCHEMA_VERSION, SchemaMismatchError, _tables, _unique_object,
+    check_schema, main, migrate, downgrade_phase4,
 )
 
 
@@ -77,7 +77,7 @@ class MigrationTests(unittest.TestCase):
         first = migrate(self.engine)
         check_schema(self.engine)
         second = migrate(self.engine)
-        self.assertEqual(first["version"], 1)
+        self.assertEqual(first["version"], SCHEMA_VERSION)
         self.assertEqual(second["added_columns"], [])
         self.assertEqual(second["ownership_assignments"], 0)
         self.assertEqual(first["legacy_constraints"], [])
@@ -166,7 +166,7 @@ class MigrationTests(unittest.TestCase):
         self.legacy()
         with self.engine.begin() as conn:
             conn.exec_driver_sql("CREATE TABLE sentinel_schema_versions (version INTEGER PRIMARY KEY, applied_at DATETIME)")
-            conn.exec_driver_sql("INSERT INTO sentinel_schema_versions VALUES (1, CURRENT_TIMESTAMP)")
+            conn.exec_driver_sql(f"INSERT INTO sentinel_schema_versions VALUES ({SCHEMA_VERSION}, CURRENT_TIMESTAMP)")
         with self.assertRaisesRegex(SchemaMismatchError, "missing column"):
             check_schema(self.engine)
         migrate(self.engine)
@@ -175,7 +175,7 @@ class MigrationTests(unittest.TestCase):
     def test_newer_version_refused(self):
         migrate(self.engine)
         with self.engine.begin() as conn:
-            conn.exec_driver_sql("INSERT INTO sentinel_schema_versions VALUES (2, CURRENT_TIMESTAMP)")
+            conn.exec_driver_sql(f"INSERT INTO sentinel_schema_versions VALUES ({SCHEMA_VERSION + 1}, CURRENT_TIMESTAMP)")
         with self.assertRaises(SchemaMismatchError):
             migrate(self.engine)
         with self.assertRaises(SchemaMismatchError):
@@ -225,6 +225,105 @@ class MigrationTests(unittest.TestCase):
     def test_duplicate_json_keys_rejected(self):
         with self.assertRaises(OwnershipMappingError):
             json.loads('{"website":{"1":7,"1":8}}', object_pairs_hook=_unique_object)
+
+    def test_phase4_upgrade_and_downgrade_on_disposable_db(self):
+        """Verify v6 migration, table/index creation, record persistence, and safe downgrade."""
+        # 1. Migrate fresh disposable DB to latest version
+        report = migrate(self.engine)
+        self.assertEqual(report["version"], SCHEMA_VERSION)
+        inspector = inspect(self.engine)
+        self.assertIn("ai_analysis_jobs", inspector.get_table_names())
+        self.assertIn("scanner_findings", inspector.get_table_names())
+        self.assertIn("scanner_finding_observations", inspector.get_table_names())
+        self.assertIn("investigations", inspector.get_table_names())
+        self.assertIn("investigation_jobs", inspector.get_table_names())
+
+        event_cols = {c["name"]: c for c in inspector.get_columns("events")}
+        self.assertIn("client_event_id", event_cols)
+        self.assertIn("ai_status", event_cols)
+        self.assertIn("ai_completed_at", event_cols)
+        event_indexes = {idx["name"] for idx in inspector.get_indexes("events")}
+        self.assertIn("ix_events_org_integration_client_event_id", event_indexes)
+
+        scan_cols = {c["name"]: c for c in inspector.get_columns("scans")}
+        self.assertIn("profile", scan_cols)
+        self.assertIn("normalization_status", scan_cols)
+
+        alert_cols = {c["name"]: c for c in inspector.get_columns("alerts")}
+        self.assertIn("source_type", alert_cols)
+        self.assertIn("finding_id", alert_cols)
+        self.assertIn("investigation_id", alert_cols)
+        self.assertIn("scan_id", alert_cols)
+
+        incident_cols = {c["name"]: c for c in inspector.get_columns("incidents")}
+        self.assertIn("investigation_id", incident_cols)
+        self.assertIn("finding_id", incident_cols)
+
+        website_cols = {c["name"]: c for c in inspector.get_columns("websites")}
+        self.assertIn("intrusive_scans_authorized_at", website_cols)
+        self.assertIn("intrusive_scans_authorized_by", website_cols)
+        self.assertIn("scan_policy", website_cols)
+
+        # 2. Insert test data across models
+        tables = Base.metadata.tables
+        with self.engine.begin() as conn:
+            conn.execute(tables["organizations"].insert().values(id=1, name="Acme", slug="acme"))
+            conn.execute(tables["websites"].insert().values(id=1, organization_id=1, url="https://acme.org"))
+            conn.execute(tables["integrations"].insert().values(
+                id=1, organization_id=1, website_id=1, name="int1", api_key_hash="k", api_secret_hash="s"
+            ))
+            conn.execute(tables["events"].insert().values(
+                id=1, organization_id=1, integration_id=1, website_id=1,
+                client_event_id="v1.stream1.100", event_type="login", source="auth", title="Login attempt"
+            ))
+            now = datetime.utcnow()
+            conn.execute(tables["ai_analysis_jobs"].insert().values(
+                id=1, organization_id=1, event_id=1, status="PENDING", attempts=0,
+                available_at=now, created_at=now, updated_at=now
+            ))
+
+        # 3. Execute downgrade_phase4
+        downgrade_phase4(self.engine)
+        inspector = inspect(self.engine)
+        self.assertNotIn("ai_analysis_jobs", inspector.get_table_names())
+        event_indexes = {idx["name"] for idx in inspector.get_indexes("events")}
+        self.assertNotIn("ix_events_org_integration_client_event_id", event_indexes)
+        with self.engine.connect() as conn:
+            versions = conn.execute(text("SELECT version FROM sentinel_schema_versions")).scalars().all()
+            self.assertTrue(all(v < 5 for v in versions))
+            # Verify event row is still present and intact
+            event_row = conn.execute(select(tables["events"].c.id, tables["events"].c.title).where(tables["events"].c.id == 1)).one()
+            self.assertEqual(event_row, (1, "Login attempt"))
+
+        # 4. Re-upgrade cleanly
+        re_report = migrate(self.engine)
+        self.assertEqual(re_report["version"], SCHEMA_VERSION)
+        inspector = inspect(self.engine)
+        self.assertIn("ai_analysis_jobs", inspector.get_table_names())
+        event_indexes = {idx["name"] for idx in inspector.get_indexes("events")}
+        self.assertIn("ix_events_org_integration_client_event_id", event_indexes)
+        check_schema(self.engine)
+
+    def test_schema_mismatch_detected_on_v4_and_resolved_by_migrate(self):
+        """Simulate existing v4 database: check_schema raises SchemaMismatchError; migrate() resolves it."""
+        # 1. Start with full schema
+        migrate(self.engine)
+        # 2. Downgrade to v4 (simulate legacy database state)
+        downgrade_phase4(self.engine)
+        # 3. check_schema must raise SchemaMismatchError
+        with self.assertRaises(SchemaMismatchError) as ctx:
+            check_schema(self.engine)
+        err_msg = str(ctx.exception)
+        self.assertIn(f"migration version {SCHEMA_VERSION} not applied", err_msg)
+        self.assertIn("missing table ai_analysis_jobs", err_msg)
+        self.assertIn("missing index ix_events_org_integration_client_event_id", err_msg)
+
+        # 4. Run migration to recover
+        report = migrate(self.engine)
+        self.assertEqual(report["version"], SCHEMA_VERSION)
+
+        # 5. check_schema now succeeds without error
+        check_schema(self.engine)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.config.runtime import get_runtime_config
 from app.database.database import get_db
 from app.models.user import User
 from app.models.organization_member import OrganizationMember
@@ -13,6 +14,7 @@ from app.services.auth_service import (
     authenticate_user, create_password_reset_token, create_user_token, register_user, reset_password,
 )
 from app.services.session_service import create_session
+from app.utils.client_ip import get_client_ip
 from app.utils.rate_limit import check_rate_limit
 from app.utils.recovery_delivery import RecoveryDelivery, get_recovery_delivery
 from app.utils.security import get_current_user, transaction
@@ -24,17 +26,30 @@ RECOVERY_MESSAGE = {"message": "If an account exists, recovery instructions will
 def _audit(db: Session, request: Request, user_id: int, action: str):
     create_audit_log(db=db, organization_id=None, user_id=user_id,
                      action=action, resource_type="USER", resource_id=str(user_id),
-                     ip_address=request.client.host if request.client else None,
+                     ip_address=get_client_ip(request),
                      user_agent=request.headers.get("user-agent", "")[:1000])
+
+
+@router.get("/registration-status")
+def registration_status():
+    config = get_runtime_config()
+    return {
+        "registration_mode": config.registration_mode,
+        "registration_enabled": config.registration_mode == "open",
+    }
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
 def register(data: RegisterRequest, request: Request, db: Session = Depends(get_db)):
+    config = get_runtime_config()
+    if config.registration_mode == "closed":
+        raise HTTPException(status_code=403, detail="Public registration is disabled on this instance")
     check_rate_limit(request, data.email)
     with transaction(db):
         user = register_user(db, data)
         _audit(db, request, user.id, "REGISTER_USER")
     return user
+
 
 
 @router.get("/me", response_model=UserResponse)
@@ -47,7 +62,7 @@ def login(data: LoginRequest, request: Request, db: Session = Depends(get_db)):
     check_rate_limit(request, data.email)
     with transaction(db):
         user = authenticate_user(db, data)
-        session = create_session(db, user.id, request.client.host if request.client else None,
+        session = create_session(db, user.id, get_client_ip(request),
                                  request.headers.get("user-agent", "")[:1000])
         token = create_user_token(user, session.session_id)
         _audit(db, request, user.id, "LOGIN")

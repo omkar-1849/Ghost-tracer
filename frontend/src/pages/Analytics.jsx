@@ -31,7 +31,7 @@ function SectionHeading({ label, title, className = "" }) {
 function WorkSurface({ children, className = "" }) {
     return (
         <div
-            className={`bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg shadow-[var(--shadow-1)] ${className}`}
+            className={`sentinel-glass rounded-2xl ${className}`}
         >
             {children}
         </div>
@@ -40,9 +40,9 @@ function WorkSurface({ children, className = "" }) {
 
 function SurfaceTitle({ title, hint }) {
     return (
-        <div className="flex items-baseline justify-between gap-3 mb-2">
-            <h3 className="card-title">{title}</h3>
-            {hint && <p className="text-[11px] text-[var(--color-text-muted)]">{hint}</p>}
+        <div className="flex items-baseline justify-between gap-3 mb-3">
+            <h3 className="text-sm font-semibold text-[#F5F1EC]">{title}</h3>
+            {hint && <p className="text-[11px] text-[#9E948A]">{hint}</p>}
         </div>
     );
 }
@@ -78,22 +78,22 @@ function Analytics() {
     }
 
     return (
-        <div className="p-6 max-w-[1440px]">
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
             {/* Header */}
-            <div className="flex items-start justify-between gap-4 mb-8">
+            <div className="flex items-start justify-between gap-4 mb-6">
                 <div>
-                    <p className="section-label mb-1.5">Intelligence</p>
-                    <h1 className="page-title">
+                    <p className="text-[11px] font-semibold tracking-wider uppercase text-[#D3A06A] mb-1.5">Intelligence</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC]">
                         Threat Analytics
                     </h1>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                    <p className="text-xs text-[#9E948A] mt-1">
                         Attack surface analysis and threat intelligence
                     </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)]">
-                        <LiveDot color="var(--color-success)" size={5} />
+                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#77C79A] bg-[rgba(119,199,154,0.10)] border border-[rgba(119,199,154,0.22)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+                        <LiveDot color="#77C79A" size={5} />
                         AUTO-REFRESH
                     </span>
 
@@ -101,7 +101,7 @@ function Analytics() {
                         type="button"
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className="p-2 rounded-md bg-[var(--color-surface-2)] border border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:border-[var(--color-border-strong)] hover:text-[var(--color-text-primary)] transition-colors disabled:opacity-50"
+                        className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-[#D6CFC7] hover:bg-white/10 hover:text-[#F5F1EC] transition-all disabled:opacity-50"
                         aria-label="Refresh"
                     >
                         <RefreshCw size={14} className={refreshing ? "animate-spin" : ""} />
@@ -109,42 +109,42 @@ function Analytics() {
                 </div>
             </div>
 
-            {/* Volume readout — typography on the canvas, not cards */}
-            <div className="flex flex-wrap items-end gap-x-10 gap-y-4 pb-7">
+            {/* Volume readout — glass container with tabular mono numerals */}
+            <div className="sentinel-glass p-6 rounded-2xl flex flex-wrap items-center gap-x-10 gap-y-4">
                 <div>
-                    <p className="section-label mb-1">Detections</p>
-                    <p className="metric-value text-[34px] leading-none">
+                    <p className="text-[10px] font-semibold tracking-wider uppercase text-[#9E948A] mb-1">Detections</p>
+                    <p className="font-mono text-3xl font-bold tracking-tight leading-none text-[#F5F1EC]">
                         {stats ? (stats.total_logs ?? 0).toLocaleString() : "—"}
                     </p>
                 </div>
-                <div className="hidden sm:block w-px self-stretch bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                <div className="hidden sm:block w-px self-stretch bg-white/10" aria-hidden="true" />
                 <div>
-                    <p className="section-label mb-1 text-[var(--color-critical)]">Critical alerts</p>
-                    <p className="metric-value text-[34px] leading-none text-[var(--color-critical)]">
+                    <p className="text-[10px] font-semibold tracking-wider uppercase text-[#FF8585] mb-1">Critical alerts</p>
+                    <p className="font-mono text-3xl font-bold tracking-tight leading-none text-[#FF8585]">
                         {stats ? (stats.critical_alerts ?? 0).toLocaleString() : "—"}
                     </p>
                 </div>
-                <div className="hidden sm:block w-px self-stretch bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                <div className="hidden sm:block w-px self-stretch bg-white/10" aria-hidden="true" />
                 <div>
-                    <p className="section-label mb-1 text-[var(--color-high)]">High alerts</p>
-                    <p className="metric-value text-[34px] leading-none text-[var(--color-high)]">
+                    <p className="text-[10px] font-semibold tracking-wider uppercase text-[#E5B374] mb-1">High alerts</p>
+                    <p className="font-mono text-3xl font-bold tracking-tight leading-none text-[#E5B374]">
                         {stats ? (stats.high_alerts ?? 0).toLocaleString() : "—"}
                     </p>
                 </div>
-                <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed max-w-[240px] sm:ml-auto sm:text-right">
+                <p className="text-[11px] text-[#9E948A] leading-relaxed max-w-[240px] sm:ml-auto sm:text-right">
                     Live counts from the monitoring engine — refreshed every 5 seconds.
                 </p>
             </div>
 
             {/* Threat sources — one surface: ranked origins + classification mix */}
-            <SectionHeading label="Threat Sources" title="Origin IPs & classification mix" className="mb-3" />
-            <WorkSurface className="p-5 mb-8">
+            <SectionHeading label="Threat Sources" title="Origin IPs & classification mix" className="mb-2" />
+            <WorkSurface className="p-6 mb-6">
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_1px_minmax(0,2fr)]">
                     <div className="min-w-0">
                         <SurfaceTitle title="Top Attacking IPs" hint="by attack volume" />
                         <TopAttackingIPs />
                     </div>
-                    <div className="hidden lg:block bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                    <div className="hidden lg:block bg-white/10" aria-hidden="true" />
                     <div className="min-w-0">
                         <SurfaceTitle title="Threat Distribution" hint="event mix" />
                         <ThreatDistribution />
@@ -153,14 +153,14 @@ function Analytics() {
             </WorkSurface>
 
             {/* Vectors & targets — one surface: what hits us, and where */}
-            <SectionHeading label="Vectors & Targets" title="Attack patterns & exposed endpoints" className="mb-3" />
-            <WorkSurface className="p-5">
+            <SectionHeading label="Vectors & Targets" title="Attack patterns & exposed endpoints" className="mb-2" />
+            <WorkSurface className="p-6">
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,3fr)_1px_minmax(0,2fr)]">
                     <div className="min-w-0">
                         <SurfaceTitle title="Attack Types" hint="severity-graded" />
                         <AttackTypes />
                     </div>
-                    <div className="hidden lg:block bg-[var(--color-border-subtle)]" aria-hidden="true" />
+                    <div className="hidden lg:block bg-white/10" aria-hidden="true" />
                     <div className="min-w-0">
                         <SurfaceTitle title="Top Targeted URLs" hint="most-hit endpoints" />
                         <TopTargetedURLs />

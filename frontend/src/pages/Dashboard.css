@@ -23,7 +23,9 @@
 }
 
 /* ==========================================================================
-   Dashboard Full-Viewport Fixed Background & Atmosphere (back.jpg)
+   Dashboard Full-Viewport Fixed Background & Atmosphere (back3.jpg)
+   Global atmosphere now owned by .sentinel-app-shell in index.css;
+   Disable duplicate pseudo-elements to avoid double-overlay on Dashboard.
    ========================================================================== */
 .dashboard-viewport {
   position: relative;
@@ -31,25 +33,9 @@
   width: 100%;
 }
 
-.dashboard-viewport::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background-image: url('/back.jpg');
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  pointer-events: none;
-}
-
+.dashboard-viewport::before,
 .dashboard-viewport::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  background: rgba(10, 9, 8, 0.40);
-  pointer-events: none;
+  display: none !important;
 }
 
 /* Base Page Container */

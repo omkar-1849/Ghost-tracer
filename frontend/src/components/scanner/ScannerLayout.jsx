@@ -218,21 +218,21 @@ export default function ScannerLayout() {
     };
 
     return (
-        <div className="p-6 max-w-[1440px]">
+        <div className="sentinel-page space-y-6 animate-fade-in select-none">
             {/* Page header */}
             <div className="flex items-center justify-between gap-4 mb-6">
                 <div>
-                    <p className="section-label mb-1.5">Assessment Console</p>
-                    <h1 className="page-title">
+                    <p className="text-[11px] font-semibold tracking-wider uppercase text-[#D3A06A] mb-1.5">Assessment Console</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-[#F5F1EC]">
                         Scanner Module
                     </h1>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1">
+                    <p className="text-xs text-[#9E948A] mt-1">
                         Multi-engine security testing and vulnerability assessment
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2 px-2.5 py-1 rounded text-[10px] font-semibold text-[var(--color-success)] bg-[rgba(85,176,123,0.08)] border border-[rgba(85,176,123,0.20)]">
-                    <LiveDot color="var(--color-success)" size={5} />
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-semibold text-[#77C79A] bg-[rgba(119,199,154,0.10)] border border-[rgba(119,199,154,0.22)] shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+                    <LiveDot color="#77C79A" size={5} />
                     SCANNER READY
                 </div>
             </div>
@@ -265,26 +265,26 @@ export default function ScannerLayout() {
                     className="fixed inset-0 z-50 flex items-center justify-center p-4"
                     onClick={() => setDeleteTarget(null)}
                 >
-                    <div className="absolute inset-0 bg-[var(--color-overlay)] animate-[fade-in_0.15s_ease-out_both]" aria-hidden="true" />
+                    <div className="absolute inset-0 bg-[#0D0C0A]/80 backdrop-blur-sm animate-[fade-in_0.15s_ease-out_both]" aria-hidden="true" />
                     <div
-                        className="relative bg-[var(--color-surface-3)] border border-[var(--color-border-default)] rounded-lg p-5 w-full max-w-sm shadow-[var(--shadow-3)] animate-[modal-in_0.18s_cubic-bezier(0.16,1,0.3,1)_both]"
+                        className="relative bg-[#12100E]/95 backdrop-blur-2xl border border-[rgba(255,248,238,0.10)] rounded-2xl p-6 w-full max-w-sm shadow-[0_24px_64px_rgba(0,0,0,0.85)] animate-[modal-in_0.18s_cubic-bezier(0.16,1,0.3,1)_both]"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center gap-3 mb-3">
-                            <span className="w-8 h-8 rounded-md bg-[rgba(223,91,91,0.12)] border border-[rgba(223,91,91,0.25)] flex items-center justify-center">
-                                <Trash2 size={16} className="text-[var(--color-critical)]" />
+                            <span className="w-9 h-9 rounded-xl bg-[rgba(223,91,91,0.12)] border border-[rgba(223,91,91,0.25)] flex items-center justify-center">
+                                <Trash2 size={16} className="text-[#FF8585]" />
                             </span>
-                            <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">Delete Scan Record</h3>
+                            <h3 className="text-sm font-semibold text-[#F5F1EC]">Delete Scan Record</h3>
                         </div>
-                        <p className="text-xs text-[var(--color-text-secondary)] mb-5">
-                            Permanently delete scan <span className="font-mono text-[var(--color-text-primary)]">#{deleteTarget.id}</span> targeting{" "}
-                            <span className="text-[var(--color-text-primary)] font-mono">{deleteTarget.target}</span>? This action cannot be undone.
+                        <p className="text-xs text-[#D6CFC7] mb-5 leading-relaxed">
+                            Permanently delete scan <span className="font-mono text-[#D3A06A]">#{deleteTarget.id}</span> targeting{" "}
+                            <span className="text-[#F5F1EC] font-mono">{deleteTarget.target}</span>? This action cannot be undone.
                         </p>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2.5">
                             <button
                                 type="button"
                                 onClick={() => setDeleteTarget(null)}
-                                className="px-3 py-1.5 rounded-md bg-[var(--color-surface-2)] text-[var(--color-text-secondary)] border border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] text-xs font-medium transition-colors"
+                                className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[#D6CFC7] hover:bg-white/10 hover:text-[#F5F1EC] text-xs font-medium transition-colors"
                             >
                                 Cancel
                             </button>
@@ -292,7 +292,7 @@ export default function ScannerLayout() {
                                 type="button"
                                 onClick={() => handleDeleteScan(deleteTarget.id)}
                                 disabled={deletingId === deleteTarget.id}
-                                className="px-3 py-1.5 rounded-md bg-[var(--color-critical)] text-white text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-50 hover:bg-[var(--color-critical)]/90"
+                                className="px-4 py-2 rounded-xl bg-[rgba(223,91,91,0.2)] border border-[rgba(223,91,91,0.4)] text-[#FF8585] text-xs font-semibold flex items-center gap-1.5 transition-colors disabled:opacity-50 hover:bg-[rgba(223,91,91,0.3)] shadow-[0_2px_8px_rgba(223,91,91,0.2)]"
                             >
                                 {deletingId === deleteTarget.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                                 Delete

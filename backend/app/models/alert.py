@@ -31,6 +31,26 @@ class Alert(TenantOwned, Base):
         index=True,
     )
 
+    source_type = Column(String(50), nullable=True, default="telemetry")
+    finding_id = Column(
+        Integer,
+        ForeignKey("scanner_findings.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    investigation_id = Column(
+        Integer,
+        ForeignKey("investigations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    scan_id = Column(
+        Integer,
+        ForeignKey("scans.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     ip_address = Column(String(50))
     threat_level = Column(String(20))
     message = Column(String(255))
@@ -43,3 +63,11 @@ class Alert(TenantOwned, Base):
     website = relationship("Website", foreign_keys=[website_id])
     event = relationship("Event", foreign_keys=[event_id])
     log = relationship("Log", foreign_keys=[log_id])
+    finding = relationship("ScannerFinding", foreign_keys=[finding_id])
+    investigation = relationship("Investigation", foreign_keys=[investigation_id])
+    scan = relationship("Scan", foreign_keys=[scan_id])
+
+    @property
+    def incident_id(self) -> int | None:
+        inc = getattr(self, "incident", None)
+        return inc.id if inc is not None else None

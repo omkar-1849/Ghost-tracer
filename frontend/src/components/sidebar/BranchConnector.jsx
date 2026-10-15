@@ -15,9 +15,9 @@ import React from "react";
  * - Origin node at (21, 0) with radius 2.5, fill #e3b985 — active group only
  */
 
-const CHILD_H = 32;
-const CHILD_GAP = 3;
-const ROW_PITCH = CHILD_H + CHILD_GAP; // 35px
+const CHILD_H = 34;
+const CHILD_GAP = 4;
+const ROW_PITCH = CHILD_H + CHILD_GAP; // 38px
 const PADDING_TOP = 4; // childrenInnerPaddingTop
 const TRUNK_X = 21;
 const NODE_X = 32;
@@ -28,7 +28,7 @@ const NODE_R_ACTIVE = 2.5;
 const ORIGIN_NODE_R = 2.5;
 
 function getChildCenterY(index) {
-  return PADDING_TOP + index * ROW_PITCH + CHILD_H / 2; // 4 + index * 35 + 16
+  return PADDING_TOP + index * ROW_PITCH + CHILD_H / 2; // 4 + index * 38 + 17
 }
 
 export function BranchConnector({

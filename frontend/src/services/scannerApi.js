@@ -63,11 +63,13 @@ async function request(url, options = {}) {
     return response.json();
 }
 
-export async function startScan(websiteId, engine) {
-    const data = await request(`${API_URL}/scanner/run`, {
+export async function startScan(websiteId, engine, profile = null) {
+    const payload = { website_id: websiteId, engine };
+    if (profile) payload.profile = profile;
+    const data = await request(`${API_URL}/scans`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ website_id: websiteId, engine }),
+        body: JSON.stringify(payload),
     });
     return mapScanToFrontend(data);
 }
@@ -84,6 +86,62 @@ export async function getScanById(scanId) {
 
 export async function getScanReport(scanId) {
     return request(`${API_URL}/scanner/${scanId}/report`);
+}
+
+export async function getScanFindings(scanId) {
+    return request(`${API_URL}/scans/${scanId}/findings`);
+}
+
+export async function getScanInvestigation(scanId) {
+    return request(`${API_URL}/scans/${scanId}/investigation`);
+}
+
+export async function triggerScanInvestigation(scanId) {
+    return request(`${API_URL}/scans/${scanId}/investigate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+    });
+}
+
+export async function getFindings(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.website_id) params.set("website_id", filters.website_id);
+    if (filters.status) params.set("status", filters.status);
+    if (filters.severity) params.set("severity", filters.severity);
+    if (filters.engine) params.set("engine", filters.engine);
+    const qs = params.toString();
+    return request(`${API_URL}/findings${qs ? `?${qs}` : ""}`);
+}
+
+export async function getFindingById(findingId) {
+    return request(`${API_URL}/findings/${findingId}`);
+}
+
+export async function updateFindingStatus(findingId, status) {
+    return request(`${API_URL}/findings/${findingId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+    });
+}
+
+export async function getInvestigations(filters = {}) {
+    const params = new URLSearchParams();
+    if (filters.website_id) params.set("website_id", filters.website_id);
+    if (filters.status) params.set("status", filters.status);
+    const qs = params.toString();
+    return request(`${API_URL}/investigations${qs ? `?${qs}` : ""}`);
+}
+
+export async function getInvestigationById(investigationId) {
+    return request(`${API_URL}/investigations/${investigationId}`);
+}
+
+export async function cancelInvestigation(investigationId) {
+    return request(`${API_URL}/investigations/${investigationId}/cancel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+    });
 }
 
 export async function cancelScan(scanId) {

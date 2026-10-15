@@ -12,9 +12,9 @@ export default function SeverityBadge({ level, className = "" }) {
   return (
     <span
       className={`
-        inline-flex items-center gap-1.5 px-2 py-0.5
-        text-[11px] font-semibold leading-none
-        border rounded
+        inline-flex items-center gap-1.5 px-2.5 py-0.5
+        text-[11px] font-medium font-sans tracking-wide leading-none
+        border rounded-full
         ${tw.bg} ${tw.border} ${tw.text}
         ${className}
       `.trim()}

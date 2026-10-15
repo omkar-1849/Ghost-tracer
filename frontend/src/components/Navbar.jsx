@@ -57,9 +57,12 @@ function Navbar() {
     };
 
     useEffect(() => {
-        fetchNotifications();
+        const initial = setTimeout(fetchNotifications, 0);
         const interval = setInterval(fetchNotifications, 15000);
-        return () => clearInterval(interval);
+        return () => {
+            clearTimeout(initial);
+            clearInterval(interval);
+        };
     }, []);
 
     // Close notifications menu on outside click or escape key

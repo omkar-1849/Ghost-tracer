@@ -11,7 +11,13 @@ ALERT_THREAT_LEVELS = {"HIGH", "CRITICAL"}
 MAX_RISK_SCORE = 100
 
 
-def create_log(db: Session, log: LogCreate, website_id: int | None = None):
+def create_log(
+    db: Session,
+    log: LogCreate,
+    website_id: int | None = None,
+    integration_id: int | None = None,
+    audit: bool = True,
+):
     """Analyze, store and correlate one HTTP log; flush-only, single commit.
 
     Risk is computed only from server-derived signals; no caller field can
@@ -37,15 +43,19 @@ def create_log(db: Session, log: LogCreate, website_id: int | None = None):
     # Score is always server-capped before persistence.
     risk_analysis["risk_score"] = min(risk_analysis["risk_score"], MAX_RISK_SCORE)
 
+    from app.services.normalization_service import redact_sensitive_url, redact_sensitive_text
+
     db_log = Log(
         organization_id=db.info.get("organization_id"),
         website_id=website_id,
+        integration_id=integration_id,
+
         ip_address=log.ip_address,
         method=log.method,
-        url=log.url,
+        url=redact_sensitive_url(log.url),
         status_code=log.status_code,
         user_agent=log.user_agent,
-        message=log.message,
+        message=redact_sensitive_text(log.message),
         risk_score=risk_analysis["risk_score"],
         threat_level=risk_analysis["threat_level"],
         detection_reason=", ".join(risk_analysis["reasons"])[:255],
@@ -68,15 +78,19 @@ def create_log(db: Session, log: LogCreate, website_id: int | None = None):
             actor_id=db.info.get("actor_id"),
         )
 
-    db.add(AuditLog(organization_id=db.info["organization_id"], action="INGEST_LOG", resource_type="LOG",
-                    resource_id=str(db_log.id), description="HTTP telemetry analyzed; reported source identity is unverified."))
-    db.flush()
+    if audit:
+        db.add(AuditLog(organization_id=db.info["organization_id"], action="INGEST_LOG", resource_type="LOG",
+                        resource_id=str(db_log.id), description="HTTP telemetry analyzed; reported source identity is unverified."))
+        db.flush()
     return db_log
 
 
-def get_recent_logs(db: Session, limit=10):
+def get_recent_logs(db: Session, organization_id: int | None = None, limit=10):
+    query = db.query(Log)
+    if organization_id is not None:
+        query = query.filter(Log.organization_id == organization_id)
     return (
-        db.query(Log)
+        query
         .order_by(Log.timestamp.desc())
         .limit(min(limit, 100))
         .all()

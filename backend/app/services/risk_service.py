@@ -5,6 +5,12 @@ ATTEMPT_TIERS = ((50, 50, "High-volume brute-force activity ({n} attempts)"),
                  (20, 35, "Repeated authentication attempts ({n} attempts)"),
                  (5, 20, "Multiple authentication attempts ({n} attempts)"))
 AUTH_FAILURE_KEYWORDS = ("login_failed", "authentication_failure", "brute_force", "credential_attack")
+CANONICAL_AUTHORIZATION_EVENTS = (
+    "idor_object_authorization_mismatch",
+    "object_authorization_mismatch",
+    "bola_authorization_mismatch",
+    "unauthorized_object_access",
+)
 
 
 def calculate_risk(log, *, observed_attempts=0):
@@ -16,9 +22,16 @@ def calculate_risk(log, *, observed_attempts=0):
     score = 0
     reasons = []
 
-    from urllib.parse import unquote
+    from urllib.parse import unquote, unquote_plus, urlsplit
     event = (log.get("event") or "").lower()
-    url = unquote(log.get("url") or "").lower()
+    raw_url = log.get("url") or ""
+    try:
+        parsed_url = urlsplit(raw_url)
+        decoded_path = unquote(parsed_url.path)
+        decoded_query = unquote_plus(parsed_url.query) if parsed_url.query else ""
+        url = (decoded_path + ("?" + decoded_query if decoded_query else "")).lower()
+    except Exception:
+        url = unquote(raw_url).lower()
     content = event + " " + url
     user_agent = (log.get("user_agent") or "").lower()
     status_code = log.get("status_code")
@@ -49,6 +62,11 @@ def calculate_risk(log, *, observed_attempts=0):
     if "/admin" in url:
         score += RISK_RULES["ADMIN_ACCESS"]
         reasons.append("Admin Panel Access")
+    if (event.startswith("security [") or "event: " in event) and any(
+        canon in event for canon in CANONICAL_AUTHORIZATION_EVENTS
+    ):
+        score += RISK_RULES["IDOR"]
+        reasons.append("Object-Level Authorization Violation (IDOR/BOLA)")
     if any(keyword in content for keyword in ("'", "or 1=1", "union select", "--", "drop table", "insert into")):
         score += RISK_RULES["SQL_INJECTION"]
         reasons.append("Possible SQL Injection")

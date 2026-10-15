@@ -11,12 +11,16 @@ class IntegrationCreate(BaseModel):
 class IntegrationResponse(BaseModel):
     id: int
     website_id: int
-    status: Literal["Connected", "Revoked"]
+    name: str | None = None
+    kind: str = "legacy"
+    status: Literal["Connected", "Revoked", "Disabled"]
+    revoked_at: datetime | None = None
     created_at: datetime
     updated_at: datetime
     last_used: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
 
 
 class IntegrationKeyResponse(BaseModel):

@@ -15,7 +15,13 @@ def detect_event(event: CanonicalSecurityEvent, attempt_signal=None):
     if auth:
         add("AUTH_FAILURE_ACTIVITY", "Authentication", 0.8, "Reported authentication failure")
     meta_values = " ".join(str(v) for v in (event.metadata or {}).values()) if isinstance(event.metadata, dict) else ""
-    text = unquote(" ".join((event.event_type or "", event.url or "", event.title or "", event.description or "", meta_values))).lower()
+    from urllib.parse import unquote_plus, urlsplit
+    try:
+        parsed_url = urlsplit(event.url or "")
+        decoded_url = unquote(parsed_url.path) + ("?" + unquote_plus(parsed_url.query) if parsed_url.query else "")
+    except Exception:
+        decoded_url = unquote(event.url or "")
+    text = " ".join((event.event_type or "", decoded_url, event.title or "", event.description or "", meta_values)).lower()
     patterns = (
         ("SQL_INJECTION_PATTERN", ("or 1=1", "union select", "drop table"), "Possible SQL injection pattern"),
         ("XSS_PATTERN", ("<script", "onerror=", "onload="), "Possible cross-site scripting pattern"),

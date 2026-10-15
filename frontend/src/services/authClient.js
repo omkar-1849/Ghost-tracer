@@ -80,14 +80,23 @@ export async function getMemberships() {
     if (!Array.isArray(data)) throw new Error("Invalid membership list");
     return data;
 }
-export async function selectOrganization(id) {
+export async function selectOrganization(id, role = null) {
+    const existingRole = role || membership?.current_user_role;
     membership = null;
     const response = await authenticatedRequest(`${BASE_URL}/organization`, {}, id);
     const data = await response.json();
     if (String(data.id) !== String(id)) throw new Error("Organization validation failed");
-    membership = data;
+    let currentRole = data.current_user_role || existingRole;
+    if (!currentRole) {
+        try {
+            const list = await getMemberships();
+            const found = list.find((m) => String(m.id) === String(id));
+            if (found?.current_user_role) currentRole = found.current_user_role;
+        } catch { /* ignore */ }
+    }
+    membership = { ...data, current_user_role: currentRole };
     storage()?.setItem(ORG_KEY, String(id));
-    return data;
+    return membership;
 }
 export async function createOrganization(name) {
     const response = await authenticatedRequest(`${BASE_URL}/organization`, {

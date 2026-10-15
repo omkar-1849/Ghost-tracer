@@ -86,7 +86,7 @@ export default function WebsiteFilters({
                 className="px-4 py-2 bg-white hover:bg-neutral-200 text-black rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-150 shadow-sm shrink-0"
             >
                 <Plus size={15} />
-                <span>Add Website</span>
+                <span>Configure Asset</span>
             </button>
         </div>
     );

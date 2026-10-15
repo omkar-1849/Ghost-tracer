@@ -27,6 +27,12 @@ function mapToFrontend(backend) {
         verificationMethod: backend.verification_method || null,
         verificationToken: backend.verification_token || null,
         verifiedAt: backend.verified_at || null,
+        // Phase 3: Telemetry & Monitoring Posture
+        monitoringStatus: backend.monitoring_status || "not_connected",
+        collectorsTotal: backend.collectors_total ?? 0,
+        collectorsOnline: backend.collectors_online ?? 0,
+        lastTelemetryAt: backend.last_telemetry_at || null,
+        scanAuthorization: backend.scan_authorization || "unverified",
     };
 }
 
@@ -167,3 +173,101 @@ export async function disconnectWebsite(websiteId) {
     if (!res.ok) throw new Error(await errorMessage(res));
     return res.json();
 }
+
+/* ------------------------------------------------------------------
+ * Phase 3: Collectors & Enrollment Tokens
+ * ------------------------------------------------------------------ */
+
+export async function getEnrollmentTokens(websiteId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/enrollment-tokens`);
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function createEnrollmentToken(websiteId, { label, expiresInHours = 24, maxUses = 1 }) {
+    const res = await authFetch(`${API_URL}/${websiteId}/enrollment-tokens`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            label,
+            expires_in_hours: expiresInHours,
+            max_uses: maxUses,
+        }),
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function revokeEnrollmentToken(websiteId, tokenId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/enrollment-tokens/${tokenId}`, {
+        method: "DELETE",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return true;
+}
+
+export async function getCollectors(websiteId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/collectors`);
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function rotateCollectorKey(websiteId, collectorId, graceSeconds = 300) {
+    const res = await authFetch(`${API_URL}/${websiteId}/collectors/${collectorId}/rotate-key`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ grace_seconds: graceSeconds }),
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function disableCollector(websiteId, collectorId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/collectors/${collectorId}/disable`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function enableCollector(websiteId, collectorId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/collectors/${collectorId}/enable`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function revokeCollector(websiteId, collectorId) {
+    const res = await authFetch(`${API_URL}/${websiteId}/collectors/${collectorId}/revoke`, {
+        method: "POST",
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+/* ------------------------------------------------------------------
+ * Token-First Protected Asset Onboarding (Tenant Scoped)
+ * ------------------------------------------------------------------ */
+
+export async function createTenantEnrollmentToken({ label, expiresInHours = 24, maxUses = 1 }) {
+    const res = await authFetch(`${BASE_URL}/enrollment-tokens`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            label: label?.trim() || null,
+            expires_in_hours: expiresInHours,
+            max_uses: maxUses,
+        }),
+    });
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+export async function getEnrollmentTokenStatus(tokenId) {
+    const res = await authFetch(`${BASE_URL}/enrollment-tokens/${tokenId}/status`);
+    if (!res.ok) throw new Error(await errorMessage(res));
+    return res.json();
+}
+
+

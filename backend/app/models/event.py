@@ -4,6 +4,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     JSON,
     String,
@@ -33,6 +34,8 @@ class Event(TenantOwned, Base):
         index=True,
     )
 
+    client_event_id = Column(String(128), nullable=True)
+
     event_type = Column(String(100), nullable=False)
     severity = Column(String(20), default="Info")
     source = Column(String(100), nullable=False)
@@ -54,6 +57,10 @@ class Event(TenantOwned, Base):
     normalization_version = Column(Integer, nullable=True)
     processed_at = Column(DateTime, nullable=True)
 
+    # AI job status fields (Phase 1)
+    ai_status = Column(String(20), nullable=True)
+    ai_completed_at = Column(DateTime, nullable=True)
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow,
@@ -63,3 +70,13 @@ class Event(TenantOwned, Base):
 
     website = relationship("Website")
     integration = relationship("Integration")
+
+    __table_args__ = (
+        Index(
+            "ix_events_org_integration_client_event_id",
+            "organization_id",
+            "integration_id",
+            "client_event_id",
+            unique=True,
+        ),
+    )

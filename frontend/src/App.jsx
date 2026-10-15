@@ -17,6 +17,8 @@ const Report = lazy(() => import("./pages/Report"));
 const Websites = lazy(() => import("./pages/Websites"));
 const AuditLogs = lazy(() => import("./pages/AuditLogs"));
 const Settings = lazy(() => import("./pages/Settings"));
+const Analytics = lazy(() => import("./pages/Analytics"));
+const AiAnalyst = lazy(() => import("./pages/AiAnalyst"));
 const Login = lazy(() => import("./pages/Login"));
 
 function PageLoader() {
@@ -36,9 +38,9 @@ function PageLoader() {
  */
 function AppLayout() {
     return (
-        <div className="flex bg-[var(--color-canvas)] text-[var(--color-text-primary)] h-screen overflow-hidden">
+        <div className="sentinel-app-shell flex text-[var(--color-text-primary)] h-screen overflow-hidden">
             <Sidebar />
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
                 <Navbar />
                 <main className="flex-1 overflow-y-auto scroll-smooth">
                     <Suspense fallback={<PageLoader />}>
@@ -73,7 +75,7 @@ function RequireAuth({ children }) {
                 const match = list.find((m) => String(m.id) === stored);
                 const target = match || (list.length === 1 ? list[0] : null);
                 if (!target) { setStatus("select"); return; }
-                await selectOrganization(target.id);
+                await selectOrganization(target.id, target.current_user_role);
                 if (isMounted) setStatus("ready");
             } catch (err) {
                 if (isMounted) { setError(err.message); setStatus(isAuthenticated() ? "error" : "redirect"); }
@@ -89,7 +91,7 @@ function RequireAuth({ children }) {
 
     if (status === "loading") return <PageLoader />;
     if (status === "error") return <div className="p-8" role="alert">{error}<button className="ml-4" onClick={() => setStatus("loading")}>Retry</button><button className="ml-4" onClick={async () => { try { await logout(); } catch (err) { setError(err.message); } }}>Sign out</button></div>;
-    if (status === "select") return <div className="p-8 space-y-4"><h2>Select organization</h2>{error && <p role="alert">{error}</p>}{memberships.map((org) => <button className="block" key={org.id} onClick={async () => { try { await selectOrganization(org.id); setStatus("ready"); } catch (err) { setError(err.message); } }}>{org.name} ({org.current_user_role})</button>)}</div>;
+    if (status === "select") return <div className="p-8 space-y-4"><h2>Select organization</h2>{error && <p role="alert">{error}</p>}{memberships.map((org) => <button className="block" key={org.id} onClick={async () => { try { await selectOrganization(org.id, org.current_user_role); setStatus("ready"); } catch (err) { setError(err.message); } }}>{org.name} ({org.current_user_role})</button>)}</div>;
     if (status === "ready") return children;
     if (status === "onboarding") {
         return (
@@ -102,7 +104,7 @@ function RequireAuth({ children }) {
                         const form = e.currentTarget;
                         try {
                             const created = await createOrganization(form.orgName.value);
-                            await selectOrganization(created.id);
+                            await selectOrganization(created.id, "owner");
                             setStatus("ready");
                         } catch (err) {
                             setError(err.message);
@@ -142,8 +144,11 @@ function App() {
             <Route path="/reset-password" element={<Suspense fallback={<PageLoader />}><Login /></Suspense>} />
             <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/activity" element={<Activity />} />
                 <Route path="/alerts" element={<Alerts />} />
+                <Route path="/analyst" element={<AiAnalyst />} />
+                <Route path="/ai-analyst" element={<Navigate to="/analyst" replace />} />
                 <Route path="/incidents" element={<Incidents />} />
                 <Route path="/response-actions" element={<ResponseActions />} />
                 <Route path="/websites" element={<Websites />} />
@@ -151,6 +156,10 @@ function App() {
                 <Route path="/scanner/report/:id" element={<Report />} />
                 <Route path="/audit-logs" element={<AuditLogs />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/analytics" element={<Analytics />} />
+                <Route path="/threats" element={<Navigate to="/alerts" replace />} />
+                <Route path="/assets" element={<Navigate to="/websites" replace />} />
+                <Route path="/reports" element={<Navigate to="/scanner" replace />} />
                 {/* Fallback to dashboard */}
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

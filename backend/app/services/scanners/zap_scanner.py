@@ -72,6 +72,12 @@ class ZapScanner(BaseScanner, ScannerJobMixin):
                 self.fail_job(db, scan, "The isolated ZAP daemon is not reachable.")
                 return
 
+            # Initialize clean, isolated ZAP session for this scan (BUG-03 fix)
+            try:
+                api_request("/JSON/core/action/newSession/", {"name": f"sentinel_scan_{scan.id}", "overwrite": "true"})
+            except Exception:
+                pass
+
             try:
                 spider_id = api_request("/JSON/spider/action/scan/", {"url": scan.target}).get("scan")
                 for _ in range(60):

@@ -20,3 +20,5 @@ class AIAnalystResponse(BaseModel):
     requires_approval: bool = True
     source_ip_trusted: bool = False
     engine: str = "deterministic_rules_v1"
+    attack_type: str | None = None
+    evidence: list[str] | None = None

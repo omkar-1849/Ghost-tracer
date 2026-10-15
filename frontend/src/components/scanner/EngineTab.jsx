@@ -75,31 +75,31 @@ export default function EngineTab({
         <div className="space-y-6">
             {/* Scanner Introduction Header — echoes the brass selection
                 language of the engine tab that opened this workspace */}
-            <div className="flex items-start gap-4 bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
-                <div className="w-11 h-11 rounded-lg bg-[var(--color-signal-subtle)] border border-[var(--color-signal-strong)] flex items-center justify-center shrink-0">
-                    <Icon size={20} className="text-[var(--color-signal)]" />
+            <div className="flex items-start gap-4 sentinel-glass p-5 rounded-2xl">
+                <div className="w-11 h-11 rounded-xl bg-[rgba(211,160,106,0.12)] border border-[rgba(211,160,106,0.30)] flex items-center justify-center shrink-0">
+                    <Icon size={20} className="text-[#D3A06A]" />
                 </div>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 mb-1">
-                        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">{engine.name}</h2>
+                        <h2 className="text-base font-semibold text-[#F5F1EC]">{engine.name}</h2>
                         <EngineStatusBadge status={engine.status} />
                     </div>
-                    <p className="text-xs text-[var(--color-text-muted)] mb-2">{engine.description}</p>
-                    <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed max-w-2xl">
+                    <p className="text-xs text-[#9E948A] mb-2">{engine.description}</p>
+                    <p className="text-xs text-[#D6CFC7] leading-relaxed max-w-2xl">
                         Select a registered target website below to launch the {engine.name} assessment. Discovered vulnerabilities, risk posture metrics, and remediation guidance will stream directly into the reporting console.
                     </p>
                 </div>
             </div>
 
             {/* Target Configuration */}
-            <div className="bg-[var(--color-surface-2)] border border-[var(--color-border-default)] rounded-lg p-5 shadow-[var(--shadow-1)]">
+            <div className="sentinel-glass p-5 rounded-2xl">
                 <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-                    <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
-                        <Target size={16} className="text-[var(--color-text-muted)]" />
+                    <h3 className="text-sm font-semibold text-[#F5F1EC] flex items-center gap-2">
+                        <Target size={16} className="text-[#D3A06A]" />
                         Target Configuration
                     </h3>
                     {engineBusy && (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--color-accent-subtle)] border border-[rgba(69,165,131,0.25)] text-[var(--color-accent)]">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-[rgba(211,160,106,0.12)] border border-[rgba(211,160,106,0.25)] text-[#D3A06A]">
                             <Loader2 size={11} className="animate-spin" />
                             {engine.name} scan in progress
                         </span>
@@ -119,13 +119,13 @@ export default function EngineTab({
                         onClick={handleStartScan}
                         disabled={startDisabled}
                         title={engineBusy ? `Another ${engine.name} scan is already running` : "Start scan"}
-                        className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-md text-xs font-medium transition-colors duration-150 whitespace-nowrap ${
+                        className={`inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 whitespace-nowrap ${
                             startDisabled
-                                ? "bg-[var(--color-surface-3)] text-[var(--color-text-disabled)] border border-[var(--color-border-default)] cursor-not-allowed opacity-70"
-                                : "bg-[var(--color-accent)] text-[var(--color-accent-foreground)] hover:bg-[var(--color-accent-hover)] active:bg-[var(--color-accent-active)] cursor-pointer shadow-sm"
+                                ? "bg-white/5 text-[#6E675F] border border-white/5 cursor-not-allowed opacity-60"
+                                : "bg-gradient-to-r from-[#D3A06A] to-[#E3B985] text-[#0D0C0A] hover:brightness-105 active:scale-[0.98] cursor-pointer shadow-[0_4px_16px_rgba(211,160,106,0.25)]"
                         }`}
                     >
-                        {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} />}
+                        {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} className="fill-current" />}
                         {loading ? "Starting…" : "Run Scan"}
                     </button>
                 </div>
